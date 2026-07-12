@@ -1,0 +1,38 @@
+{
+  "name": "preconfin-qbo-xero-migrator",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Standalone PreconFin QBO to Xero migration utility.",
+  "packageManager": "npm@10.9.2",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build:packages": "npm run build -w packages/canonical-model && npm run build -w packages/migration-engine && npm run build -w packages/validation-engine && npm run build -w packages/pdf-report && npm run build -w packages/xero-export && npm run build -w packages/shared-ui",
+    "build": "npm run build:packages && npm run build -w apps/api && npm run build -w apps/web",
+    "typecheck": "npm run build:packages && npm run typecheck -w apps/api && npm run typecheck -w apps/web",
+    "test": "npm run test -w packages/canonical-model && npm run test -w packages/migration-engine && npm run test -w packages/validation-engine && npm run test -w packages/xero-export && npm run test -w apps/api",
+    "lint": "npm run lint --workspaces --if-present",
+    "format": "prettier --check .",
+    "dev:web": "npm run dev -w apps/web",
+    "dev:api": "npm run dev -w apps/api"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "@typescript-eslint/eslint-plugin": "^8.18.1",
+    "@typescript-eslint/parser": "^8.18.1",
+    "eslint": "^9.17.0",
+    "prettier": "^3.4.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vitest": "^4.1.10",
+    "wrangler": "^4.86.0"
+  },
+  "overrides": {
+    "postcss": "8.5.17",
+    "next@16.2.10": {
+      "postcss": "8.5.17"
+    }
+  }
+}

@@ -1,0 +1,3 @@
+ContactName,AccountNumber,EmailAddress,FirstName,LastName,PhoneNumber,PostalAddressLine1,TaxNumber,ContactType
+North Pier Retailers,10,ap@northpier.example,,,,,customer
+Summit Fuel Supply,20,billing@summitfuel.example,,,,,supplier

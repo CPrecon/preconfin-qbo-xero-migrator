@@ -1,0 +1,48 @@
+name: Deploy Cloudflare
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  deploy-web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run pages:build -w apps/web
+      - run: npm run deploy -w apps/web
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+  deploy-api:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build -w apps/api
+      - run: npm run deploy -w apps/api
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          PUBLIC_APP_URL: ${{ secrets.PUBLIC_APP_URL }}
+          PUBLIC_API_URL: ${{ secrets.PUBLIC_API_URL }}
+          INTUIT_CLIENT_ID: ${{ secrets.INTUIT_CLIENT_ID }}
+          INTUIT_CLIENT_SECRET: ${{ secrets.INTUIT_CLIENT_SECRET }}
+          INTUIT_REDIRECT_URI: ${{ secrets.INTUIT_REDIRECT_URI }}
+          INTUIT_ENVIRONMENT: production
+          TOKEN_ENCRYPTION_KEY: ${{ secrets.TOKEN_ENCRYPTION_KEY }}
+          OAUTH_STATE_SIGNING_SECRET: ${{ secrets.OAUTH_STATE_SIGNING_SECRET }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SUPABASE_STORAGE_BUCKET: migration-artifacts

@@ -1,0 +1,17 @@
+node_modules
+.next
+dist
+coverage
+.env
+.env.local
+.env.*.local
+.DS_Store
+.vercel
+.wrangler
+.dev.vars
+*.log
+migration-artifacts
+.gstack/
+.open-next
+.gstack
+*.tsbuildinfo

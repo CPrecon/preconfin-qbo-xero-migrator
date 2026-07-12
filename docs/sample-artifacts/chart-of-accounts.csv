@@ -1,0 +1,4 @@
+Code,Name,Type,TaxType,Description,Dashboard,ExpenseClaims,EnablePayments
+100,Operating Checking,BANK,NONE,Primary bank account,Yes,No,Yes
+200,Services Revenue,REVENUE,NONE,Revenue from services,No,No,No
+400,Contractor Expense,EXPENSE,NONE,Delivery contractor costs,No,Yes,No

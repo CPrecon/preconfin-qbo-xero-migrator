@@ -1,0 +1,21 @@
+{
+  "name": "@preconfin/pdf-report",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@preconfin/canonical-model": "0.1.0",
+    "@preconfin/migration-engine": "0.1.0",
+    "@preconfin/validation-engine": "0.1.0",
+    "pdfkit": "^0.15.2"
+  },
+  "devDependencies": {
+    "@types/pdfkit": "^0.13.9"
+  }
+}

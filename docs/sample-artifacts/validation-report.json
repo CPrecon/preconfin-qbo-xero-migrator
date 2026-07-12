@@ -1,0 +1,23 @@
+{
+  "summary": {
+    "score": 88,
+    "readiness": "review_needed",
+    "errorCount": 0,
+    "warningCount": 3,
+    "infoCount": 0,
+    "generatedAt": "2026-07-12T00:00:00.000Z"
+  },
+  "findings": [
+    {
+      "code": "MISSING_TRIAL_BALANCE",
+      "severity": "warning",
+      "title": "Trial balance unavailable",
+      "message": "QuickBooks did not return a trial balance report for this scan.",
+      "recommendation": "Reconnect QuickBooks and rerun the scan, or export a trial balance manually for reconciliation."
+    }
+  ],
+  "recommendations": [
+    "Review warnings with an accountant or PreconFin migration specialist.",
+    "Import into a Xero demo organization first, then reconcile AR, AP, bank, and retained earnings before go-live."
+  ]
+}
