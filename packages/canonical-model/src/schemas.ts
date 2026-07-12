@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const moneyAmountSchema = z.object({
   amount: z.number().finite(),
-  currency: z.string().min(3).max(3)
+  currency: z.string().min(3).max(3),
 });
 
 export const sourceReferenceSchema = z.object({
@@ -10,7 +10,7 @@ export const sourceReferenceSchema = z.object({
   sourceId: z.string().min(1),
   sourceType: z.string().min(1),
   sourceTimestamp: z.string().optional(),
-  metadata: z.record(z.unknown())
+  metadata: z.record(z.unknown()),
 });
 
 export const accountSchema = z.object({
@@ -28,14 +28,14 @@ export const accountSchema = z.object({
     "bank",
     "accounts_receivable",
     "accounts_payable",
-    "other"
+    "other",
   ]),
   sourceAccountType: z.string().optional(),
   sourceAccountSubType: z.string().optional(),
   currency: z.string().optional(),
   active: z.boolean(),
   parentId: z.string().optional(),
-  currentBalance: moneyAmountSchema.optional()
+  currentBalance: moneyAmountSchema.optional(),
 });
 
 export const accountingSnapshotSchema = z.object({
@@ -47,7 +47,7 @@ export const accountingSnapshotSchema = z.object({
     baseCurrency: z.string().min(3).max(3),
     country: z.string().optional(),
     fiscalYearStartMonth: z.number().int().min(1).max(12).optional(),
-    qboRealmId: z.string().optional()
+    qboRealmId: z.string().optional(),
   }),
   accounts: z.array(accountSchema),
   contacts: z.array(z.unknown()),
@@ -64,7 +64,7 @@ export const accountingSnapshotSchema = z.object({
   reports: z.object({
     trialBalance: z.array(z.unknown()),
     profitAndLoss: z.array(z.unknown()),
-    balanceSheet: z.array(z.unknown())
+    balanceSheet: z.array(z.unknown()),
   }),
-  pulledAt: z.string()
+  pulledAt: z.string(),
 });

@@ -10,16 +10,26 @@ const xeroAccountTypeByClassification: Record<string, string> = {
   equity: "EQUITY",
   revenue: "REVENUE",
   expense: "EXPENSE",
-  other: "EXPENSE"
+  other: "EXPENSE",
 };
 
 function accountCode(account: Account, index: number): string {
   if (account.code) return account.code;
-  const base = account.classification === "revenue" ? 200 : account.classification === "expense" ? 400 : account.classification === "bank" ? 100 : 800;
+  const base =
+    account.classification === "revenue"
+      ? 200
+      : account.classification === "expense"
+        ? 400
+        : account.classification === "bank"
+          ? 100
+          : 800;
   return String(base + index).padStart(3, "0");
 }
 
-export function mapAccounts(snapshot: AccountingSnapshot): { mappings: MappingResult[]; exceptions: MigrationException[] } {
+export function mapAccounts(snapshot: AccountingSnapshot): {
+  mappings: MappingResult[];
+  exceptions: MigrationException[];
+} {
   const seenCodes = new Set<string>();
   const exceptions: MigrationException[] = [];
   const mappings = snapshot.accounts.map((account, index) => {
@@ -32,12 +42,13 @@ export function mapAccounts(snapshot: AccountingSnapshot): { mappings: MappingRe
         entityId: account.id,
         entityName: account.name,
         message: `Multiple accounts map to code ${targetCode}.`,
-        recommendation: "Assign a unique Xero account code before import."
+        recommendation: "Assign a unique Xero account code before import.",
       });
     }
     seenCodes.add(targetCode);
 
-    const targetType = xeroAccountTypeByClassification[account.classification] ?? "EXPENSE";
+    const targetType =
+      xeroAccountTypeByClassification[account.classification] ?? "EXPENSE";
     if (!account.active) {
       exceptions.push({
         code: "INACTIVE_ACCOUNT",
@@ -46,7 +57,8 @@ export function mapAccounts(snapshot: AccountingSnapshot): { mappings: MappingRe
         entityId: account.id,
         entityName: account.name,
         message: "Inactive QuickBooks account detected.",
-        recommendation: "Review whether this account should be imported, archived, or merged in Xero."
+        recommendation:
+          "Review whether this account should be imported, archived, or merged in Xero.",
       });
     }
     if (account.classification === "other") {
@@ -57,7 +69,8 @@ export function mapAccounts(snapshot: AccountingSnapshot): { mappings: MappingRe
         entityId: account.id,
         entityName: account.name,
         message: `QuickBooks account type ${account.sourceAccountType ?? "unknown"} does not map cleanly to Xero.`,
-        recommendation: "Choose an explicit Xero account type before migration."
+        recommendation:
+          "Choose an explicit Xero account type before migration.",
       });
     }
 
@@ -67,8 +80,17 @@ export function mapAccounts(snapshot: AccountingSnapshot): { mappings: MappingRe
       targetType,
       targetCode,
       targetName: account.name,
-      confidence: account.classification === "other" ? "low" as const : account.code ? "high" as const : "medium" as const,
-      notes: account.code ? [] : ["Generated Xero account code because QuickBooks account number was empty."]
+      confidence:
+        account.classification === "other"
+          ? ("low" as const)
+          : account.code
+            ? ("high" as const)
+            : ("medium" as const),
+      notes: account.code
+        ? []
+        : [
+            "Generated Xero account code because QuickBooks account number was empty.",
+          ],
     };
   });
 

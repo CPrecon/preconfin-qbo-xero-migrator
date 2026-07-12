@@ -3,6 +3,7 @@ create extension if not exists pgcrypto;
 create table if not exists oauth_states (
   nonce text primary key,
   return_to text not null,
+  code_verifier text not null,
   expires_at timestamptz not null,
   created_at timestamptz not null default now()
 );

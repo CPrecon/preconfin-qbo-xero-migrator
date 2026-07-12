@@ -26,6 +26,9 @@ export function decryptJson<T>(payload: string, secret: string): T {
   const encrypted = raw.subarray(28);
   const decipher = createDecipheriv("aes-256-gcm", key, iv);
   decipher.setAuthTag(tag);
-  const plaintext = Buffer.concat([decipher.update(encrypted), decipher.final()]);
+  const plaintext = Buffer.concat([
+    decipher.update(encrypted),
+    decipher.final(),
+  ]);
   return JSON.parse(plaintext.toString("utf8")) as T;
 }

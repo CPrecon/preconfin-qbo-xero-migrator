@@ -29,7 +29,8 @@ export type AccountClassification =
   | "other";
 
 export type ContactType = "customer" | "supplier" | "both";
-export type TransactionStatus = "draft" | "authorized" | "paid" | "void" | "deleted" | "unknown";
+export type TransactionStatus =
+  "draft" | "authorized" | "paid" | "void" | "deleted" | "unknown";
 
 export interface SourceReference {
   sourceSystem: SourceSystem;
@@ -197,6 +198,8 @@ export interface AccountingReports {
   trialBalance: ReportValue[];
   profitAndLoss: ReportValue[];
   balanceSheet: ReportValue[];
+  arAging: ReportValue[];
+  apAging: ReportValue[];
 }
 
 export interface AccountingSnapshot {

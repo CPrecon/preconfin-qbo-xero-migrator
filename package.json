@@ -12,7 +12,7 @@
     "build:packages": "npm run build -w packages/canonical-model && npm run build -w packages/migration-engine && npm run build -w packages/validation-engine && npm run build -w packages/pdf-report && npm run build -w packages/xero-export && npm run build -w packages/shared-ui",
     "build": "npm run build:packages && npm run build -w apps/api && npm run build -w apps/web",
     "typecheck": "npm run build:packages && npm run typecheck -w apps/api && npm run typecheck -w apps/web",
-    "test": "npm run test -w packages/canonical-model && npm run test -w packages/migration-engine && npm run test -w packages/validation-engine && npm run test -w packages/xero-export && npm run test -w apps/api",
+    "test": "npm run test -w packages/canonical-model && npm run test -w packages/migration-engine && npm run test -w packages/validation-engine && npm run test -w packages/pdf-report && npm run test -w packages/xero-export && npm run test -w apps/api",
     "lint": "npm run lint --workspaces --if-present",
     "format": "prettier --check .",
     "dev:web": "npm run dev -w apps/web",

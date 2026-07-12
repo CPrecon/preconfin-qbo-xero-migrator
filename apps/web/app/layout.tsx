@@ -8,22 +8,28 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://migrate.preconfin.com"),
   title: {
     default: "QBO to Xero Migrator by PreconFin",
-    template: "%s | PreconFin Migrator"
+    template: "%s | PreconFin Migrator",
   },
-  description: "Connect QuickBooks Online, validate migration readiness, and generate Xero-ready CSV files with a branded financial validation report.",
+  description:
+    "Connect QuickBooks Online, validate migration readiness, and generate Xero-ready CSV files with a branded financial validation report.",
   openGraph: {
     title: "QBO to Xero Migrator by PreconFin",
-    description: "Secure QuickBooks Online to Xero migration files and validation report.",
-    type: "website"
+    description:
+      "Secure QuickBooks Online to Xero migration files and validation report.",
+    type: "website",
   },
   twitter: {
     card: "summary_large_image",
     title: "QBO to Xero Migrator by PreconFin",
-    description: "Generate Xero-ready migration files from QuickBooks Online."
-  }
+    description: "Generate Xero-ready migration files from QuickBooks Online.",
+  },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en">
       <body>

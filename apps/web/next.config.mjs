@@ -6,11 +6,11 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const nextConfig = {
   transpilePackages: ["@preconfin/shared-ui"],
   turbopack: {
-    root: resolve(__dirname, "../..")
+    root: resolve(__dirname, "../.."),
   },
   experimental: {
-    optimizePackageImports: ["lucide-react"]
-  }
+    optimizePackageImports: ["lucide-react"],
+  },
 };
 
 export default nextConfig;

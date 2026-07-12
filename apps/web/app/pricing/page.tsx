@@ -1,8 +1,56 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-export const metadata: Metadata = { title: "Pricing", description: "Run a QBO to Xero migration readiness scan and choose assisted migration support when needed." };
+export const metadata: Metadata = {
+  title: "Pricing",
+  description:
+    "Run a QBO to Xero migration readiness scan and choose assisted migration support when needed.",
+};
 
 export default function PricingPage() {
-  return <main className="py-20"><div className="container max-w-4xl text-center"><p className="text-sm font-semibold uppercase text-teal">Simple starting point</p><h1 className="mt-4 text-4xl font-semibold tracking-tight text-ink">Run the migration scan first.</h1><p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-ink/72">The public utility helps you understand migration readiness before you commit to an assisted migration project. PreconFin consultation is available when your report shows issues that need expert review.</p><div className="mt-10 grid gap-4 md:grid-cols-2"><div className="rounded-lg border border-ink/10 bg-white p-6 text-left"><h2 className="text-xl font-semibold">Self-guided scan</h2><p className="mt-3 text-ink/70">Connect QuickBooks, generate a validation report, and download migration files for review.</p><Link href="/migrate" className="mt-6 inline-flex min-h-11 items-center rounded-full bg-teal px-5 text-sm font-semibold text-white">Start scan</Link></div><div className="rounded-lg border border-ink/10 bg-white p-6 text-left"><h2 className="text-xl font-semibold">Assisted review</h2><p className="mt-3 text-ink/70">Share your report with PreconFin to review exceptions, mappings, and migration risk before import.</p><Link href="/contact" className="mt-6 inline-flex min-h-11 items-center rounded-full border border-ink/15 px-5 text-sm font-semibold text-ink">Contact PreconFin</Link></div></div></div></main>;
+  return (
+    <main className="py-20">
+      <div className="container max-w-4xl text-center">
+        <p className="text-sm font-semibold uppercase text-teal">
+          Simple starting point
+        </p>
+        <h1 className="mt-4 text-4xl font-semibold tracking-tight text-ink">
+          Run the migration scan first.
+        </h1>
+        <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-ink/72">
+          The public utility helps you understand migration readiness before you
+          commit to an assisted migration project. PreconFin consultation is
+          available when your report shows issues that need expert review.
+        </p>
+        <div className="mt-10 grid gap-4 md:grid-cols-2">
+          <div className="rounded-lg border border-ink/10 bg-white p-6 text-left">
+            <h2 className="text-xl font-semibold">Self-guided scan</h2>
+            <p className="mt-3 text-ink/70">
+              Connect QuickBooks, generate a validation report, and download
+              migration files for review.
+            </p>
+            <Link
+              href="/migrate"
+              className="mt-6 inline-flex min-h-11 items-center rounded-full bg-teal px-5 text-sm font-semibold text-white"
+            >
+              Start scan
+            </Link>
+          </div>
+          <div className="rounded-lg border border-ink/10 bg-white p-6 text-left">
+            <h2 className="text-xl font-semibold">Assisted review</h2>
+            <p className="mt-3 text-ink/70">
+              Share your report with PreconFin to review exceptions, mappings,
+              and migration risk before import.
+            </p>
+            <Link
+              href="/contact"
+              className="mt-6 inline-flex min-h-11 items-center rounded-full border border-ink/15 px-5 text-sm font-semibold text-ink"
+            >
+              Contact PreconFin
+            </Link>
+          </div>
+        </div>
+      </div>
+    </main>
+  );
 }

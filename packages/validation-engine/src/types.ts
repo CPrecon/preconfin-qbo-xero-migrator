@@ -1,11 +1,19 @@
 export type ValidationSeverity = "pass" | "info" | "warning" | "error";
 
+export interface AffectedSourceRecord {
+  sourceId: string;
+  sourceType: string;
+  label?: string;
+}
+
 export interface ValidationFinding {
   code: string;
   severity: ValidationSeverity;
   title: string;
   message: string;
   recommendation: string;
+  affectedRecords: AffectedSourceRecord[];
+  blocksExport: boolean;
   entityType?: string;
   entityId?: string;
 }
