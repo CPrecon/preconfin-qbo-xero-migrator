@@ -4,6 +4,10 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "QuickBooks Connected",
   description: "QuickBooks Online connection returned to the migrator.",
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default function OAuthCallbackPage() {

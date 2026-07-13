@@ -3,8 +3,13 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, Download, Loader2, Trash2 } from "lucide-react";
-import { apiUrl } from "../lib/config";
+import { apiUrl, supportUrl } from "../lib/config";
 import { track } from "../lib/analytics";
+import {
+  captureAttribution,
+  hasAttribution,
+  withAttribution,
+} from "../lib/attribution";
 import { LeadForm } from "./lead-form";
 
 type DownloadLink = {
@@ -32,6 +37,10 @@ function storeSession(values: Record<string, string>) {
     window.sessionStorage.setItem(key, value);
 }
 
+function leadStorageKey(jobId: string): string {
+  return `leadSubmitted:${jobId}`;
+}
+
 export function MigrationWizard() {
   const initialConnectionId = useMemo(() => readParam("connectionId"), []);
   const initialConnectionToken = useMemo(
@@ -48,8 +57,29 @@ export function MigrationWizard() {
   const [score, setScore] = useState<number | null>(null);
   const [readiness, setReadiness] = useState("");
   const [downloads, setDownloads] = useState<DownloadLink[]>([]);
+  const [leadSubmitted, setLeadSubmitted] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    const attribution = captureAttribution();
+    if (hasAttribution(attribution)) {
+      track("migration_referral_received", {
+        source: "migration_wizard",
+        ...attribution,
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!jobId) {
+      setLeadSubmitted(false);
+      return;
+    }
+    setLeadSubmitted(
+      window.sessionStorage.getItem(leadStorageKey(jobId)) === "true",
+    );
+  }, [jobId]);
 
   useEffect(() => {
     const url = new URL(window.location.href);
@@ -76,7 +106,8 @@ export function MigrationWizard() {
   function connectQbo() {
     track("qbo_connect_clicked", { source: "migration_wizard" });
     track("qbo_oauth_started", { source: "migration_wizard" });
-    window.location.href = `${apiUrl}/api/oauth/qbo/start?returnTo=${encodeURIComponent(window.location.origin + "/migrate")}`;
+    const returnTo = `${window.location.origin}/migrate${window.location.search}`;
+    window.location.href = `${apiUrl}/api/oauth/qbo/start?returnTo=${encodeURIComponent(returnTo)}`;
   }
 
   async function runScan() {
@@ -95,12 +126,14 @@ export function MigrationWizard() {
       const created = await create.json();
       setJobId(created.jobId);
       setJobToken(created.jobToken);
+      setLeadSubmitted(false);
       storeSession({
         jobId: created.jobId,
         jobToken: created.jobToken,
         connectionId,
         connectionToken,
       });
+      window.sessionStorage.removeItem(leadStorageKey(created.jobId));
       setStatus("running");
 
       const run = await fetch(
@@ -150,6 +183,11 @@ export function MigrationWizard() {
     setDownloads(payload.downloads ?? []);
   }
 
+  function markLeadSubmitted() {
+    if (jobId) window.sessionStorage.setItem(leadStorageKey(jobId), "true");
+    setLeadSubmitted(true);
+  }
+
   async function deleteScan() {
     if (!jobId || !jobToken) return;
     await fetch(`${apiUrl}/api/migration-jobs/${jobId}`, {
@@ -162,7 +200,19 @@ export function MigrationWizard() {
     setScore(null);
     setReadiness("");
     setDownloads([]);
+    setLeadSubmitted(false);
     for (const key of storageKeys) window.sessionStorage.removeItem(key);
+  }
+
+  function openPreconfinConsultation(event: React.MouseEvent) {
+    event.preventDefault();
+    track("preconfin_cta_clicked", {
+      source: "migration_wizard_completion",
+    });
+    window.location.href = withAttribution(
+      supportUrl,
+      "qbo_xero_migrator_completion",
+    );
   }
 
   return (
@@ -255,33 +305,52 @@ export function MigrationWizard() {
         {downloads.length > 0 && (
           <div className="mt-6 space-y-3">
             <h3 className="font-semibold text-ink">Downloads</h3>
-            {downloads.map((item) => (
-              <a
-                key={item.id}
-                href={item.url}
-                onClick={() => {
-                  track("migration_package_downloaded", {
-                    source: "migration_wizard",
-                    kind: item.kind,
-                  });
-                  if (item.kind === "pdf")
-                    track("migration_report_viewed", {
+            {leadSubmitted ? (
+              downloads.map((item) => (
+                <a
+                  key={item.id}
+                  href={item.url}
+                  onClick={() => {
+                    track("migration_package_downloaded", {
                       source: "migration_wizard",
+                      kind: item.kind,
                     });
-                  if (item.kind === "zip")
-                    track("migration_mapping_reviewed", {
-                      source: "migration_wizard",
-                    });
-                }}
-                className="flex min-h-12 items-center justify-between rounded-lg border border-ink/10 px-4 text-sm hover:bg-paper"
-              >
-                <span>
-                  {item.kind.toUpperCase()} ·{" "}
-                  {(item.sizeBytes / 1024).toFixed(1)} KB
-                </span>
-                <Download aria-hidden="true" className="h-4 w-4 text-teal" />
-              </a>
-            ))}
+                    if (item.kind === "pdf")
+                      track("migration_report_viewed", {
+                        source: "migration_wizard",
+                      });
+                    if (item.kind === "zip")
+                      track("migration_mapping_reviewed", {
+                        source: "migration_wizard",
+                      });
+                  }}
+                  className="flex min-h-12 items-center justify-between rounded-lg border border-ink/10 px-4 text-sm hover:bg-paper"
+                >
+                  <span>
+                    {item.kind.toUpperCase()} ·{" "}
+                    {(item.sizeBytes / 1024).toFixed(1)} KB
+                  </span>
+                  <Download aria-hidden="true" className="h-4 w-4 text-teal" />
+                </a>
+              ))
+            ) : (
+              <div className="rounded-lg border border-ink/10 bg-paper p-4">
+                <h4 className="font-semibold text-ink">
+                  Send the package to your work email.
+                </h4>
+                <p className="mt-2 text-sm leading-6 text-ink/70">
+                  Your scan is complete. Submit your details to unlock the ZIP
+                  package and PDF report links in this browser.
+                </p>
+                <div className="mt-4">
+                  <LeadForm
+                    source="migration-package-download"
+                    jobId={jobId}
+                    onSuccess={markLeadSubmitted}
+                  />
+                </div>
+              </div>
+            )}
             <button
               onClick={deleteScan}
               className="inline-flex min-h-11 items-center rounded-full text-sm font-semibold text-red-700"
@@ -291,18 +360,22 @@ export function MigrationWizard() {
             </button>
           </div>
         )}
-        {status === "completed" && (
+        {status === "completed" && leadSubmitted && (
           <div className="mt-8 border-t border-ink/10 pt-6">
             <h3 className="text-lg font-semibold">
-              Need help reviewing the report?
+              Want help reviewing the report?
             </h3>
             <p className="mt-2 text-sm leading-6 text-ink/70">
-              Send your contact details and PreconFin can help review exceptions
-              and next steps.
+              PreconFin can help review exceptions, mappings, and next steps
+              before your Xero import.
             </p>
-            <div className="mt-4">
-              <LeadForm source="migration-report" jobId={jobId} />
-            </div>
+            <a
+              href={supportUrl}
+              onClick={openPreconfinConsultation}
+              className="mt-4 inline-flex min-h-11 items-center rounded-full bg-teal px-5 text-sm font-semibold text-white hover:bg-[#185c60]"
+            >
+              Talk to PreconFin
+            </a>
           </div>
         )}
         <p className="mt-6 text-xs leading-5 text-ink/50">

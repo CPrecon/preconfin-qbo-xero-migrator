@@ -1,7 +1,0 @@
-name = "preconfin-qbo-xero-api"
-main = "dist/worker.js"
-compatibility_date = "2026-07-01"
-compatibility_flags = ["nodejs_compat"]
-
-[vars]
-NODE_ENV = "production"

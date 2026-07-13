@@ -11,7 +11,10 @@
     "start": "node dist/index.js",
     "test": "vitest run",
     "deploy": "wrangler deploy",
-    "verify:env:live": "tsx src/verify-live-env.ts"
+    "verify:env:live": "tsx src/verify-live-env.ts",
+    "deploy:staging": "wrangler deploy --env staging",
+    "deploy:production": "wrangler deploy --env production",
+    "deploy:dry-run": "wrangler deploy --dry-run"
   },
   "dependencies": {
     "@fastify/cors": "^10.0.2",

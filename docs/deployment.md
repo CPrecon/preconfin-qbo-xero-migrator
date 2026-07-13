@@ -1,47 +1,253 @@
-# Xero CSV Compatibility Matrix
+# Cloudflare Workers Deployment Guide
 
-This matrix documents the V1 export intent. The generated package is designed for controlled review and Xero demo import testing before production use.
+This repository deploys the QBO to Xero Migrator as a standalone PreconFin acquisition tool. It remains separate from the PreconFin marketing repository.
 
-| Export              | Package path                               | Fixture status                       | Live certification status | Notes                                                                                                                                                                                                   |
-| ------------------- | ------------------------------------------ | ------------------------------------ | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Chart of accounts   | import-ready/chart-of-accounts.csv         | Import-ready after review            | Not run                   | Uses mapped Xero account code, type, tax type, dashboard, expense claim, and payment flags. System accounts such as receivables, payables, bank, and retained earnings still require accountant review. |
-| Contacts            | import-ready/contacts.csv                  | Import-ready after review            | Not run                   | Consolidates customers and suppliers as contacts. Duplicate names are warnings because Xero may merge or reject duplicates depending on import path.                                                    |
-| Items               | import-ready/items.csv                     | Import-ready for non-inventory items | Not run                   | Inventory items are flagged as unsupported for V1 because Xero inventory setup may require manual configuration.                                                                                        |
-| Sales invoices      | import-ready/sales-invoices.csv            | Import-ready after validation        | Not run                   | Uses contact names and mapped Xero account codes. Does not write payment allocation state directly to Xero.                                                                                             |
-| Bills               | import-ready/bills.csv                     | Import-ready after validation        | Not run                   | Uses supplier contact names and mapped Xero account codes. Payment state requires manual review after import.                                                                                           |
-| Credit notes        | import-ready/credit-notes.csv              | Import-ready after validation        | Not run                   | Separates customer and supplier credits by Type field. Allocation history may require manual reconciliation.                                                                                            |
-| Manual journals     | manual-configuration/manual-journals.csv   | Manual configuration                 | Not run                   | Generated only from balanced journals. Review tax and account mapping before import.                                                                                                                    |
-| Bank statements     | manual-configuration/bank-statements.csv   | Manual configuration                 | Not run                   | Payment-derived bank rows are reference-ready, not a substitute for bank-feed reconciliation.                                                                                                           |
-| Opening balances    | manual-configuration/opening-balances.csv  | Manual configuration                 | Not run                   | Derived from trial-balance rows. Retained earnings, AR, AP, bank, and tax balances must be reconciled before use.                                                                                       |
-| Mapping report      | reference-only/mapping-report.csv          | Reference-only                       | Not applicable            | Shows generated account, tax, contact, item, and tracking mappings.                                                                                                                                     |
-| Exceptions          | reference-only/exceptions.csv              | Reference-only                       | Not applicable            | Lists validation and migration findings with severity and blocks-export status.                                                                                                                         |
-| Validation report   | reference-only/validation-report.json      | Reference-only                       | Not applicable            | Machine-readable validation result.                                                                                                                                                                     |
-| PDF report          | reference-only/migration-health-report.pdf | Reference-only                       | Not applicable            | Branded human-readable migration health report.                                                                                                                                                         |
-| Unsupported records | unsupported/unsupported-records.csv        | Reference-only                       | Not applicable            | Records that V1 cannot safely express in Xero CSV import without manual work.                                                                                                                           |
-| Excluded records    | excluded/excluded-records.csv              | Reference-only                       | Not applicable            | Blocking findings and records that should not be imported until remediated.                                                                                                                             |
+## Deployment architecture
 
-## Compatibility constraints accounted for
+Use two Cloudflare Workers behind one public converter domain.
 
-- QBO and Xero entities do not map one-to-one.
-- Xero account codes must be unique and safe for import.
-- Xero tracking supports a maximum of two active tracking categories.
-- Xero system accounts require manual review, especially receivables, payables, retained earnings, and bank accounts.
-- Regional tax codes may need manual mapping after export.
-- Historical payment allocation state may not import cleanly from CSV alone.
-- Unsupported historical state, inventory, payroll, and attachments are excluded from V1 import-ready files.
+| Surface | Worker                                       | Route                                 | Purpose                                                       |
+| ------- | -------------------------------------------- | ------------------------------------- | ------------------------------------------------------------- |
+| Web app | `preconfin-qbo-xero-migrator-web-staging`    | `migrate-staging.preconfin.com/*`     | OpenNext/Next.js UI, SEO pages, wizard, static assets         |
+| API     | `preconfin-qbo-xero-migrator-api-staging`    | `migrate-staging.preconfin.com/api/*` | Direct Worker API router, OAuth, extraction, artifacts, leads |
+| Web app | `preconfin-qbo-xero-migrator-web-production` | `migrate.preconfin.com/*`             | Production converter UI                                       |
+| API     | `preconfin-qbo-xero-migrator-api-production` | `migrate.preconfin.com/api/*`         | Production API                                                |
 
-## Live certification status
+Cloudflare route specificity sends `/api/*` to the API Worker and all other paths to the OpenNext web Worker. The browser uses same-origin API calls by default.
 
-Live Xero import certification has not been executed in this repository session because no disposable Xero organisation or verified QBO sandbox package was available. Populate `docs/live-verification/xero-import-results.md` before changing any row to live-certified.
+The SEO landing page is not in this repository. It should live at `https://preconfin.com/tools/quickbooks-to-xero` in the marketing repository.
 
-## Live certification gate
+## Current config files
 
-Before production launch, complete all of the following and commit sanitized evidence only:
+- Web Worker: `apps/web/wrangler.jsonc`
+- API Worker: `apps/api/wrangler.jsonc`
+- OpenNext config: `apps/web/open-next.config.ts`
+- Deploy workflow: `.github/workflows/deploy-cloudflare.yml`
 
-- `docs/live-verification/intuit-sandbox-results.md`
-- `docs/live-verification/supabase-security-results.md`
-- `docs/live-verification/xero-import-results.md`
-- `docs/live-verification/reconciliation-results.md`
-- A dated machine-readable reconciliation JSON derived from `docs/live-verification/reconciliation-result.template.json`
+## Required Cloudflare setup
 
-The launch decision must state exact differences for trial balance, AR, AP, bank balances, open invoice balances, and open bill balances.
+1. Confirm the Cloudflare account has the `preconfin.com` zone.
+2. Create API tokens with permission to deploy Workers and edit Workers routes.
+3. Add DNS records for staging and production domains. Use proxied records.
+4. Do not attach `migrate.preconfin.com` until staging is certified.
+
+Expected custom domains:
+
+```text
+migrate-staging.preconfin.com
+migrate.preconfin.com
+```
+
+## Runtime variables
+
+Committed Wrangler config contains only non-secret environment variables. Secrets must be set through Cloudflare Workers secrets or GitHub Actions secrets.
+
+### API secrets per environment
+
+Set these on `preconfin-qbo-xero-migrator-api-staging` and later on `preconfin-qbo-xero-migrator-api-production`:
+
+```bash
+cd apps/api
+wrangler secret put INTUIT_CLIENT_ID --env staging
+wrangler secret put INTUIT_CLIENT_SECRET --env staging
+wrangler secret put INTUIT_REDIRECT_URI --env staging
+wrangler secret put TOKEN_ENCRYPTION_KEY --env staging
+wrangler secret put OAUTH_STATE_SIGNING_SECRET --env staging
+wrangler secret put SUPABASE_URL --env staging
+wrangler secret put SUPABASE_SERVICE_ROLE_KEY --env staging
+wrangler secret put POSTHOG_KEY --env staging
+```
+
+Use the same names with `--env production` only after staging certification.
+
+Expected staging values by name, without secret values:
+
+```text
+PUBLIC_APP_URL=https://migrate-staging.preconfin.com
+PUBLIC_API_URL=https://migrate-staging.preconfin.com
+INTUIT_REDIRECT_URI=https://migrate-staging.preconfin.com/api/oauth/qbo/callback
+INTUIT_ENVIRONMENT=sandbox
+SUPABASE_STORAGE_BUCKET=migration-artifacts-staging
+```
+
+Expected production values by name, without secret values:
+
+```text
+PUBLIC_APP_URL=https://migrate.preconfin.com
+PUBLIC_API_URL=https://migrate.preconfin.com
+INTUIT_REDIRECT_URI=https://migrate.preconfin.com/api/oauth/qbo/callback
+INTUIT_ENVIRONMENT=production
+SUPABASE_STORAGE_BUCKET=migration-artifacts-production
+```
+
+### Web build variables
+
+`NEXT_PUBLIC_*` values are build-time inputs for the client bundle. Use the environment-specific scripts instead of the generic build when deploying:
+
+```bash
+npm run pages:build:staging -w apps/web
+npm run pages:build:production -w apps/web
+```
+
+If PostHog is enabled, provide `NEXT_PUBLIC_POSTHOG_KEY` at build time. Do not include it in committed files.
+
+## Supabase staging setup
+
+1. Create a dedicated staging Supabase project.
+2. Apply database migrations from an empty database.
+3. Create a private Storage bucket named `migration-artifacts-staging`.
+4. Confirm generated object paths include the migration job and artifact nonce.
+5. Confirm signed URLs expire.
+6. Confirm deletion removes database rows and storage objects.
+7. Confirm service-role keys are stored only as Cloudflare Worker secrets.
+
+## Intuit setup
+
+Configure an Intuit developer app for staging with this redirect URL:
+
+```text
+https://migrate-staging.preconfin.com/api/oauth/qbo/callback
+```
+
+Use sandbox credentials only for staging. Production Intuit credentials must not be enabled until live certification is complete.
+
+## PostHog setup
+
+Create a staging project or staging environment. The app sends only allowlisted funnel properties. Do not add accounting values, contact details, transaction descriptions, tokens, CSV contents, or balances to analytics events.
+
+## Local validation
+
+```bash
+npm run format
+npm run lint
+npm run typecheck
+npm run test
+npm run build
+npm run pages:build:staging -w apps/web
+npm run build -w apps/api
+npm run deploy:dry-run -w apps/api
+npm run deploy:dry-run -w apps/web
+```
+
+## Local Worker smoke test
+
+Web Worker:
+
+```bash
+cd apps/web
+npm run pages:build:staging
+wrangler dev --local --port 8787
+curl -i http://127.0.0.1:8787/health
+curl -i http://127.0.0.1:8787/robots.txt
+```
+
+API Worker with disposable local values:
+
+```bash
+cd apps/api
+npm run build
+PUBLIC_APP_URL=http://127.0.0.1:8787 \
+PUBLIC_API_URL=http://127.0.0.1:8788 \
+CORS_ORIGINS=http://127.0.0.1:8787 \
+INTUIT_CLIENT_ID=local-intuit-client \
+INTUIT_CLIENT_SECRET=local-intuit-secret \
+INTUIT_REDIRECT_URI=http://127.0.0.1:8788/api/oauth/qbo/callback \
+TOKEN_ENCRYPTION_KEY=<32-byte-base64-key> \
+OAUTH_STATE_SIGNING_SECRET=<random-32-byte-string> \
+SUPABASE_URL=https://example.supabase.co \
+SUPABASE_SERVICE_ROLE_KEY=<local-placeholder-service-key> \
+wrangler dev --local --port 8788
+```
+
+Then verify:
+
+```bash
+curl -i http://127.0.0.1:8788/health
+```
+
+## Staging deployment
+
+Do not deploy staging until secrets are configured.
+
+```bash
+npm run deploy:staging
+```
+
+Equivalent manual steps:
+
+```bash
+npm run build -w apps/api
+npm run deploy:staging -w apps/api
+npm run pages:build:staging -w apps/web
+npm run deploy:staging -w apps/web
+```
+
+Expected checks after deployment:
+
+```bash
+curl -i https://migrate-staging.preconfin.com/health
+curl -i https://migrate-staging.preconfin.com/api/health
+curl -i https://migrate-staging.preconfin.com/robots.txt
+curl -i https://migrate-staging.preconfin.com/sitemap.xml
+```
+
+## Production deployment
+
+Production must wait for:
+
+- Intuit sandbox OAuth and extraction evidence.
+- Supabase artifact lifecycle evidence.
+- Xero import certification evidence.
+- Reconciliation evidence.
+- Launch-readiness sign-off.
+
+When approved:
+
+```bash
+npm run deploy:production
+```
+
+## GitHub Actions
+
+The Cloudflare deployment workflow is manual only. It accepts an `environment` input of `staging` or `production`. Required GitHub secrets:
+
+```text
+CLOUDFLARE_API_TOKEN
+CLOUDFLARE_ACCOUNT_ID
+NEXT_PUBLIC_POSTHOG_KEY
+```
+
+Worker runtime secrets are managed in Cloudflare with `wrangler secret put`, not committed to GitHub workflow files.
+
+## Rollback
+
+Use Cloudflare Workers versions from the dashboard or redeploy a known-good commit.
+
+```bash
+git checkout <known-good-commit>
+npm ci
+npm run deploy:staging
+```
+
+For production rollback, use the same command with `deploy:production` only after confirming the target commit and environment.
+
+## Health verification
+
+A healthy deployment returns JSON from both routes:
+
+```json
+{ "ok": true, "service": "qbo-xero-migrator-web" }
+{ "ok": true, "service": "qbo-xero-migrator-api" }
+```
+
+The API health route validates the runtime environment because the API Worker initializes the Fastify app before serving requests. Missing secrets should fail clearly.
+
+## Incident response
+
+1. Disable the affected Worker route in Cloudflare if customer data or OAuth safety is at risk.
+2. Revoke Intuit app credentials if token exposure is suspected.
+3. Rotate `TOKEN_ENCRYPTION_KEY` only with a migration plan for existing encrypted tokens.
+4. Rotate `OAUTH_STATE_SIGNING_SECRET` immediately if OAuth state signing is at risk.
+5. Revoke Supabase service-role key and issue a new Worker secret if storage/database access is at risk.
+6. Run artifact cleanup and verify storage deletion.
+7. Document the incident in `docs/live-verification/` or the incident tracker without secrets or private accounting data.

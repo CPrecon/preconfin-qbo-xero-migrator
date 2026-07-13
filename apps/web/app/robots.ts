@@ -1,12 +1,15 @@
 import type { MetadataRoute } from "next";
+import { appUrl } from "../lib/config";
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl =
-    process.env.NEXT_PUBLIC_APP_URL ??
-    process.env.PUBLIC_APP_URL ??
-    "https://migrate.preconfin.com";
   return {
-    rules: [{ userAgent: "*", allow: "/" }],
-    sitemap: `${baseUrl}/sitemap.xml`,
+    rules: [
+      {
+        userAgent: "*",
+        allow: ["/", "/features", "/faq", "/privacy", "/terms", "/contact"],
+        disallow: ["/dashboard", "/oauth", "/downloads"],
+      },
+    ],
+    sitemap: `${appUrl}/sitemap.xml`,
   };
 }

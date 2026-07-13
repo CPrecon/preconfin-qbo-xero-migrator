@@ -10,7 +10,13 @@
     "lint": "eslint . --config ../../eslint.config.mjs",
     "pages:build": "opennextjs-cloudflare build",
     "deploy": "opennextjs-cloudflare deploy",
-    "start": "next start"
+    "start": "next start",
+    "worker:dev": "opennextjs-cloudflare preview",
+    "deploy:staging": "wrangler deploy --env staging",
+    "deploy:production": "wrangler deploy --env production",
+    "deploy:dry-run": "wrangler deploy --dry-run",
+    "pages:build:staging": "NEXT_PUBLIC_APP_URL=https://migrate-staging.preconfin.com NEXT_PUBLIC_API_URL=https://migrate-staging.preconfin.com NEXT_PUBLIC_MARKETING_URL=https://preconfin.com NEXT_PUBLIC_MARKETING_TOOL_URL=https://preconfin.com/tools/quickbooks-to-xero NEXT_PUBLIC_PRIVACY_URL=https://migrate-staging.preconfin.com/privacy NEXT_PUBLIC_TERMS_URL=https://migrate-staging.preconfin.com/terms NEXT_PUBLIC_SUPPORT_URL=https://preconfin.com/contact NEXT_PUBLIC_POSTHOG_HOST=https://us.i.posthog.com opennextjs-cloudflare build",
+    "pages:build:production": "NEXT_PUBLIC_APP_URL=https://migrate.preconfin.com NEXT_PUBLIC_API_URL=https://migrate.preconfin.com NEXT_PUBLIC_MARKETING_URL=https://preconfin.com NEXT_PUBLIC_MARKETING_TOOL_URL=https://preconfin.com/tools/quickbooks-to-xero NEXT_PUBLIC_PRIVACY_URL=https://migrate.preconfin.com/privacy NEXT_PUBLIC_TERMS_URL=https://migrate.preconfin.com/terms NEXT_PUBLIC_SUPPORT_URL=https://preconfin.com/contact NEXT_PUBLIC_POSTHOG_HOST=https://us.i.posthog.com opennextjs-cloudflare build"
   },
   "dependencies": {
     "@preconfin/shared-ui": "0.1.0",

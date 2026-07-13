@@ -32,6 +32,13 @@ describe("server", () => {
     const response = await app.inject({ method: "GET", url: "/health" });
     expect(response.statusCode).toBe(200);
     expect(response.json().ok).toBe(true);
+
+    const routedResponse = await app.inject({
+      method: "GET",
+      url: "/api/health",
+    });
+    expect(routedResponse.statusCode).toBe(200);
+    expect(routedResponse.json().service).toBe("qbo-xero-migrator-api");
   });
 
   it("rejects an invalid OAuth callback state before token exchange", async () => {

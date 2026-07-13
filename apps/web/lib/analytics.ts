@@ -3,6 +3,7 @@
 import posthog from "posthog-js";
 
 type FunnelEvent =
+  | "migration_referral_received"
   | "migration_landing_viewed"
   | "qbo_connect_clicked"
   | "qbo_oauth_started"
@@ -26,6 +27,13 @@ const allowedProperties = new Set([
   "hasJob",
   "stage",
   "reason",
+  "campaignSource",
+  "campaignMedium",
+  "campaignName",
+  "campaignContent",
+  "campaignTerm",
+  "referralCode",
+  "referralHost",
 ]);
 
 export function track(

@@ -17,7 +17,13 @@
     "format": "prettier --check .",
     "dev:web": "npm run dev -w apps/web",
     "dev:api": "npm run dev -w apps/api",
-    "verify:env:live": "npm run verify:env:live -w apps/api"
+    "verify:env:live": "npm run verify:env:live -w apps/api",
+    "pages:build": "npm run pages:build -w apps/web",
+    "deploy:staging": "npm run build -w apps/api && npm run deploy:staging -w apps/api && npm run pages:build:staging -w apps/web && npm run deploy:staging -w apps/web",
+    "deploy:production": "npm run build -w apps/api && npm run deploy:production -w apps/api && npm run pages:build:production -w apps/web && npm run deploy:production -w apps/web",
+    "deploy:dry-run": "npm run build -w apps/api && npm run deploy:dry-run -w apps/api && npm run pages:build:staging -w apps/web && npm run deploy:dry-run -w apps/web",
+    "pages:build:staging": "npm run pages:build:staging -w apps/web",
+    "pages:build:production": "npm run pages:build:production -w apps/web"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",

@@ -1,0 +1,78 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "preconfin-qbo-xero-migrator-api",
+  "main": "dist/worker.js",
+  "compatibility_date": "2026-07-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  "preview_urls": true,
+  "observability": {
+    "enabled": true,
+    "logs": {
+      "enabled": true,
+      "persist": true,
+      "invocation_logs": true,
+    },
+  },
+  "vars": {
+    "NODE_ENV": "production",
+    "LOG_LEVEL": "info",
+    "PUBLIC_APP_URL": "https://migrate-staging.preconfin.com",
+    "PUBLIC_API_URL": "https://migrate-staging.preconfin.com",
+    "CORS_ORIGINS": "https://migrate-staging.preconfin.com",
+    "INTUIT_ENVIRONMENT": "sandbox",
+    "QBO_MINOR_VERSION": "75",
+    "SUPABASE_STORAGE_BUCKET": "migration-artifacts-staging",
+    "ARTIFACT_RETENTION_DAYS": "14",
+    "SIGNED_URL_TTL_SECONDS": "3600",
+    "POSTHOG_HOST": "https://us.i.posthog.com",
+  },
+  "env": {
+    "staging": {
+      "name": "preconfin-qbo-xero-migrator-api-staging",
+      "workers_dev": true,
+      "routes": [
+        {
+          "pattern": "migrate-staging.preconfin.com/api/*",
+          "zone_name": "preconfin.com",
+        },
+      ],
+      "vars": {
+        "NODE_ENV": "production",
+        "LOG_LEVEL": "info",
+        "PUBLIC_APP_URL": "https://migrate-staging.preconfin.com",
+        "PUBLIC_API_URL": "https://migrate-staging.preconfin.com",
+        "CORS_ORIGINS": "https://migrate-staging.preconfin.com",
+        "INTUIT_ENVIRONMENT": "sandbox",
+        "QBO_MINOR_VERSION": "75",
+        "SUPABASE_STORAGE_BUCKET": "migration-artifacts-staging",
+        "ARTIFACT_RETENTION_DAYS": "14",
+        "SIGNED_URL_TTL_SECONDS": "3600",
+        "POSTHOG_HOST": "https://us.i.posthog.com",
+      },
+    },
+    "production": {
+      "name": "preconfin-qbo-xero-migrator-api-production",
+      "workers_dev": false,
+      "routes": [
+        {
+          "pattern": "migrate.preconfin.com/api/*",
+          "zone_name": "preconfin.com",
+        },
+      ],
+      "vars": {
+        "NODE_ENV": "production",
+        "LOG_LEVEL": "info",
+        "PUBLIC_APP_URL": "https://migrate.preconfin.com",
+        "PUBLIC_API_URL": "https://migrate.preconfin.com",
+        "CORS_ORIGINS": "https://migrate.preconfin.com",
+        "INTUIT_ENVIRONMENT": "production",
+        "QBO_MINOR_VERSION": "75",
+        "SUPABASE_STORAGE_BUCKET": "migration-artifacts-production",
+        "ARTIFACT_RETENTION_DAYS": "14",
+        "SIGNED_URL_TTL_SECONDS": "3600",
+        "POSTHOG_HOST": "https://us.i.posthog.com",
+      },
+    },
+  },
+}

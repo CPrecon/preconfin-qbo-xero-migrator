@@ -35,9 +35,14 @@ function safeReturnTo(returnTo: string | undefined, appUrl: string): string {
   return parsed.toString();
 }
 
-export async function buildServer(env: AppEnv) {
+export async function buildServer(
+  env: AppEnv,
+  options: { workerRuntime?: boolean } = {},
+) {
   const logger = createLogger(env);
-  const app = Fastify({ loggerInstance: logger });
+  const app = Fastify(
+    options.workerRuntime ? { logger: false } : { loggerInstance: logger },
+  );
   const repo = new Repository(createSupabase(env));
   const oauth = new IntuitOAuthClient(env);
   const migrationService = new MigrationService(env, repo);
@@ -54,11 +59,14 @@ export async function buildServer(env: AppEnv) {
   });
   await app.register(swaggerUi, { routePrefix: "/documentation" });
 
-  app.get("/health", async () => ({
+  const healthResponse = () => ({
     ok: true,
     service: "qbo-xero-migrator-api",
     timestamp: new Date().toISOString(),
-  }));
+  });
+
+  app.get("/health", async () => healthResponse());
+  app.get("/api/health", async () => healthResponse());
 
   app.get("/api/oauth/qbo/start", async (request, reply) => {
     const query = z

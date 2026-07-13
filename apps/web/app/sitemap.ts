@@ -1,25 +1,13 @@
 import type { MetadataRoute } from "next";
+import { appUrl } from "../lib/config";
 
-const routes = [
-  "",
-  "/features",
-  "/pricing",
-  "/faq",
-  "/privacy",
-  "/terms",
-  "/contact",
-  "/migrate",
-];
+const routes = ["", "/features", "/faq", "/privacy", "/terms", "/contact"];
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl =
-    process.env.NEXT_PUBLIC_APP_URL ??
-    process.env.PUBLIC_APP_URL ??
-    "https://migrate.preconfin.com";
   return routes.map((route) => ({
-    url: `${baseUrl}${route}`,
+    url: `${appUrl}${route}`,
     lastModified: new Date(),
     changeFrequency: route === "" ? "weekly" : "monthly",
-    priority: route === "" ? 1 : 0.7,
+    priority: route === "" ? 0.6 : 0.4,
   }));
 }

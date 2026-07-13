@@ -7,9 +7,11 @@ import { track } from "../lib/analytics";
 export function LeadForm({
   source,
   jobId,
+  onSuccess,
 }: {
   source: string;
   jobId?: string;
+  onSuccess?: () => void;
 }) {
   const [status, setStatus] = useState<
     "idle" | "submitting" | "success" | "error"
@@ -46,6 +48,7 @@ export function LeadForm({
     track("migration_lead_submitted", { source, hasJob: Boolean(jobId) });
     setStatus("success");
     setMessage("Thanks. PreconFin will follow up with the right next step.");
+    onSuccess?.();
     event.currentTarget.reset();
   }
 

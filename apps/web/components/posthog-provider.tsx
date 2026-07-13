@@ -9,8 +9,13 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
     if (!posthogKey) return;
     posthog.init(posthogKey, {
       api_host: posthogHost,
+      autocapture: false,
       capture_pageview: true,
-      persistence: "memory",
+      cross_subdomain_cookie: true,
+      disable_session_recording: true,
+      mask_all_element_attributes: true,
+      mask_all_text: true,
+      persistence: "localStorage+cookie",
     });
   }, []);
 

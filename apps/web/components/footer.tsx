@@ -1,4 +1,10 @@
 import Link from "next/link";
+import {
+  marketingToolUrl,
+  marketingUrl,
+  privacyUrl,
+  termsUrl,
+} from "../lib/config";
 
 export function Footer() {
   return (
@@ -8,19 +14,22 @@ export function Footer() {
           <p className="font-semibold text-ink">
             PreconFin QBO → Xero Migrator
           </p>
-          <p className="mt-1">A standalone utility from PreconFin.</p>
+          <p className="mt-1">A PreconFin tool for migration readiness.</p>
         </div>
         <nav className="flex flex-wrap gap-4" aria-label="Footer navigation">
-          <Link href="/privacy" className="hover:text-ink">
+          <Link href={privacyUrl} className="hover:text-ink">
             Privacy
           </Link>
-          <Link href="/terms" className="hover:text-ink">
+          <Link href={termsUrl} className="hover:text-ink">
             Terms
           </Link>
           <Link href="/contact" className="hover:text-ink">
             Contact
           </Link>
-          <Link href="https://www.preconfin.com" className="hover:text-ink">
+          <Link href={marketingToolUrl} className="hover:text-ink">
+            Tool overview
+          </Link>
+          <Link href={marketingUrl} className="hover:text-ink">
             PreconFin
           </Link>
         </nav>
