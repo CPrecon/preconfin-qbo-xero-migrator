@@ -1,0 +1,25 @@
+{
+  "status": "not_run",
+  "source": {
+    "system": "quickbooks-online-sandbox",
+    "realmIdHash": null,
+    "extractedAt": null
+  },
+  "destination": {
+    "system": "xero-disposable-organisation",
+    "tenantIdHash": null,
+    "importedAt": null
+  },
+  "differences": {
+    "trialBalance": null,
+    "accountsReceivable": null,
+    "accountsPayable": null,
+    "openInvoiceBalance": null,
+    "openBillBalance": null,
+    "bankBalances": null,
+    "retainedEarnings": null,
+    "accountLevelBalances": []
+  },
+  "classification": "not_verified",
+  "notes": "Populate after live QBO extraction and Xero import certification. Do not include private source records, contact details, descriptions, tokens, or credentials."
+}

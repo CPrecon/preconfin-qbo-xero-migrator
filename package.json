@@ -16,7 +16,8 @@
     "lint": "npm run lint --workspaces --if-present",
     "format": "prettier --check .",
     "dev:web": "npm run dev -w apps/web",
-    "dev:api": "npm run dev -w apps/api"
+    "dev:api": "npm run dev -w apps/api",
+    "verify:env:live": "npm run verify:env:live -w apps/api"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",

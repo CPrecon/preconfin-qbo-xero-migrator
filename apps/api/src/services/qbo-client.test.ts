@@ -22,6 +22,8 @@ const env = {
   SUPABASE_STORAGE_BUCKET: "migration-artifacts",
   ARTIFACT_RETENTION_DAYS: 14,
   SIGNED_URL_TTL_SECONDS: 3600,
+  POSTHOG_HOST: "https://us.i.posthog.com",
+  LIVE_CERTIFICATION_MODE: false,
 };
 
 afterEach(() => vi.unstubAllGlobals());

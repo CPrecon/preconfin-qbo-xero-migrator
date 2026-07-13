@@ -10,7 +10,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "start": "node dist/index.js",
     "test": "vitest run",
-    "deploy": "wrangler deploy"
+    "deploy": "wrangler deploy",
+    "verify:env:live": "tsx src/verify-live-env.ts"
   },
   "dependencies": {
     "@fastify/cors": "^10.0.2",
