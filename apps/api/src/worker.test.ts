@@ -27,9 +27,45 @@ const env = {
 };
 
 describe("worker router", () => {
-  it("serves same-origin API health without Fastify", async () => {
+  it("allows only the configured production frontend origin for CORS", async () => {
+    const productionEnv = {
+      ...env,
+      PUBLIC_APP_URL: "https://migrate.preconfin.com",
+      PUBLIC_API_URL: "https://api-migrate.preconfin.com",
+      CORS_ORIGINS: "https://migrate.preconfin.com",
+      INTUIT_REDIRECT_URI:
+        "https://api-migrate.preconfin.com/api/oauth/qbo/callback",
+    };
+
+    const allowed = await worker.fetch(
+      new Request("https://api-migrate.preconfin.com/api/health", {
+        method: "OPTIONS",
+        headers: { origin: "https://migrate.preconfin.com" },
+      }),
+      productionEnv,
+    );
+
+    expect(allowed.status).toBe(204);
+    expect(allowed.headers.get("access-control-allow-origin")).toBe(
+      "https://migrate.preconfin.com",
+    );
+    expect(allowed.headers.get("vary")).toBe("Origin");
+
+    const blocked = await worker.fetch(
+      new Request("https://api-migrate.preconfin.com/api/health", {
+        method: "OPTIONS",
+        headers: { origin: "https://example.com" },
+      }),
+      productionEnv,
+    );
+
+    expect(blocked.status).toBe(204);
+    expect(blocked.headers.get("access-control-allow-origin")).toBeNull();
+  });
+
+  it("serves API health without Fastify", async () => {
     const response = await worker.fetch(
-      new Request("https://migrate-staging.preconfin.com/api/health"),
+      new Request("https://api-migrate.preconfin.com/api/health"),
       env,
     );
     expect(response.status).toBe(200);

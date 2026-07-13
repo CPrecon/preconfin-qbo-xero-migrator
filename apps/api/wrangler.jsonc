@@ -56,15 +56,15 @@
       "workers_dev": false,
       "routes": [
         {
-          "pattern": "migrate.preconfin.com/api/*",
-          "zone_name": "preconfin.com",
+          "pattern": "api-migrate.preconfin.com",
+          "custom_domain": true,
         },
       ],
       "vars": {
         "NODE_ENV": "production",
         "LOG_LEVEL": "info",
         "PUBLIC_APP_URL": "https://migrate.preconfin.com",
-        "PUBLIC_API_URL": "https://migrate.preconfin.com",
+        "PUBLIC_API_URL": "https://api-migrate.preconfin.com",
         "CORS_ORIGINS": "https://migrate.preconfin.com",
         "INTUIT_ENVIRONMENT": "production",
         "QBO_MINOR_VERSION": "75",

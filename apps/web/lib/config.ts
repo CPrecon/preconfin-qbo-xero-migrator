@@ -9,7 +9,9 @@ export const appUrl = stripTrailingSlash(
 );
 
 export const apiUrl = stripTrailingSlash(
-  process.env.NEXT_PUBLIC_API_URL ?? process.env.PUBLIC_API_URL ?? appUrl,
+  process.env.NEXT_PUBLIC_API_URL ??
+    process.env.PUBLIC_API_URL ??
+    "https://api-migrate.preconfin.com",
 );
 
 export const marketingUrl = stripTrailingSlash(

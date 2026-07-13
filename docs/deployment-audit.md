@@ -23,7 +23,7 @@ Use two Cloudflare Workers:
 1. `preconfin-qbo-xero-migrator-web-*` for the OpenNext web application.
 2. `preconfin-qbo-xero-migrator-api-*` for the API Worker.
 
-Cloudflare routes send `/api/*` to the API Worker and all other paths to the web Worker. This keeps OAuth callbacks, artifact generation, and Supabase access isolated from the client bundle while preserving same-origin browser requests. The Worker router reuses the same repository, OAuth, migration, validation, PDF, ZIP, and Supabase service modules as the Node API path.
+Staging can use `/api/*` route specificity on `migrate-staging.preconfin.com`. Production uses separate Worker Custom Domains: `migrate.preconfin.com` for the web Worker and `api-migrate.preconfin.com` for the API Worker. This keeps OAuth callbacks, artifact generation, and Supabase access isolated from the client bundle while allowing explicit CORS control between the two production origins. The Worker router reuses the same repository, OAuth, migration, validation, PDF, ZIP, and Supabase service modules as the Node API path.
 
 A single full-stack Worker was not chosen because integrating the existing Fastify API into Next route handlers would be a broader product refactor and would increase launch risk. A static Pages deployment was not chosen because OAuth, migration jobs, signed artifact URLs, and lead capture require server runtime behavior.
 
@@ -39,8 +39,8 @@ migrate-staging.preconfin.com/* -> Web Worker
 Production:
 
 ```text
-migrate.preconfin.com/api/* -> API Worker
-migrate.preconfin.com/* -> Web Worker
+api-migrate.preconfin.com -> API Worker custom domain
+migrate.preconfin.com -> Web Worker custom domain
 ```
 
 ## Health checks

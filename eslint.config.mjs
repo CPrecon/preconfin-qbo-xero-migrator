@@ -38,6 +38,7 @@ export default [
       "**/dist/**",
       "**/.next/**",
       "**/.open-next/**",
+      "**/.wrangler/**",
       "**/.vercel/**",
     ],
   },

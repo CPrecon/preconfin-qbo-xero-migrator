@@ -4,16 +4,16 @@ This repository deploys the QBO to Xero Migrator as a standalone PreconFin acqui
 
 ## Deployment architecture
 
-Use two Cloudflare Workers behind one public converter domain.
+Use two Cloudflare Workers with separate production frontend and API domains.
 
 | Surface | Worker                                       | Route                                 | Purpose                                                       |
 | ------- | -------------------------------------------- | ------------------------------------- | ------------------------------------------------------------- |
 | Web app | `preconfin-qbo-xero-migrator-web-staging`    | `migrate-staging.preconfin.com/*`     | OpenNext/Next.js UI, SEO pages, wizard, static assets         |
 | API     | `preconfin-qbo-xero-migrator-api-staging`    | `migrate-staging.preconfin.com/api/*` | Direct Worker API router, OAuth, extraction, artifacts, leads |
-| Web app | `preconfin-qbo-xero-migrator-web-production` | `migrate.preconfin.com/*`             | Production converter UI                                       |
-| API     | `preconfin-qbo-xero-migrator-api-production` | `migrate.preconfin.com/api/*`         | Production API                                                |
+| Web app | `preconfin-qbo-xero-migrator-web`            | `migrate.preconfin.com`               | Production converter UI                                       |
+| API     | `preconfin-qbo-xero-migrator-api-production` | `api-migrate.preconfin.com`           | Production API                                                |
 
-Cloudflare route specificity sends `/api/*` to the API Worker and all other paths to the OpenNext web Worker. The browser uses same-origin API calls by default.
+Production uses Worker Custom Domains for both public converter surfaces. Browser API calls target `https://api-migrate.preconfin.com`; API CORS must allow only `https://migrate.preconfin.com` plus any explicitly approved staging/local origins.
 
 The SEO landing page is not in this repository. It should live at `https://preconfin.com/tools/quickbooks-to-xero` in the marketing repository.
 
@@ -36,6 +36,7 @@ Expected custom domains:
 ```text
 migrate-staging.preconfin.com
 migrate.preconfin.com
+api-migrate.preconfin.com
 ```
 
 ## Runtime variables
@@ -74,8 +75,9 @@ Expected production values by name, without secret values:
 
 ```text
 PUBLIC_APP_URL=https://migrate.preconfin.com
-PUBLIC_API_URL=https://migrate.preconfin.com
-INTUIT_REDIRECT_URI=https://migrate.preconfin.com/api/oauth/qbo/callback
+PUBLIC_API_URL=https://api-migrate.preconfin.com
+CORS_ORIGINS=https://migrate.preconfin.com
+INTUIT_REDIRECT_URI=https://api-migrate.preconfin.com/api/oauth/qbo/callback
 INTUIT_ENVIRONMENT=production
 SUPABASE_STORAGE_BUCKET=migration-artifacts-production
 ```
@@ -87,6 +89,19 @@ SUPABASE_STORAGE_BUCKET=migration-artifacts-production
 ```bash
 npm run pages:build:staging -w apps/web
 npm run pages:build:production -w apps/web
+```
+
+Production frontend build values:
+
+```text
+NEXT_PUBLIC_APP_URL=https://migrate.preconfin.com
+NEXT_PUBLIC_API_URL=https://api-migrate.preconfin.com
+NEXT_PUBLIC_MARKETING_URL=https://preconfin.com
+NEXT_PUBLIC_MARKETING_TOOL_URL=https://preconfin.com/tools/quickbooks-to-xero
+NEXT_PUBLIC_PRIVACY_URL=https://migrate.preconfin.com/privacy
+NEXT_PUBLIC_TERMS_URL=https://migrate.preconfin.com/terms
+NEXT_PUBLIC_SUPPORT_URL=https://preconfin.com/contact
+NEXT_PUBLIC_POSTHOG_HOST=https://us.i.posthog.com
 ```
 
 If PostHog is enabled, provide `NEXT_PUBLIC_POSTHOG_KEY` at build time. Do not include it in committed files.
@@ -201,11 +216,21 @@ Production must wait for:
 - Reconciliation evidence.
 - Launch-readiness sign-off.
 
-When approved:
+When approved, deploy the frontend with:
 
 ```bash
-npm run deploy:production
+npm run pages:build:production -w apps/web
+npm run deploy:production -w apps/web
 ```
+
+Deploy the production API only after its secrets and `api-migrate.preconfin.com` custom domain are approved:
+
+```bash
+npm run build -w apps/api
+npm run deploy:production -w apps/api
+```
+
+The root `npm run deploy:production` command deploys both Workers and should be reserved for coordinated full-stack releases.
 
 ## GitHub Actions
 
@@ -233,7 +258,14 @@ For production rollback, use the same command with `deploy:production` only afte
 
 ## Health verification
 
-A healthy deployment returns JSON from both routes:
+A healthy production deployment returns JSON from both routes:
+
+```bash
+curl -i https://migrate.preconfin.com/health
+curl -i https://api-migrate.preconfin.com/health
+```
+
+Expected JSON bodies:
 
 ```json
 { "ok": true, "service": "qbo-xero-migrator-web" }

@@ -174,7 +174,7 @@ The converter app owns OAuth. Configure Intuit redirect URLs in Intuit, not in t
 
 ```text
 https://migrate-staging.preconfin.com/api/oauth/qbo/callback
-https://migrate.preconfin.com/api/oauth/qbo/callback
+https://api-migrate.preconfin.com/api/oauth/qbo/callback
 ```
 
 ## Analytics boundary

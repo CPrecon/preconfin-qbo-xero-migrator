@@ -52,18 +52,18 @@
       },
     },
     "production": {
-      "name": "preconfin-qbo-xero-migrator-web-production",
+      "name": "preconfin-qbo-xero-migrator-web",
       "workers_dev": false,
       "routes": [
         {
-          "pattern": "migrate.preconfin.com/*",
-          "zone_name": "preconfin.com",
+          "pattern": "migrate.preconfin.com",
+          "custom_domain": true,
         },
       ],
       "vars": {
         "APP_ENV": "production",
         "NEXT_PUBLIC_APP_URL": "https://migrate.preconfin.com",
-        "NEXT_PUBLIC_API_URL": "https://migrate.preconfin.com",
+        "NEXT_PUBLIC_API_URL": "https://api-migrate.preconfin.com",
         "NEXT_PUBLIC_MARKETING_URL": "https://preconfin.com",
         "NEXT_PUBLIC_MARKETING_TOOL_URL": "https://preconfin.com/tools/quickbooks-to-xero",
         "NEXT_PUBLIC_PRIVACY_URL": "https://migrate.preconfin.com/privacy",
