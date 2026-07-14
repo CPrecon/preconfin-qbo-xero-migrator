@@ -66,6 +66,7 @@
         "PUBLIC_APP_URL": "https://migrate.preconfin.com",
         "PUBLIC_API_URL": "https://api-migrate.preconfin.com",
         "CORS_ORIGINS": "https://migrate.preconfin.com",
+        "INTUIT_REDIRECT_URI": "https://api-migrate.preconfin.com/api/oauth/qbo/callback",
         "INTUIT_ENVIRONMENT": "production",
         "QBO_MINOR_VERSION": "75",
         "SUPABASE_STORAGE_BUCKET": "migration-artifacts-production",
