@@ -144,6 +144,14 @@ npm run deploy:dry-run -w apps/api
 npm run deploy:dry-run -w apps/web
 ```
 
+`wrangler secret list` is useful for diagnostics, but it is not the production deployment gate. Cloudflare Worker secrets and encrypted dashboard variables are validated at Worker runtime. After deploying the API Worker, validate the actual runtime bindings through the live health route:
+
+```bash
+npm run verify:env:live -w apps/api -- --runtime-url=https://api-migrate.preconfin.com
+```
+
+The runtime health response must report `readiness.environment=configured` and `readiness.oauthRedirectUriMatchesExpected=true`. It returns required binding names and non-secret public configuration only; it must not return secret values.
+
 ## Local Worker smoke test
 
 Web Worker:
@@ -262,7 +270,7 @@ A healthy production deployment returns JSON from both routes:
 
 ```bash
 curl -i https://migrate.preconfin.com/health
-curl -i https://api-migrate.preconfin.com/health
+curl -i https://api-migrate.preconfin.com/api/health
 ```
 
 Expected JSON bodies:

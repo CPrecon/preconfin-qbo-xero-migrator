@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { loadEnv, type AppEnv } from "./env.js";
+import { EnvValidationError, loadEnv, type AppEnv } from "./env.js";
 import { createSupabase } from "./db/supabase.js";
 import { decryptJson, encryptJson } from "./security/crypto.js";
 import {
@@ -15,6 +15,18 @@ import { MigrationService } from "./services/migration-service.js";
 import { Repository } from "./services/repository.js";
 
 type WorkerBindings = Record<string, string | undefined>;
+
+const requiredRuntimeBindings = [
+  "INTUIT_CLIENT_ID",
+  "INTUIT_CLIENT_SECRET",
+  "INTUIT_REDIRECT_URI",
+  "TOKEN_ENCRYPTION_KEY",
+  "OAUTH_STATE_SIGNING_SECRET",
+  "SUPABASE_URL",
+  "SUPABASE_SERVICE_ROLE_KEY",
+] as const;
+
+const oauthCallbackPath = "/api/oauth/qbo/callback";
 
 type WorkerContext = {
   env: AppEnv;
@@ -95,12 +107,50 @@ async function readJson(request: Request): Promise<unknown> {
   }
 }
 
-function healthResponse() {
+function expectedOAuthRedirectUri(env: AppEnv): string {
+  return new URL(oauthCallbackPath, `${env.PUBLIC_API_URL}/`).toString();
+}
+
+function healthResponse(env: AppEnv) {
+  const oauthRedirectUriMatchesExpected =
+    env.INTUIT_REDIRECT_URI === expectedOAuthRedirectUri(env);
   return {
-    ok: true,
+    ok: oauthRedirectUriMatchesExpected,
     service: "qbo-xero-migrator-api",
     timestamp: new Date().toISOString(),
+    readiness: {
+      environment: "configured",
+      requiredRuntimeBindingsPresent: [...requiredRuntimeBindings],
+      oauthRedirectUriMatchesExpected,
+    },
+    runtime: {
+      publicAppUrl: env.PUBLIC_APP_URL,
+      publicApiUrl: env.PUBLIC_API_URL,
+      corsOrigins: env.CORS_ORIGINS.split(",").map((item) => item.trim()),
+      intuitEnvironment: env.INTUIT_ENVIRONMENT,
+      qboMinorVersion: env.QBO_MINOR_VERSION,
+      storageBucket: env.SUPABASE_STORAGE_BUCKET,
+      oauthCallbackPath,
+    },
   };
+}
+
+function environmentErrorResponse(error: unknown): Response {
+  const issues =
+    error instanceof EnvValidationError
+      ? error.issues
+      : ["Invalid environment configuration"];
+  return json(
+    {
+      ok: false,
+      service: "qbo-xero-migrator-api",
+      readiness: {
+        environment: "invalid",
+        issues,
+      },
+    },
+    500,
+  );
 }
 
 async function handleRequest(
@@ -115,7 +165,8 @@ async function handleRequest(
     request.method === "GET" &&
     (path === "/health" || path === "/api/health")
   ) {
-    return json(healthResponse());
+    const health = healthResponse(env);
+    return json(health, health.ok ? 200 : 500);
   }
 
   if (request.method === "GET" && path === "/api/oauth/qbo/start") {
@@ -304,15 +355,16 @@ export default {
     request: Request,
     envBindings: WorkerBindings,
   ): Promise<Response> {
+    const url = new URL(request.url);
+    const isHealthRoute =
+      request.method === "GET" &&
+      (url.pathname === "/health" || url.pathname === "/api/health");
     let ctx: WorkerContext;
     try {
       ctx = await context(envBindings);
     } catch (error) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : "Invalid environment configuration";
-      return new Response(message, { status: 500 });
+      if (isHealthRoute) return environmentErrorResponse(error);
+      return json({ error: "Invalid environment configuration" }, 500);
     }
 
     const headers = corsHeaders(ctx.env, request);
