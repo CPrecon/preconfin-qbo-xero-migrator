@@ -144,7 +144,7 @@ npm run deploy:dry-run -w apps/api
 npm run deploy:dry-run -w apps/web
 ```
 
-`wrangler secret list` is useful for diagnostics, but it is not the production deployment gate. Cloudflare Worker secrets and encrypted dashboard variables are validated at Worker runtime. After deploying the API Worker, validate the actual runtime bindings through the live health route:
+`wrangler secret list` is useful for diagnostics, but it is not the production deployment gate. Cloudflare Worker secrets and encrypted dashboard variables are validated at Worker runtime. When values are managed in the Cloudflare dashboard, deploy with `--keep-vars`; otherwise Wrangler replaces dashboard-managed runtime bindings with only the local `vars` block. After deploying the API Worker, validate the actual runtime bindings through the live health route:
 
 ```bash
 npm run verify:env:live -w apps/api -- --runtime-url=https://api-migrate.preconfin.com
@@ -231,7 +231,7 @@ npm run pages:build:production -w apps/web
 npm run deploy:production -w apps/web
 ```
 
-Deploy the production API only after its secrets and `api-migrate.preconfin.com` custom domain are approved:
+Deploy the production API only after its secrets and `api-migrate.preconfin.com` custom domain are approved. The API production deploy script uses `--keep-vars` so dashboard-managed runtime secrets and variables are not removed by Wrangler:
 
 ```bash
 npm run build -w apps/api
