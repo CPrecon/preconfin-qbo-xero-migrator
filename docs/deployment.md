@@ -6,12 +6,12 @@ This repository deploys the QBO to Xero Migrator as a standalone PreconFin acqui
 
 Use two Cloudflare Workers with separate production frontend and API domains.
 
-| Surface | Worker                                       | Route                                 | Purpose                                                       |
-| ------- | -------------------------------------------- | ------------------------------------- | ------------------------------------------------------------- |
-| Web app | `preconfin-qbo-xero-migrator-web-staging`    | `migrate-staging.preconfin.com/*`     | OpenNext/Next.js UI, SEO pages, wizard, static assets         |
-| API     | `preconfin-qbo-xero-migrator-api-staging`    | `migrate-staging.preconfin.com/api/*` | Direct Worker API router, OAuth, extraction, artifacts, leads |
-| Web app | `preconfin-qbo-xero-migrator-web`            | `migrate.preconfin.com`               | Production converter UI                                       |
-| API     | `preconfin-qbo-xero-migrator-api-production` | `api-migrate.preconfin.com`           | Production API                                                |
+| Surface | Worker                                    | Route                                 | Purpose                                                       |
+| ------- | ----------------------------------------- | ------------------------------------- | ------------------------------------------------------------- |
+| Web app | `preconfin-qbo-xero-migrator-web-staging` | `migrate-staging.preconfin.com/*`     | OpenNext/Next.js UI, SEO pages, wizard, static assets         |
+| API     | `preconfin-qbo-xero-migrator-api-staging` | `migrate-staging.preconfin.com/api/*` | Direct Worker API router, OAuth, extraction, artifacts, leads |
+| Web app | `preconfin-qbo-xero-migrator-web`         | `migrate.preconfin.com`               | Production converter UI                                       |
+| API     | `preconfin-qbo-xero-migrator-api`         | `api-migrate.preconfin.com`           | Production API                                                |
 
 Production uses Worker Custom Domains for both public converter surfaces. Browser API calls target `https://api-migrate.preconfin.com`; API CORS must allow only `https://migrate.preconfin.com` plus any explicitly approved staging/local origins.
 
@@ -45,7 +45,7 @@ Committed Wrangler config contains only non-secret environment variables. Secret
 
 ### API secrets per environment
 
-Set these on `preconfin-qbo-xero-migrator-api-staging` and later on `preconfin-qbo-xero-migrator-api-production`:
+Set these on `preconfin-qbo-xero-migrator-api-staging` and later on `preconfin-qbo-xero-migrator-api`:
 
 ```bash
 cd apps/api

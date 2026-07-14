@@ -52,7 +52,7 @@
       },
     },
     "production": {
-      "name": "preconfin-qbo-xero-migrator-api-production",
+      "name": "preconfin-qbo-xero-migrator-api",
       "workers_dev": false,
       "routes": [
         {
