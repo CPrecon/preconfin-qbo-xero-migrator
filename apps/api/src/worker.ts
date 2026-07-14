@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { EnvValidationError, loadEnv, type AppEnv } from "./env.js";
-import { createSupabase } from "./db/supabase.js";
+import { createSupabase, SupabaseHttpError } from "./db/supabase.js";
 import { decryptJson, encryptJson } from "./security/crypto.js";
 import {
   createPkcePair,
@@ -10,9 +10,12 @@ import {
   verifySignedState,
 } from "./security/tokens.js";
 import type { IntuitTokens } from "./services/intuit-oauth.js";
-import { IntuitOAuthClient } from "./services/intuit-oauth.js";
+import {
+  IntuitOAuthClient,
+  IntuitOAuthError,
+} from "./services/intuit-oauth.js";
 import { MigrationService } from "./services/migration-service.js";
-import { Repository } from "./services/repository.js";
+import { Repository, RepositoryError } from "./services/repository.js";
 
 type WorkerBindings = Record<string, string | undefined>;
 
@@ -153,6 +156,50 @@ function environmentErrorResponse(error: unknown): Response {
   );
 }
 
+export function errorLogDetails(error: unknown): Record<string, unknown> {
+  if (error instanceof RepositoryError) {
+    return {
+      type: error.name,
+      message: error.message,
+      code: error.code,
+      table: error.table,
+      operation: error.operation,
+      sourceType: error.sourceType,
+      status: error.status,
+      statusText: error.statusText,
+      keys: error.keys,
+    };
+  }
+
+  if (error instanceof IntuitOAuthError) {
+    return {
+      type: error.name,
+      message: error.message,
+      statusCode: error.statusCode,
+      errorCode: error.errorCode,
+    };
+  }
+
+  if (error instanceof SupabaseHttpError) {
+    return {
+      type: error.name,
+      message: error.message,
+      status: error.status,
+      statusText: error.statusText,
+      code: error.code,
+    };
+  }
+  if (error instanceof Error) {
+    return { type: error.name || "Error", message: error.message };
+  }
+
+  const record = error as { code?: unknown; message?: unknown; name?: unknown };
+  return {
+    type: typeof record?.name === "string" ? record.name : "UnknownThrownValue",
+    message: typeof record?.message === "string" ? record.message : "unknown",
+    code: typeof record?.code === "string" ? record.code : undefined,
+  };
+}
 async function handleRequest(
   request: Request,
   ctx: WorkerContext,
@@ -383,9 +430,7 @@ export default {
           headers,
         );
       }
-      console.error("request failed", {
-        message: error instanceof Error ? error.message : "unknown",
-      });
+      console.error("request failed", errorLogDetails(error));
       return json({ error: "Unexpected server error" }, 500, headers);
     }
   },

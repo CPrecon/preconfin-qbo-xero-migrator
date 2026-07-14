@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import worker from "./worker.js";
+import { SupabaseHttpError } from "./db/supabase.js";
+import { IntuitOAuthError } from "./services/intuit-oauth.js";
+import { RepositoryError } from "./services/repository.js";
+import worker, { errorLogDetails } from "./worker.js";
 
 const env = {
   NODE_ENV: "test",
@@ -72,6 +75,65 @@ describe("worker router", () => {
     await expect(response.json()).resolves.toMatchObject({
       ok: true,
       service: "qbo-xero-migrator-api",
+    });
+  });
+  it("formats repository failures without losing table and operation metadata", () => {
+    const details = errorLogDetails(
+      new RepositoryError(
+        "oauth_states",
+        "insert",
+        "42P01",
+        "Object",
+        404,
+        "Not Found",
+        ["code", "message"],
+        'Supabase insert failed for oauth_states: relation "public.oauth_states" does not exist',
+      ),
+    );
+
+    expect(details).toMatchObject({
+      type: "RepositoryError",
+      message:
+        'Supabase insert failed for oauth_states: relation "public.oauth_states" does not exist',
+      code: "42P01",
+      table: "oauth_states",
+      operation: "insert",
+      sourceType: "Object",
+      status: 404,
+      statusText: "Not Found",
+      keys: ["code", "message"],
+    });
+  });
+
+  it("formats Supabase HTTP errors with status and code", () => {
+    const details = errorLogDetails(
+      new SupabaseHttpError(
+        404,
+        "Not Found",
+        "42P01",
+        'Supabase HTTP request failed: relation "public.oauth_states" does not exist',
+      ),
+    );
+
+    expect(details).toMatchObject({
+      type: "SupabaseHttpError",
+      message:
+        'Supabase HTTP request failed: relation "public.oauth_states" does not exist',
+      status: 404,
+      statusText: "Not Found",
+      code: "42P01",
+    });
+  });
+  it("formats Intuit OAuth errors with status and provider code", () => {
+    const details = errorLogDetails(
+      new IntuitOAuthError("Intuit token request failed", 400, "invalid_grant"),
+    );
+
+    expect(details).toMatchObject({
+      type: "IntuitOAuthError",
+      message: "Intuit token request failed",
+      statusCode: 400,
+      errorCode: "invalid_grant",
     });
   });
 });

@@ -40,17 +40,116 @@ export interface ArtifactRecord {
   expiresAt?: string;
 }
 
+export class RepositoryError extends Error {
+  constructor(
+    readonly table: string,
+    readonly operation: string,
+    readonly code: string | undefined,
+    readonly sourceType: string,
+    readonly status: number | undefined,
+    readonly statusText: string | undefined,
+    readonly keys: string[],
+    message: string,
+  ) {
+    super(message);
+    this.name = "RepositoryError";
+  }
+}
+
+type SupabaseErrorLike = {
+  code?: unknown;
+  error?: unknown;
+  details?: unknown;
+  hint?: unknown;
+  message?: unknown;
+  msg?: unknown;
+  name?: unknown;
+  status?: unknown;
+  statusCode?: unknown;
+  statusText?: unknown;
+};
+
+function sanitizeRepositoryMessage(value: unknown): string | undefined {
+  if (typeof value !== "string" || !value) return undefined;
+  return value
+    .replace(/Bearer\s+[A-Za-z0-9._~+/=-]+/g, "Bearer [redacted]")
+    .replace(/=\([^)]+\)/g, "=([redacted])")
+    .slice(0, 500);
+}
+
+function errorSourceType(error: unknown): string {
+  if (error instanceof Error) return error.name || "Error";
+  return Object.prototype.toString.call(error).replace(/^\[object |\]$/g, "");
+}
+
+function errorKeys(error: unknown): string[] {
+  if (!error || typeof error !== "object") return [];
+  return Array.from(
+    new Set([...Object.keys(error), ...Object.getOwnPropertyNames(error)]),
+  )
+    .sort()
+    .slice(0, 12);
+}
+
+function optionalNumber(value: unknown): number | undefined {
+  return typeof value === "number" ? value : undefined;
+}
+
+function optionalString(value: unknown): string | undefined {
+  return typeof value === "string" && value ? value : undefined;
+}
+
+function throwRepositoryError(
+  table: string,
+  operation: string,
+  error: unknown,
+  response?: { status?: number; statusText?: string },
+): never {
+  const supabaseError = error as SupabaseErrorLike;
+  const sourceType = errorSourceType(error);
+  const keys = errorKeys(error);
+  const status =
+    optionalNumber(supabaseError.status) ??
+    optionalNumber(supabaseError.statusCode);
+  const statusText = optionalString(supabaseError.statusText);
+  const message =
+    sanitizeRepositoryMessage(
+      error instanceof Error ? error.message : undefined,
+    ) ??
+    sanitizeRepositoryMessage(supabaseError.message) ??
+    sanitizeRepositoryMessage(supabaseError.error) ??
+    sanitizeRepositoryMessage(supabaseError.msg) ??
+    sanitizeRepositoryMessage(supabaseError.details) ??
+    sanitizeRepositoryMessage(statusText) ??
+    (keys.length
+      ? "Supabase error object keys: " + keys.join(",")
+      : undefined) ??
+    "unknown Supabase error";
+
+  throw new RepositoryError(
+    table,
+    operation,
+    optionalString(supabaseError.code),
+    sourceType,
+    status,
+    statusText,
+    keys,
+    "Supabase " + operation + " failed for " + table + ": " + message,
+  );
+}
 export class Repository {
   constructor(private readonly supabase: SupabaseClient) {}
 
   async createOAuthState(record: OAuthStateRecord): Promise<void> {
-    const { error } = await this.supabase.from("oauth_states").insert({
+    const result = await this.supabase.from("oauth_states").insert({
       nonce: record.nonce,
       return_to: record.returnTo,
       expires_at: record.expiresAt,
       code_verifier: record.codeVerifier,
     });
-    if (error) throw error;
+    if (result.error) {
+      throwRepositoryError("oauth_states", "insert", result.error, result);
+    }
   }
 
   async consumeOAuthState(nonce: string): Promise<OAuthStateRecord | null> {
@@ -300,10 +399,12 @@ export class Repository {
   }
 
   async audit(event: string, payload: Record<string, unknown>): Promise<void> {
-    const { error } = await this.supabase
+    const result = await this.supabase
       .from("audit_events")
       .insert({ event, payload });
-    if (error) throw error;
+    if (result.error) {
+      throwRepositoryError("audit_events", "insert", result.error, result);
+    }
   }
 }
 
