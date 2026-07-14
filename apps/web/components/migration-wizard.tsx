@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowRight, Download, Loader2, Trash2 } from "lucide-react";
 import { apiUrl, supportUrl } from "../lib/config";
 import { track } from "../lib/analytics";
@@ -11,6 +11,11 @@ import {
   withAttribution,
 } from "../lib/attribution";
 import { LeadForm } from "./lead-form";
+import {
+  createAndRunMigration,
+  createInFlightGuard,
+  migrationErrorMessage,
+} from "../lib/migration-client";
 
 type DownloadLink = {
   id: string;
@@ -60,6 +65,7 @@ export function MigrationWizard() {
   const [leadSubmitted, setLeadSubmitted] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const runScanOnce = useRef(createInFlightGuard());
 
   useEffect(() => {
     const attribution = captureAttribution();
@@ -111,65 +117,60 @@ export function MigrationWizard() {
   }
 
   async function runScan() {
-    setBusy(true);
-    setError("");
-    track("migration_scan_started", { source: "migration_wizard" });
-    try {
-      if (!connectionId || !connectionToken)
-        throw new Error("Connect QuickBooks before running a scan.");
-      const create = await fetch(`${apiUrl}/api/migration-jobs`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ connectionId, connectionToken }),
-      });
-      if (!create.ok) throw new Error(await safeError(create));
-      const created = await create.json();
-      setJobId(created.jobId);
-      setJobToken(created.jobToken);
-      setLeadSubmitted(false);
-      storeSession({
-        jobId: created.jobId,
-        jobToken: created.jobToken,
-        connectionId,
-        connectionToken,
-      });
-      window.sessionStorage.removeItem(leadStorageKey(created.jobId));
-      setStatus("running");
+    await runScanOnce.current(async () => {
+      setBusy(true);
+      setError("");
+      track("migration_scan_started", { source: "migration_wizard" });
+      try {
+        if (!connectionId || !connectionToken)
+          throw new Error("Connect QuickBooks before running a scan.");
 
-      const run = await fetch(
-        `${apiUrl}/api/migration-jobs/${created.jobId}/run`,
-        {
-          method: "POST",
-          headers: { "x-migration-token": created.jobToken },
-        },
-      );
-      if (!run.ok) throw new Error(await safeError(run));
-      const result = await run.json();
-      setScore(result.score);
-      setReadiness(result.readiness);
-      setStatus("completed");
-      track("migration_scan_completed", {
-        source: "migration_wizard",
-        readiness: result.readiness,
-      });
-      track("migration_validation_completed", {
-        source: "migration_wizard",
-        readiness: result.readiness,
-      });
-      track("migration_package_generated", {
-        source: "migration_wizard",
-        readiness: result.readiness,
-      });
-      await loadDownloads(created.jobId, created.jobToken);
-    } catch (err) {
-      setStatus("failed");
-      const message =
-        err instanceof Error ? err.message : "Migration scan failed.";
-      setError(message);
-      track("migration_failed", { source: "migration_wizard", stage: "scan" });
-    } finally {
-      setBusy(false);
-    }
+        const { created, result } = await createAndRunMigration({
+          apiUrl,
+          connectionId,
+          connectionToken,
+          onCreated: (nextJob) => {
+            setJobId(nextJob.jobId);
+            setJobToken(nextJob.jobToken);
+            setLeadSubmitted(false);
+            storeSession({
+              jobId: nextJob.jobId,
+              jobToken: nextJob.jobToken,
+              connectionId,
+              connectionToken,
+            });
+            window.sessionStorage.removeItem(leadStorageKey(nextJob.jobId));
+            setStatus("running");
+          },
+        });
+
+        setScore(result.score);
+        setReadiness(result.readiness);
+        setStatus("completed");
+        track("migration_scan_completed", {
+          source: "migration_wizard",
+          readiness: result.readiness,
+        });
+        track("migration_validation_completed", {
+          source: "migration_wizard",
+          readiness: result.readiness,
+        });
+        track("migration_package_generated", {
+          source: "migration_wizard",
+          readiness: result.readiness,
+        });
+        await loadDownloads(created.jobId, created.jobToken);
+      } catch (err) {
+        setStatus("failed");
+        setError(migrationErrorMessage(err));
+        track("migration_failed", {
+          source: "migration_wizard",
+          stage: "scan",
+        });
+      } finally {
+        setBusy(false);
+      }
+    });
   }
 
   async function loadDownloads(nextJobId = jobId, nextJobToken = jobToken) {
@@ -231,6 +232,7 @@ export function MigrationWizard() {
         </p>
         <div className="mt-6 space-y-3">
           <button
+            type="button"
             onClick={connectQbo}
             className="flex min-h-12 w-full items-center justify-center rounded-full bg-teal px-5 text-sm font-semibold text-white hover:bg-[#185c60]"
           >
@@ -239,6 +241,7 @@ export function MigrationWizard() {
               : "Connect QuickBooks Online"}
           </button>
           <button
+            type="button"
             onClick={runScan}
             disabled={busy || !connectionId || !connectionToken}
             className="flex min-h-12 w-full items-center justify-center rounded-full border border-ink/15 bg-white px-5 text-sm font-semibold text-ink hover:bg-ink/5 disabled:opacity-50"
@@ -352,6 +355,7 @@ export function MigrationWizard() {
               </div>
             )}
             <button
+              type="button"
               onClick={deleteScan}
               className="inline-flex min-h-11 items-center rounded-full text-sm font-semibold text-red-700"
             >
@@ -400,8 +404,14 @@ export function MigrationWizard() {
 
 async function safeError(response: Response): Promise<string> {
   try {
-    const payload = await response.json();
-    if (typeof payload.error === "string") return payload.error;
+    const payload: unknown = await response.json();
+    if (
+      payload &&
+      typeof payload === "object" &&
+      "error" in payload &&
+      typeof payload.error === "string"
+    )
+      return payload.error;
   } catch {
     return "Request failed. Please try again.";
   }
