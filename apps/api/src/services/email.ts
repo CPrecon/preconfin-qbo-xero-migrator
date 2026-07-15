@@ -43,7 +43,9 @@ export class ResendEmailSender implements EmailSender {
     message: OutboundEmail,
     idempotencyKey: string,
   ): Promise<EmailDeliveryResult> {
-    const response = await this.fetchImpl(`${this.apiUrl}/emails`, {
+    // Workerd's native fetch rejects method-style invocation with a foreign receiver.
+    const fetchImpl = this.fetchImpl;
+    const response = await fetchImpl(`${this.apiUrl}/emails`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${this.apiKey}`,

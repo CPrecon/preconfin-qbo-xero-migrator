@@ -2,6 +2,33 @@ import { describe, expect, it, vi } from "vitest";
 import { EmailDeliveryError, ResendEmailSender } from "./email.js";
 
 describe("ResendEmailSender", () => {
+  it("invokes fetch without binding the sender as its receiver", async () => {
+    let receiver: unknown = Symbol("not-called");
+    const fetchImpl = vi.fn(function (this: unknown) {
+      receiver = this;
+      return Promise.resolve(
+        new Response(JSON.stringify({ id: "email_worker" }), { status: 200 }),
+      );
+    });
+    const sender = new ResendEmailSender(
+      "re_secret",
+      "PreconFin <hello@preconfin.com>",
+      "https://api.resend.com",
+      fetchImpl,
+    );
+
+    await sender.send(
+      {
+        to: "operator@example.com",
+        subject: "Subject",
+        text: "Body",
+      },
+      "lead-admin/lead_worker",
+    );
+
+    expect(receiver).toBeUndefined();
+  });
+
   it("uses the REST API with an idempotency key and returns the provider ID", async () => {
     const fetchImpl = vi.fn().mockResolvedValue(
       new Response(JSON.stringify({ id: "email_123" }), {
