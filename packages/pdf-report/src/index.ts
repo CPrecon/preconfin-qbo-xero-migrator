@@ -1,4 +1,4 @@
-import PDFDocument from "pdfkit";
+import PDFDocument from "pdfkit/js/pdfkit.standalone.js";
 import type { AccountingSnapshot } from "@preconfin/canonical-model";
 import type { MigrationPlan } from "@preconfin/migration-engine";
 import type { ValidationReport } from "@preconfin/validation-engine";
