@@ -31,6 +31,21 @@ export class EmailDeliveryError extends Error {
 
 type FetchLike = typeof fetch;
 
+function sanitizedTransportMessage(
+  error: unknown,
+  sensitiveValues: readonly string[],
+): string {
+  let message = error instanceof Error ? error.message : "Unknown failure";
+  for (const value of sensitiveValues) {
+    if (value) message = message.replaceAll(value, "[redacted]");
+  }
+  return message
+    .replace(/Bearer\s+\S+/gi, "Bearer [redacted]")
+    .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, "[email]")
+    .replace(/re_[A-Za-z0-9_-]+/g, "[redacted]")
+    .slice(0, 240);
+}
+
 export class ResendEmailSender implements EmailSender {
   constructor(
     private readonly apiKey: string,
@@ -45,21 +60,35 @@ export class ResendEmailSender implements EmailSender {
   ): Promise<EmailDeliveryResult> {
     // Workerd's native fetch rejects method-style invocation with a foreign receiver.
     const fetchImpl = this.fetchImpl;
-    const response = await fetchImpl(`${this.apiUrl}/emails`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${this.apiKey}`,
-        "Content-Type": "application/json",
-        "Idempotency-Key": idempotencyKey,
-      },
-      body: JSON.stringify({
-        from: this.from,
-        to: [message.to],
-        subject: message.subject,
-        text: message.text,
-        ...(message.replyTo ? { reply_to: message.replyTo } : {}),
-      }),
-    });
+    let response: Response;
+    try {
+      response = await fetchImpl(`${this.apiUrl}/emails`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${this.apiKey}`,
+          "Content-Type": "application/json",
+          "Idempotency-Key": idempotencyKey,
+        },
+        body: JSON.stringify({
+          from: this.from,
+          to: [message.to],
+          subject: message.subject,
+          text: message.text,
+          ...(message.replyTo ? { reply_to: message.replyTo } : {}),
+        }),
+      });
+    } catch (error) {
+      throw new EmailDeliveryError(
+        `Email transport failed: ${sanitizedTransportMessage(error, [
+          this.apiKey,
+          this.from,
+          message.to,
+          message.replyTo ?? "",
+        ])}`,
+        undefined,
+        "EMAIL_PROVIDER_UNREACHABLE",
+      );
+    }
 
     if (!response.ok) {
       throw new EmailDeliveryError(

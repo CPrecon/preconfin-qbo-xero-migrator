@@ -2,6 +2,38 @@ import { describe, expect, it, vi } from "vitest";
 import { EmailDeliveryError, ResendEmailSender } from "./email.js";
 
 describe("ResendEmailSender", () => {
+  it("redacts transport failures before they reach diagnostics", async () => {
+    const sender = new ResendEmailSender(
+      "re_secret",
+      "PreconFin <hello@preconfin.com>",
+      "https://api.resend.com",
+      vi
+        .fn()
+        .mockRejectedValue(
+          new TypeError(
+            "Invalid header Bearer re_secret for operator@example.com",
+          ),
+        ),
+    );
+
+    const failure = sender.send(
+      {
+        to: "operator@example.com",
+        subject: "Subject",
+        text: "Body",
+      },
+      "lead-admin/lead_transport",
+    );
+
+    await expect(failure).rejects.toMatchObject({
+      name: "EmailDeliveryError",
+      code: "EMAIL_PROVIDER_UNREACHABLE",
+    });
+    await expect(failure).rejects.not.toThrow(
+      /re_secret|operator@example\.com/,
+    );
+  });
+
   it("invokes fetch without binding the sender as its receiver", async () => {
     let receiver: unknown = Symbol("not-called");
     const fetchImpl = vi.fn(function (this: unknown) {
