@@ -115,7 +115,36 @@ export async function generateMigrationHealthPdf({
   }
 
   section(doc, "Account Mapping");
-  for (const mapping of plan.accountMappings.slice(0, 18)) {
+  const scopeSummary = plan.accountScopeSummary;
+  const legacyDecisions = plan.accountMappings.filter(
+    (mapping) => mapping.confidence !== "high",
+  );
+  keyValue(
+    doc,
+    "Automatically mapped",
+    scopeSummary?.autoMappedAccounts ??
+      plan.accountMappings.length - legacyDecisions.length,
+  );
+  keyValue(
+    doc,
+    "Needs confirmation",
+    scopeSummary?.decisionRequiredAccounts ?? legacyDecisions.length,
+  );
+  keyValue(
+    doc,
+    "Excluded because unused",
+    scopeSummary?.excludedUnusedAccounts ?? 0,
+  );
+  const decisionIds = new Set(
+    plan.accountScope
+      ? plan.accountScope
+          .filter((scope) => scope.disposition === "decision_required")
+          .map((scope) => scope.sourceId)
+      : legacyDecisions.map((mapping) => mapping.sourceId),
+  );
+  for (const mapping of plan.accountMappings
+    .filter((item) => decisionIds.has(item.sourceId))
+    .slice(0, 12)) {
     doc
       .fontSize(9)
       .fillColor("#16202a")

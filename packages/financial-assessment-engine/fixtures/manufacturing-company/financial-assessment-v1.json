@@ -1,4 +1,311 @@
 {
+  "accountScope": [
+    {
+      "disposition": "auto_mapped",
+      "evidence": {
+        "active": true,
+        "closingBalance": -100,
+        "conversionBalance": -100,
+        "exportedRecordReferenceCount": 0,
+        "itemReferenceCount": 0,
+        "openDocumentReferenceCount": 0,
+        "openingBalance": 0,
+        "periodCreditActivity": 0,
+        "periodDebitActivity": 0,
+        "systemRoles": [
+          "accumulated_depreciation",
+          "fixed_asset"
+        ],
+        "taxDependencyCount": 0,
+        "tolerance": 0.01,
+        "transactionCount": 0,
+        "unresolvedRelationshipCount": 0
+      },
+      "relevanceReasons": [
+        "non_zero_conversion_balance",
+        "non_zero_closing_balance",
+        "required_system_account"
+      ],
+      "sourceId": "acct_accumulated"
+    },
+    {
+      "decisionReason": "Confirm the destination Xero accounts-payable system account.",
+      "disposition": "decision_required",
+      "evidence": {
+        "active": true,
+        "closingBalance": -500,
+        "conversionBalance": -500,
+        "exportedRecordReferenceCount": 0,
+        "itemReferenceCount": 0,
+        "openDocumentReferenceCount": 1,
+        "openingBalance": 0,
+        "periodCreditActivity": 0,
+        "periodDebitActivity": 0,
+        "systemRoles": [
+          "accounts_payable"
+        ],
+        "taxDependencyCount": 0,
+        "tolerance": 0.01,
+        "transactionCount": 0,
+        "unresolvedRelationshipCount": 0
+      },
+      "relevanceReasons": [
+        "non_zero_conversion_balance",
+        "non_zero_closing_balance",
+        "open_document_dependency",
+        "required_system_account"
+      ],
+      "sourceId": "acct_ap"
+    },
+    {
+      "decisionReason": "Confirm the destination Xero accounts-receivable system account.",
+      "disposition": "decision_required",
+      "evidence": {
+        "active": true,
+        "closingBalance": 1000,
+        "conversionBalance": 1000,
+        "exportedRecordReferenceCount": 0,
+        "itemReferenceCount": 0,
+        "openDocumentReferenceCount": 1,
+        "openingBalance": 0,
+        "periodCreditActivity": 0,
+        "periodDebitActivity": 0,
+        "systemRoles": [
+          "accounts_receivable"
+        ],
+        "taxDependencyCount": 0,
+        "tolerance": 0.01,
+        "transactionCount": 0,
+        "unresolvedRelationshipCount": 0
+      },
+      "relevanceReasons": [
+        "non_zero_conversion_balance",
+        "non_zero_closing_balance",
+        "open_document_dependency",
+        "required_system_account"
+      ],
+      "sourceId": "acct_ar"
+    },
+    {
+      "disposition": "auto_mapped",
+      "evidence": {
+        "active": true,
+        "closingBalance": 10000,
+        "conversionBalance": 10000,
+        "exportedRecordReferenceCount": 0,
+        "itemReferenceCount": 0,
+        "openDocumentReferenceCount": 0,
+        "openingBalance": 0,
+        "periodCreditActivity": 0,
+        "periodDebitActivity": 0,
+        "systemRoles": [],
+        "taxDependencyCount": 0,
+        "tolerance": 0.01,
+        "transactionCount": 0,
+        "unresolvedRelationshipCount": 0
+      },
+      "relevanceReasons": [
+        "non_zero_conversion_balance",
+        "non_zero_closing_balance"
+      ],
+      "sourceId": "acct_bank"
+    },
+    {
+      "disposition": "auto_mapped",
+      "evidence": {
+        "active": true,
+        "closingBalance": 300,
+        "conversionBalance": 300,
+        "exportedRecordReferenceCount": 0,
+        "itemReferenceCount": 0,
+        "openDocumentReferenceCount": 0,
+        "openingBalance": 0,
+        "periodCreditActivity": 0,
+        "periodDebitActivity": 0,
+        "systemRoles": [],
+        "taxDependencyCount": 0,
+        "tolerance": 0.01,
+        "transactionCount": 0,
+        "unresolvedRelationshipCount": 0
+      },
+      "relevanceReasons": [
+        "non_zero_conversion_balance",
+        "non_zero_closing_balance"
+      ],
+      "sourceId": "acct_cogs"
+    },
+    {
+      "decisionReason": "Confirm the destination Xero credit-card bank account.",
+      "disposition": "decision_required",
+      "evidence": {
+        "active": true,
+        "closingBalance": -200,
+        "conversionBalance": -200,
+        "exportedRecordReferenceCount": 0,
+        "itemReferenceCount": 0,
+        "openDocumentReferenceCount": 0,
+        "openingBalance": 0,
+        "periodCreditActivity": 0,
+        "periodDebitActivity": 0,
+        "systemRoles": [],
+        "taxDependencyCount": 0,
+        "tolerance": 0.01,
+        "transactionCount": 0,
+        "unresolvedRelationshipCount": 0
+      },
+      "relevanceReasons": [
+        "non_zero_conversion_balance",
+        "non_zero_closing_balance"
+      ],
+      "sourceId": "acct_credit_card"
+    },
+    {
+      "disposition": "auto_mapped",
+      "evidence": {
+        "active": true,
+        "closingBalance": 1500,
+        "conversionBalance": 1500,
+        "exportedRecordReferenceCount": 1,
+        "itemReferenceCount": 1,
+        "openDocumentReferenceCount": 1,
+        "openingBalance": 0,
+        "periodCreditActivity": 0,
+        "periodDebitActivity": 500,
+        "systemRoles": [],
+        "taxDependencyCount": 0,
+        "tolerance": 0.01,
+        "transactionCount": 1,
+        "unresolvedRelationshipCount": 0
+      },
+      "relevanceReasons": [
+        "non_zero_conversion_balance",
+        "non_zero_closing_balance",
+        "period_activity",
+        "open_document_dependency",
+        "item_dependency",
+        "exported_record_dependency"
+      ],
+      "sourceId": "acct_expense"
+    },
+    {
+      "disposition": "auto_mapped",
+      "evidence": {
+        "active": true,
+        "closingBalance": 500,
+        "conversionBalance": 500,
+        "exportedRecordReferenceCount": 0,
+        "itemReferenceCount": 0,
+        "openDocumentReferenceCount": 0,
+        "openingBalance": 0,
+        "periodCreditActivity": 0,
+        "periodDebitActivity": 0,
+        "systemRoles": [
+          "fixed_asset"
+        ],
+        "taxDependencyCount": 0,
+        "tolerance": 0.01,
+        "transactionCount": 0,
+        "unresolvedRelationshipCount": 0
+      },
+      "relevanceReasons": [
+        "non_zero_conversion_balance",
+        "non_zero_closing_balance",
+        "required_system_account"
+      ],
+      "sourceId": "acct_fixed"
+    },
+    {
+      "decisionReason": "Confirm the destination Xero retained-earnings system account.",
+      "disposition": "decision_required",
+      "evidence": {
+        "active": true,
+        "closingBalance": -5000,
+        "conversionBalance": -5000,
+        "exportedRecordReferenceCount": 0,
+        "itemReferenceCount": 0,
+        "openDocumentReferenceCount": 0,
+        "openingBalance": 0,
+        "periodCreditActivity": 0,
+        "periodDebitActivity": 0,
+        "systemRoles": [
+          "retained_earnings"
+        ],
+        "taxDependencyCount": 0,
+        "tolerance": 0.01,
+        "transactionCount": 0,
+        "unresolvedRelationshipCount": 0
+      },
+      "relevanceReasons": [
+        "non_zero_conversion_balance",
+        "non_zero_closing_balance",
+        "required_system_account"
+      ],
+      "sourceId": "acct_retained"
+    },
+    {
+      "disposition": "auto_mapped",
+      "evidence": {
+        "active": true,
+        "closingBalance": -7450,
+        "conversionBalance": -7450,
+        "exportedRecordReferenceCount": 1,
+        "itemReferenceCount": 1,
+        "openDocumentReferenceCount": 1,
+        "openingBalance": 0,
+        "periodCreditActivity": 1000,
+        "periodDebitActivity": 0,
+        "systemRoles": [],
+        "taxDependencyCount": 0,
+        "tolerance": 0.01,
+        "transactionCount": 1,
+        "unresolvedRelationshipCount": 0
+      },
+      "relevanceReasons": [
+        "non_zero_conversion_balance",
+        "non_zero_closing_balance",
+        "period_activity",
+        "open_document_dependency",
+        "item_dependency",
+        "exported_record_dependency"
+      ],
+      "sourceId": "acct_revenue"
+    },
+    {
+      "decisionReason": "Confirm the destination Xero tax-liability account.",
+      "disposition": "decision_required",
+      "evidence": {
+        "active": true,
+        "closingBalance": -50,
+        "conversionBalance": -50,
+        "exportedRecordReferenceCount": 0,
+        "itemReferenceCount": 0,
+        "openDocumentReferenceCount": 0,
+        "openingBalance": 0,
+        "periodCreditActivity": 0,
+        "periodDebitActivity": 0,
+        "systemRoles": [
+          "tax_liability"
+        ],
+        "taxDependencyCount": 0,
+        "tolerance": 0.01,
+        "transactionCount": 0,
+        "unresolvedRelationshipCount": 0
+      },
+      "relevanceReasons": [
+        "non_zero_conversion_balance",
+        "non_zero_closing_balance",
+        "required_system_account"
+      ],
+      "sourceId": "acct_tax"
+    }
+  ],
+  "accountScopeSummary": {
+    "autoMappedAccounts": 6,
+    "decisionRequiredAccounts": 5,
+    "excludedUnusedAccounts": 0,
+    "relevantAccounts": 11,
+    "totalAccounts": 11
+  },
   "assessmentCoverage": {
     "applicableControlCount": 10,
     "availableControlCount": 10,
@@ -159,7 +466,7 @@
       "blockingGate": true,
       "code": "CONTROL_RETAINED_EARNINGS",
       "comparison": {
-        "comparisonLabel": "Balance-sheet retained earnings",
+        "comparisonLabel": "Sign-normalized balance-sheet retained earnings",
         "comparisonValue": -5000,
         "currency": "USD",
         "difference": 0,
@@ -180,7 +487,7 @@
           "sourceSystem": "quickbooks-online"
         }
       ],
-      "explanation": "Retained earnings agrees across the source reports.",
+      "explanation": "Retained earnings agrees across the source reports after sign normalization.",
       "period": {
         "endDate": "2026-06-30",
         "startDate": "2026-01-01"
@@ -231,7 +538,7 @@
       "blockingGate": true,
       "code": "CONTROL_CLOSING_BALANCES",
       "comparison": {
-        "comparisonLabel": "Balance-sheet account totals",
+        "comparisonLabel": "Sign-normalized balance-sheet account totals",
         "comparisonValue": 5650,
         "currency": "USD",
         "difference": 0,
@@ -252,7 +559,7 @@
           "sourceSystem": "quickbooks-online"
         }
       ],
-      "explanation": "Comparable closing balances agree across source reports.",
+      "explanation": "Comparable closing balances agree across source reports after sign normalization.",
       "period": {
         "endDate": "2026-06-30",
         "startDate": "2026-01-01"
@@ -267,7 +574,7 @@
       "blockingGate": true,
       "code": "CONTROL_TAX_LIABILITY",
       "comparison": {
-        "comparisonLabel": "Balance-sheet tax liabilities",
+        "comparisonLabel": "Sign-normalized balance-sheet tax liabilities",
         "comparisonValue": -50,
         "currency": "USD",
         "difference": 0,
@@ -288,7 +595,7 @@
           "sourceSystem": "quickbooks-online"
         }
       ],
-      "explanation": "Tax liabilities agree across the source reports.",
+      "explanation": "Tax liabilities agree across the source reports after sign normalization.",
       "period": {
         "endDate": "2026-06-30",
         "startDate": "2026-01-01"
@@ -417,6 +724,47 @@
     {
       "affectedRecords": [
         {
+          "label": "Accounts Receivable",
+          "sourceId": "acct_ar",
+          "sourceSystem": "quickbooks-online",
+          "sourceType": "account"
+        }
+      ],
+      "businessImpact": "The migration cannot be finalized until the target treatment is confirmed.",
+      "category": "migration_mapping",
+      "confidence": 0.9,
+      "decisionKey": "decision_5d2e5d0963af7d21",
+      "estimatedEffort": "Manual Mapping",
+      "evidence": [
+        {
+          "evidenceId": "evidence_212d41b522135b7d",
+          "evidenceType": "rule_signal",
+          "label": "Deterministic rule MAPPING_ACCOUNT",
+          "sourceSystem": "preconfin"
+        },
+        {
+          "evidenceId": "evidence_4a77656c9b6ecd94",
+          "evidenceType": "source_record",
+          "label": "Accounts Receivable",
+          "sourceRecordId": "acct_ar",
+          "sourceSystem": "quickbooks-online"
+        }
+      ],
+      "explanation": "Confirm the destination Xero accounts-receivable system account.",
+      "fixLocation": "xero",
+      "issueClass": "migration_decision",
+      "occurrenceId": "occurrence_986d267ce5309d50",
+      "owner": "migration_specialist",
+      "recommendedAction": "Confirm the account type and code before generating final import files.",
+      "resolutionEvidence": [],
+      "ruleVersion": "1.0.0",
+      "status": "open",
+      "title": "Confirm account treatment",
+      "workflowImpact": "review_required"
+    },
+    {
+      "affectedRecords": [
+        {
           "label": "Corporate Card",
           "sourceId": "acct_credit_card",
           "sourceSystem": "quickbooks-online",
@@ -425,7 +773,7 @@
       ],
       "businessImpact": "The migration cannot be finalized until the target treatment is confirmed.",
       "category": "migration_mapping",
-      "confidence": 0.75,
+      "confidence": 0.9,
       "decisionKey": "decision_69ee59ccb378fd86",
       "estimatedEffort": "Manual Mapping",
       "evidence": [
@@ -443,7 +791,7 @@
           "sourceSystem": "quickbooks-online"
         }
       ],
-      "explanation": "Corporate Card has a suggested Xero type of BANK.",
+      "explanation": "Confirm the destination Xero credit-card bank account.",
       "fixLocation": "xero",
       "issueClass": "migration_decision",
       "occurrenceId": "occurrence_a16e799782f07f5b",
@@ -458,8 +806,8 @@
     {
       "affectedRecords": [
         {
-          "label": "Accumulated Depreciation",
-          "sourceId": "acct_accumulated",
+          "label": "Accounts Payable",
+          "sourceId": "acct_ap",
           "sourceSystem": "quickbooks-online",
           "sourceType": "account"
         }
@@ -467,27 +815,27 @@
       "businessImpact": "The migration cannot be finalized until the target treatment is confirmed.",
       "category": "migration_mapping",
       "confidence": 0.9,
-      "decisionKey": "decision_88f9765e408fd718",
-      "estimatedEffort": "Accountant Review",
+      "decisionKey": "decision_8120eb6f0d98fbdb",
+      "estimatedEffort": "Manual Mapping",
       "evidence": [
-        {
-          "evidenceId": "evidence_1477172524463341",
-          "evidenceType": "source_record",
-          "label": "Accumulated Depreciation",
-          "sourceRecordId": "acct_accumulated",
-          "sourceSystem": "quickbooks-online"
-        },
         {
           "evidenceId": "evidence_212d41b522135b7d",
           "evidenceType": "rule_signal",
           "label": "Deterministic rule MAPPING_ACCOUNT",
           "sourceSystem": "preconfin"
+        },
+        {
+          "evidenceId": "evidence_34a0153234f316a6",
+          "evidenceType": "source_record",
+          "label": "Accounts Payable",
+          "sourceRecordId": "acct_ap",
+          "sourceSystem": "quickbooks-online"
         }
       ],
-      "explanation": "Accumulated Depreciation has a suggested Xero type of FIXED.",
+      "explanation": "Confirm the destination Xero accounts-payable system account.",
       "fixLocation": "xero",
       "issueClass": "migration_decision",
-      "occurrenceId": "occurrence_adbf9330677fd658",
+      "occurrenceId": "occurrence_e1817c915db6b109",
       "owner": "migration_specialist",
       "recommendedAction": "Confirm the account type and code before generating final import files.",
       "resolutionEvidence": [],
@@ -499,8 +847,8 @@
     {
       "affectedRecords": [
         {
-          "label": "Production Equipment",
-          "sourceId": "acct_fixed",
+          "label": "Sales Tax Payable",
+          "sourceId": "acct_tax",
           "sourceSystem": "quickbooks-online",
           "sourceType": "account"
         }
@@ -508,8 +856,8 @@
       "businessImpact": "The migration cannot be finalized until the target treatment is confirmed.",
       "category": "migration_mapping",
       "confidence": 0.9,
-      "decisionKey": "decision_aca756aa3ad725a4",
-      "estimatedEffort": "Accountant Review",
+      "decisionKey": "decision_dd1681db009a0f27",
+      "estimatedEffort": "Manual Mapping",
       "evidence": [
         {
           "evidenceId": "evidence_212d41b522135b7d",
@@ -518,17 +866,58 @@
           "sourceSystem": "preconfin"
         },
         {
-          "evidenceId": "evidence_eddeab25a750a735",
+          "evidenceId": "evidence_f5886f0a410a0ee4",
           "evidenceType": "source_record",
-          "label": "Production Equipment",
-          "sourceRecordId": "acct_fixed",
+          "label": "Sales Tax Payable",
+          "sourceRecordId": "acct_tax",
           "sourceSystem": "quickbooks-online"
         }
       ],
-      "explanation": "Production Equipment has a suggested Xero type of FIXED.",
+      "explanation": "Confirm the destination Xero tax-liability account.",
       "fixLocation": "xero",
       "issueClass": "migration_decision",
-      "occurrenceId": "occurrence_b44a7558b191bc44",
+      "occurrenceId": "occurrence_0481fc0975d93aa9",
+      "owner": "migration_specialist",
+      "recommendedAction": "Confirm the account type and code before generating final import files.",
+      "resolutionEvidence": [],
+      "ruleVersion": "1.0.0",
+      "status": "open",
+      "title": "Confirm account treatment",
+      "workflowImpact": "review_required"
+    },
+    {
+      "affectedRecords": [
+        {
+          "label": "Retained Earnings",
+          "sourceId": "acct_retained",
+          "sourceSystem": "quickbooks-online",
+          "sourceType": "account"
+        }
+      ],
+      "businessImpact": "The migration cannot be finalized until the target treatment is confirmed.",
+      "category": "migration_mapping",
+      "confidence": 0.9,
+      "decisionKey": "decision_fa3c972ca1c9f898",
+      "estimatedEffort": "Manual Mapping",
+      "evidence": [
+        {
+          "evidenceId": "evidence_212d41b522135b7d",
+          "evidenceType": "rule_signal",
+          "label": "Deterministic rule MAPPING_ACCOUNT",
+          "sourceSystem": "preconfin"
+        },
+        {
+          "evidenceId": "evidence_805309fba51dcd97",
+          "evidenceType": "source_record",
+          "label": "Retained Earnings",
+          "sourceRecordId": "acct_retained",
+          "sourceSystem": "quickbooks-online"
+        }
+      ],
+      "explanation": "Confirm the destination Xero retained-earnings system account.",
+      "fixLocation": "xero",
+      "issueClass": "migration_decision",
+      "occurrenceId": "occurrence_92dcc87582d03ba9",
       "owner": "migration_specialist",
       "recommendedAction": "Confirm the account type and code before generating final import files.",
       "resolutionEvidence": [],
@@ -540,9 +929,9 @@
   ],
   "evidenceSummary": {
     "coveragePercentage": 100,
-    "evidenceReferenceCount": 16,
-    "findingCount": 4,
-    "findingWithEvidenceCount": 4,
+    "evidenceReferenceCount": 18,
+    "findingCount": 6,
+    "findingWithEvidenceCount": 6,
     "sourceSystems": [
       "preconfin",
       "quickbooks-online"
@@ -554,7 +943,7 @@
   "identity": {
     "assessmentKey": "assessment_82997873ce79c89f",
     "organizationId": "org_atlas_manufacturing",
-    "reportId": "report_82be300f89a45f73"
+    "reportId": "report_456707bc6b021804"
   },
   "lineage": {
     "assessmentEngineVersion": "1.0.0",
@@ -564,7 +953,7 @@
       "deterministic-rule-catalogue",
       "financial-controls"
     ],
-    "inputFingerprint": "9816bba1714470cd",
+    "inputFingerprint": "53fb52d250cbb4ce",
     "normalizationVersion": "qbo-canonical-v1",
     "snapshotPulledAt": "2026-06-30T11:30:00.000Z",
     "sourceRecordCounts": {
@@ -676,9 +1065,11 @@
       "reason": "Mapping decisions are target-system choices, not accounting defects.",
       "relatedIssueKeys": [
         "decision_3c17603196d6753d",
+        "decision_5d2e5d0963af7d21",
         "decision_69ee59ccb378fd86",
-        "decision_88f9765e408fd718",
-        "decision_aca756aa3ad725a4"
+        "decision_8120eb6f0d98fbdb",
+        "decision_dd1681db009a0f27",
+        "decision_fa3c972ca1c9f898"
       ],
       "title": "Confirm migration decisions"
     }
@@ -711,7 +1102,7 @@
       "code": "migration_readiness",
       "explanation": "Measures whether blocking issues and migration decisions have been resolved.",
       "label": "Migration Readiness",
-      "score": 88
+      "score": 82
     },
     "reconciliation": {
       "code": "reconciliation",
@@ -731,12 +1122,12 @@
   "summary": {
     "actionRequiredCount": 0,
     "blockingIssueCount": 0,
-    "decisionCount": 4,
+    "decisionCount": 6,
     "failedControlCount": 0,
     "informationalCount": 0,
     "passedControlCount": 10,
     "primaryRecommendation": "Review the remaining migration decisions before generating final files.",
-    "reviewItemCount": 4,
+    "reviewItemCount": 6,
     "unavailableControlCount": 0
   }
 }

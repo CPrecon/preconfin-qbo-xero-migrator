@@ -34,6 +34,7 @@ const baseSnapshot: AccountingSnapshot = {
       name: "Mystery",
       classification: "other",
       active: true,
+      currentBalance: { amount: 1, currency: "USD" },
       source: {
         sourceSystem: "quickbooks-online",
         sourceId: "2",

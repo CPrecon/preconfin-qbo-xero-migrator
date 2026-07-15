@@ -98,6 +98,8 @@ function planFingerprint(plan?: MigrationPlan): unknown {
   if (!plan) return null;
   return {
     accountMappings: plan.accountMappings,
+    accountScope: plan.accountScope,
+    accountScopeSummary: plan.accountScopeSummary,
     taxMappings: plan.taxMappings,
     contactMappings: plan.contactMappings,
     itemMappings: plan.itemMappings,
@@ -145,6 +147,11 @@ export function createFinancialAssessment(
   );
   const recommendation = primaryRecommendation(overallStatus, assessmentType);
   const counts = sourceCounts(input.snapshot);
+  const accountScope = assessmentPlan?.accountScope
+    ? [...assessmentPlan.accountScope].sort((left, right) =>
+        left.sourceId.localeCompare(right.sourceId),
+      )
+    : undefined;
   const inputFingerprint = stableFingerprint({
     snapshot: input.snapshot,
     plan: planFingerprint(assessmentPlan),
@@ -210,6 +217,8 @@ export function createFinancialAssessment(
       counts.total,
       counts.withLineage,
     ),
+    accountScopeSummary: assessmentPlan?.accountScopeSummary,
+    accountScope,
     overallStatus,
     scorecard,
     summary: buildSummary(controls, findings, decisions, recommendation),

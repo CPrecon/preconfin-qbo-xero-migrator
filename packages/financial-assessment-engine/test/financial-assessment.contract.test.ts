@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
+import { createMigrationPlan } from "@preconfin/migration-engine";
 import {
   adaptFinancialAssessmentForAuditor,
   adaptFinancialAssessmentForMigrator,
@@ -61,6 +62,9 @@ function reverseAssessmentInput(name: FixtureName) {
     plan: {
       ...fixture.plan,
       accountMappings: [...fixture.plan.accountMappings].reverse(),
+      accountScope: fixture.plan.accountScope
+        ? [...fixture.plan.accountScope].reverse()
+        : undefined,
       taxMappings: [...fixture.plan.taxMappings].reverse(),
       contactMappings: [...fixture.plan.contactMappings].reverse(),
       itemMappings: [...fixture.plan.itemMappings].reverse(),
@@ -124,7 +128,7 @@ describe("FinancialAssessmentV1 golden conformance", () => {
   });
 
   it("uses deterministic gates independently from score values", () => {
-    expect(generate("clean-company").overallStatus).toBe("migration_ready");
+    expect(generate("clean-company").overallStatus).toBe("review_recommended");
     expect(generate("manufacturing-company").overallStatus).toBe(
       "review_recommended",
     );
@@ -145,7 +149,7 @@ describe("FinancialAssessmentV1 golden conformance", () => {
     const assessment = generate("migration-edge-cases");
     const accountDecisions = assessment.decisions.filter((decision) =>
       decision.affectedRecords.some(
-        (record) => record.sourceType === "account",
+        (record) => record.sourceId === "acct_nonposting",
       ),
     );
     expect(accountDecisions).toHaveLength(1);
@@ -242,8 +246,31 @@ describe("FinancialAssessmentV1 golden conformance", () => {
 
   it("requires deterministic destination reconciliation evidence for Verified", () => {
     const fixture = createAssessmentFixture("clean-company");
+    const resolvedDecisionCount =
+      fixture.plan.accountScopeSummary?.decisionRequiredAccounts ?? 0;
+    const resolvedPlan = {
+      ...fixture.plan,
+      accountScope: fixture.plan.accountScope?.map((scope) => ({
+        ...scope,
+        disposition:
+          scope.disposition === "decision_required"
+            ? ("auto_mapped" as const)
+            : scope.disposition,
+        decisionReason: undefined,
+      })),
+      accountScopeSummary: fixture.plan.accountScopeSummary
+        ? {
+            ...fixture.plan.accountScopeSummary,
+            autoMappedAccounts:
+              fixture.plan.accountScopeSummary.autoMappedAccounts +
+              resolvedDecisionCount,
+            decisionRequiredAccounts: 0,
+          }
+        : undefined,
+    };
     const informational = createFinancialAssessment({
-      ...fixture,
+      snapshot: fixture.snapshot,
+      plan: resolvedPlan,
       generatedAt: FIXTURE_GENERATED_AT,
       verificationEvidence: {
         verifiedAt: FIXTURE_GENERATED_AT,
@@ -261,7 +288,8 @@ describe("FinancialAssessmentV1 golden conformance", () => {
     expect(informational.overallStatus).toBe("migration_ready");
 
     const verified = createFinancialAssessment({
-      ...fixture,
+      snapshot: fixture.snapshot,
+      plan: resolvedPlan,
       generatedAt: FIXTURE_GENERATED_AT,
       assessmentType: "post_migration_reconciliation",
       verificationEvidence: {
@@ -344,6 +372,176 @@ describe("FinancialAssessmentV1 golden conformance", () => {
       clean.scorecard.migrationReadiness.score,
     );
     expect(messy.overallStatus).toBe("blocked");
+  });
+
+  it("suppresses duplicate-account cleanup when every duplicate is unused", () => {
+    const fixture = createAssessmentFixture("clean-company");
+    fixture.snapshot.accounts.push(
+      {
+        id: "acct_unused_duplicate_1",
+        code: "8010",
+        name: "Unused Duplicate",
+        classification: "expense",
+        sourceAccountType: "Expense",
+        active: true,
+        source: {
+          sourceSystem: "quickbooks-online",
+          sourceId: "unused_duplicate_1",
+          sourceType: "account",
+          metadata: {},
+        },
+      },
+      {
+        id: "acct_unused_duplicate_2",
+        code: "8020",
+        name: "Unused Duplicate",
+        classification: "expense",
+        sourceAccountType: "Expense",
+        active: false,
+        source: {
+          sourceSystem: "quickbooks-online",
+          sourceId: "unused_duplicate_2",
+          sourceType: "account",
+          metadata: {},
+        },
+      },
+    );
+    const assessment = createFinancialAssessment({
+      snapshot: fixture.snapshot,
+      plan: createMigrationPlan(fixture.snapshot),
+      assessmentType: "migration_readiness",
+      generatedAt: FIXTURE_GENERATED_AT,
+    });
+
+    expect(
+      assessment.findings.filter((finding) =>
+        ["DUPLICATE_ACCOUNT", "UNUSED_DUPLICATE_ACCOUNT"].includes(
+          finding.ruleCode,
+        ),
+      ),
+    ).toEqual([]);
+  });
+
+  it("retains a duplicate-account finding when both accounts are active", () => {
+    const fixture = createAssessmentFixture("clean-company");
+    fixture.snapshot.accounts.push(
+      {
+        id: "acct_active_duplicate_1",
+        code: "8010",
+        name: "Active Duplicate",
+        classification: "expense",
+        sourceAccountType: "Expense",
+        currentBalance: { amount: 10, currency: "USD" },
+        active: true,
+        source: {
+          sourceSystem: "quickbooks-online",
+          sourceId: "active_duplicate_1",
+          sourceType: "account",
+          metadata: {},
+        },
+      },
+      {
+        id: "acct_active_duplicate_2",
+        code: "8020",
+        name: "Active Duplicate",
+        classification: "expense",
+        sourceAccountType: "Expense",
+        currentBalance: { amount: 20, currency: "USD" },
+        active: true,
+        source: {
+          sourceSystem: "quickbooks-online",
+          sourceId: "active_duplicate_2",
+          sourceType: "account",
+          metadata: {},
+        },
+      },
+    );
+    const assessment = createFinancialAssessment({
+      snapshot: fixture.snapshot,
+      plan: createMigrationPlan(fixture.snapshot),
+      assessmentType: "migration_readiness",
+      generatedAt: FIXTURE_GENERATED_AT,
+    });
+
+    expect(
+      assessment.findings.some(
+        (finding) => finding.ruleCode === "DUPLICATE_ACCOUNT",
+      ),
+    ).toBe(true);
+  });
+
+  it("keeps excluded unused accounts out of assessment scores and decisions", () => {
+    const fixture = createAssessmentFixture("clean-company");
+    const baseline = createFinancialAssessment({
+      ...fixture,
+      assessmentType: "migration_readiness",
+      generatedAt: FIXTURE_GENERATED_AT,
+    });
+    fixture.snapshot.accounts.push({
+      id: "acct_unused",
+      code: "8999",
+      name: "Unused Expense",
+      classification: "expense",
+      sourceAccountType: "Expense",
+      active: true,
+      source: {
+        sourceSystem: "quickbooks-online",
+        sourceId: "unused",
+        sourceType: "account",
+        metadata: {},
+      },
+    });
+    const assessment = createFinancialAssessment({
+      snapshot: fixture.snapshot,
+      plan: createMigrationPlan(fixture.snapshot),
+      assessmentType: "migration_readiness",
+      generatedAt: FIXTURE_GENERATED_AT,
+    });
+
+    expect(assessment.scorecard).toEqual(baseline.scorecard);
+    expect(assessment.overallStatus).toBe(baseline.overallStatus);
+    expect(assessment.decisions).toEqual(baseline.decisions);
+    expect(assessment.accountScopeSummary?.excludedUnusedAccounts).toBe(1);
+  });
+
+  it("reconciles account-scope summary totals in the canonical contract", () => {
+    const assessment = generate("manufacturing-company");
+    const summary = assessment.accountScopeSummary!;
+    expect(summary.totalAccounts).toBe(
+      summary.relevantAccounts + summary.excludedUnusedAccounts,
+    );
+    expect(summary.relevantAccounts).toBe(
+      summary.autoMappedAccounts + summary.decisionRequiredAccounts,
+    );
+    expect(assessment.accountScope).toHaveLength(summary.totalAccounts);
+  });
+
+  it("normalizes equivalent report signs before failing financial controls", () => {
+    const fixture = createAssessmentFixture("clean-company");
+    for (const row of fixture.snapshot.reports.balanceSheet) {
+      row.amount.amount *= -1;
+    }
+    const assessment = createFinancialAssessment({
+      snapshot: fixture.snapshot,
+      plan: createMigrationPlan(fixture.snapshot),
+      assessmentType: "migration_readiness",
+      generatedAt: FIXTURE_GENERATED_AT,
+    });
+    const retainedEarnings = assessment.controls.find(
+      (control) => control.code === "CONTROL_RETAINED_EARNINGS",
+    );
+    const closingBalances = assessment.controls.find(
+      (control) => control.code === "CONTROL_CLOSING_BALANCES",
+    );
+
+    expect(retainedEarnings).toMatchObject({
+      status: "passed",
+      comparison: { difference: 0 },
+    });
+    expect(closingBalances).toMatchObject({
+      status: "passed",
+      comparison: { difference: 0 },
+    });
   });
 
   it("recommends a source refresh when freshness fails", () => {

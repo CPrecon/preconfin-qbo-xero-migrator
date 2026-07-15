@@ -10,6 +10,54 @@ export interface MappingResult {
   notes: string[];
 }
 
+export type AccountRelevanceReason =
+  | "non_zero_opening_balance"
+  | "non_zero_conversion_balance"
+  | "non_zero_closing_balance"
+  | "period_activity"
+  | "open_document_dependency"
+  | "item_dependency"
+  | "tax_dependency"
+  | "exported_record_dependency"
+  | "required_system_account"
+  | "unresolved_relationship";
+
+export type AccountMappingDisposition =
+  "auto_mapped" | "decision_required" | "excluded_unused_account";
+
+export interface AccountRelevanceEvidence {
+  openingBalance: number;
+  conversionBalance: number;
+  closingBalance: number;
+  periodDebitActivity: number;
+  periodCreditActivity: number;
+  transactionCount: number;
+  openDocumentReferenceCount: number;
+  itemReferenceCount: number;
+  taxDependencyCount: number;
+  exportedRecordReferenceCount: number;
+  unresolvedRelationshipCount: number;
+  systemRoles: string[];
+  active: boolean;
+  tolerance: number;
+}
+
+export interface AccountMigrationScope {
+  sourceId: string;
+  disposition: AccountMappingDisposition;
+  relevanceReasons: AccountRelevanceReason[];
+  decisionReason?: string;
+  evidence: AccountRelevanceEvidence;
+}
+
+export interface AccountScopeSummary {
+  totalAccounts: number;
+  relevantAccounts: number;
+  autoMappedAccounts: number;
+  decisionRequiredAccounts: number;
+  excludedUnusedAccounts: number;
+}
+
 export interface MigrationException {
   code: string;
   severity: MigrationSeverity;
@@ -22,6 +70,8 @@ export interface MigrationException {
 
 export interface MigrationPlan {
   accountMappings: MappingResult[];
+  accountScope?: AccountMigrationScope[];
+  accountScopeSummary?: AccountScopeSummary;
   taxMappings: MappingResult[];
   contactMappings: MappingResult[];
   itemMappings: MappingResult[];

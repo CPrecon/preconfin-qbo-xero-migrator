@@ -146,6 +146,92 @@ function duplicateFindings(
     );
 }
 
+function duplicateAccountFindings(
+  accounts: Account[],
+  plan?: MigrationPlan,
+): RuleFinding[] {
+  const scopeById = new Map(
+    (plan?.accountScope ?? []).map((scope) => [scope.sourceId, scope]),
+  );
+  const groups = new Map<string, Account[]>();
+  for (const account of accounts) {
+    const key = account.name.trim().toLowerCase();
+    if (!key) continue;
+    groups.set(key, [...(groups.get(key) ?? []), account]);
+  }
+
+  return [...groups.values()]
+    .filter((items) => items.length > 1)
+    .flatMap((items) => {
+      const relevant = items.filter(
+        (item) =>
+          scopeById.get(item.id)?.disposition !== "excluded_unused_account",
+      );
+      if (!relevant.length) return [];
+
+      const evidence = relevant
+        .map((item) => {
+          const scope = scopeById.get(item.id);
+          if (!scope) return item.name + " is migration-relevant.";
+          const activity =
+            scope.evidence.periodDebitActivity +
+            scope.evidence.periodCreditActivity;
+          const dependencies =
+            scope.evidence.openDocumentReferenceCount +
+            scope.evidence.itemReferenceCount +
+            scope.evidence.taxDependencyCount +
+            scope.evidence.exportedRecordReferenceCount;
+          return (
+            item.name +
+            ": closing balance " +
+            scope.evidence.closingBalance.toFixed(2) +
+            ", period activity " +
+            activity.toFixed(2) +
+            ", dependencies " +
+            dependencies +
+            "."
+          );
+        })
+        .join(" ");
+
+      if (relevant.length === 1) {
+        return [
+          finding({
+            code: "UNUSED_DUPLICATE_ACCOUNT",
+            severity: "info",
+            title: "Unused duplicate account",
+            message:
+              items[0]!.name +
+              " has an unused duplicate that is excluded from migration. " +
+              evidence,
+            recommendation:
+              "Optionally archive or rename the unused duplicate in QuickBooks.",
+            entityType: "account",
+            affectedRecords: items.map((item) => sourceRecord(item, item.name)),
+            blocksExport: false,
+          }),
+        ];
+      }
+
+      return [
+        finding({
+          code: "DUPLICATE_ACCOUNT",
+          severity: "warning",
+          title: "Duplicate account",
+          message:
+            items[0]!.name +
+            " appears on multiple migration-relevant accounts. " +
+            evidence,
+          recommendation:
+            "Review whether the active accounts should remain separate before importing to Xero.",
+          entityType: "account",
+          affectedRecords: items.map((item) => sourceRecord(item, item.name)),
+          blocksExport: false,
+        }),
+      ];
+    });
+}
+
 function duplicateDocumentFindings(
   entityType: string,
   documents: Array<{
@@ -679,8 +765,16 @@ function validateMappings(
   const accountById = new Map(
     snapshot.accounts.map((account) => [account.id, account]),
   );
+  const accountScopeById = new Map(
+    (plan.accountScope ?? []).map((scope) => [scope.sourceId, scope]),
+  );
   const codeGroups = new Map<string, MappingResult[]>();
-  for (const mapping of plan.accountMappings) {
+  const applicableMappings = plan.accountMappings.filter(
+    (mapping) =>
+      accountScopeById.get(mapping.sourceId)?.disposition !==
+      "excluded_unused_account",
+  );
+  for (const mapping of applicableMappings) {
     if (!mapping.targetCode) {
       findings.push(
         finding({
@@ -853,7 +947,10 @@ interface TrackingCategoryGroup {
   options: string[];
 }
 
-function validateInactiveEntities(snapshot: AccountingSnapshot): RuleFinding[] {
+function validateInactiveEntities(
+  snapshot: AccountingSnapshot,
+  plan?: MigrationPlan,
+): RuleFinding[] {
   const findings: RuleFinding[] = [];
   const usedAccounts = new Set<string>();
   const usedContacts = new Set<string>();
@@ -870,8 +967,17 @@ function validateInactiveEntities(snapshot: AccountingSnapshot): RuleFinding[] {
       if (line.itemId) usedItems.add(line.itemId);
     }
   }
+  const relevantAccounts = new Set(
+    (plan?.accountScope ?? [])
+      .filter((scope) => scope.disposition !== "excluded_unused_account")
+      .map((scope) => scope.sourceId),
+  );
   for (const account of snapshot.accounts.filter(
-    (account) => !account.active && usedAccounts.has(account.id),
+    (account) =>
+      !account.active &&
+      (relevantAccounts.size
+        ? relevantAccounts.has(account.id)
+        : usedAccounts.has(account.id)),
   ))
     findings.push(inactiveFinding("account", account));
   for (const contact of snapshot.contacts.filter(
@@ -981,14 +1087,7 @@ export function evaluateAssessmentRules(
         source: contact.source,
       })),
     ),
-    ...duplicateFindings(
-      "account",
-      snapshot.accounts.map((account) => ({
-        id: account.id,
-        name: account.name,
-        source: account.source,
-      })),
-    ),
+    ...duplicateAccountFindings(snapshot.accounts, plan),
     ...duplicateDocumentFindings("invoice", snapshot.invoices),
     ...duplicateDocumentFindings("bill", snapshot.bills),
     ...duplicateDocumentFindings("credit", snapshot.credits),
@@ -1001,7 +1100,7 @@ export function evaluateAssessmentRules(
     ...(plan
       ? [...validateMappings(snapshot, plan), ...validateTracking(snapshot)]
       : []),
-    ...validateInactiveEntities(snapshot),
+    ...validateInactiveEntities(snapshot, plan),
     ...validateCurrencies(snapshot),
     ...validateDates(snapshot),
     ...validateOpeningBalances(snapshot),

@@ -30,6 +30,7 @@ The top-level contract contains:
 - stable identity and organization identity;
 - assessment type, generation time, period, basis, and currency;
 - source-system and assessment coverage;
+- migration account-scope evidence and summary metadata when applicable;
 - deterministic overall status and five-dimensional scorecard;
 - summary counts;
 - ten financial controls;
@@ -59,6 +60,8 @@ Financial-health, bookkeeping, year-end, due-diligence, and continuous-monitorin
 
 A control is `passed`, `warning`, `failed`, `unavailable`, or `not_applicable`. Missing data produces `unavailable`; it never silently passes. Each control retains its tolerance, period, basis, coverage, blocking gate, and evidence references.
 
+`CONTROL_RETAINED_EARNINGS`, `CONTROL_CLOSING_BALANCES`, and `CONTROL_TAX_LIABILITY` normalize equivalent debit/credit presentation signs before comparing report values. Magnitude differences remain visible and continue to fail at the documented tolerance.
+
 ## Finding classes
 
 Each rule signal is assigned to exactly one class:
@@ -70,6 +73,19 @@ Each rule signal is assigned to exactly one class:
 - `information`
 
 Migration decisions are emitted in `decisions`, never in `findings`. Stable root keys aggregate repeated signals and affected records. Account-type, account-code, and suggested-account-treatment signals for one account become one account-mapping decision with all rule signals retained as evidence.
+
+## Migration account scope
+
+Account relevance is calculated from opening, conversion, and closing balances; in-period debit and credit activity; transaction count; open-document use; item and tax references; exported-record dependencies; unresolved relationships; system-account roles; and active state.
+
+An account with no balance above tolerance, no activity, no dependency, and no required system role is `excluded_unused_account`. It creates no decision, finding, score penalty, coverage credit, or default report card. Its source ID and zero-value evidence remain in `accountScope` and `excluded/excluded-unused-accounts.csv` for auditability.
+
+Relevant accounts are either:
+
+- `auto_mapped` when type, subtype, code, and system role produce one deterministic Xero treatment; or
+- `decision_required` when destination treatment is ambiguous, a system account needs explicit selection, a code is invalid or duplicated, or no supported mapping exists.
+
+`accountScopeSummary` reconciles total source accounts to relevant and excluded accounts, then reconciles relevant accounts to automatically mapped and decision-required accounts. Excluded accounts do not affect Migration Readiness. Only unresolved applicable decisions do.
 
 ## Scoring
 
@@ -160,7 +176,7 @@ The engine has no AI dependency. An AI overlay may summarize, prioritize, or exp
 
 ## Renderer migration gate
 
-The existing PDF and UI remain unchanged in this milestone. Renderer adoption must not begin until:
+The existing UI hierarchy remains unchanged in this milestone. The legacy PDF mapping section now consumes the deterministic account-scope summary and lists only genuine confirmations. Broader renderer adoption must not begin until:
 
 1. the same real QBO company used for the legacy baseline is assessed with this engine;
 2. the sanitized before/after comparison is reviewed;

@@ -594,6 +594,9 @@ export function buildAssessmentDecisions(
     );
   }
 
+  const accountScopeById = new Map(
+    (plan.accountScope ?? []).map((scope) => [scope.sourceId, scope]),
+  );
   for (const mapping of plan.accountMappings) {
     const account = snapshot.accounts.find(
       (candidate) => candidate.id === mapping.sourceId,
@@ -604,21 +607,24 @@ export function buildAssessmentDecisions(
     const normalizedSubtype = String(account?.sourceAccountSubType ?? "")
       .toLowerCase()
       .replace(/[^a-z0-9]/g, "");
-    const requiresTreatment =
-      mapping.confidence !== "high" ||
-      normalizedType === "creditcard" ||
-      normalizedType === "fixedasset" ||
-      normalizedSubtype === "accumulateddepreciation";
+    const accountScope = accountScopeById.get(mapping.sourceId);
+    const requiresTreatment = accountScope
+      ? accountScope.disposition === "decision_required"
+      : mapping.confidence !== "high" ||
+        normalizedType === "creditcard" ||
+        normalizedType === "fixedasset" ||
+        normalizedSubtype === "accumulateddepreciation";
     if (!requiresTreatment) continue;
     decisions.push(
       mappingDecision({
         kind: "account",
         title: "Confirm account treatment",
         explanation:
+          accountScope?.decisionReason ??
           mapping.sourceName +
-          " has a suggested Xero type of " +
-          mapping.targetType +
-          ".",
+            " has a suggested Xero type of " +
+            mapping.targetType +
+            ".",
         action:
           "Confirm the account type and code before generating final import files.",
         mappingIds: [mapping.sourceId],

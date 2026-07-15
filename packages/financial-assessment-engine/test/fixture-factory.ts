@@ -597,6 +597,7 @@ function migrationEdgeCases(): AccountingSnapshot {
       name: "Non-posting Control",
       classification: "other",
       sourceAccountType: "Non-Posting",
+      currentBalance: 1,
     }),
   );
   snapshot.tracking = ["One", "Two", "Three"].map(

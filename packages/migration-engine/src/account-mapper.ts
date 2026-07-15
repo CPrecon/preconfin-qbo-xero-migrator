@@ -1,5 +1,11 @@
 import type { Account, AccountingSnapshot } from "@preconfin/canonical-model";
-import type { MappingResult, MigrationException } from "./types.js";
+import { assessAccountRelevance } from "./account-relevance.js";
+import type {
+  AccountMigrationScope,
+  AccountScopeSummary,
+  MappingResult,
+  MigrationException,
+} from "./types.js";
 
 const xeroAccountTypeByClassification: Record<string, string> = {
   bank: "BANK",
@@ -92,28 +98,93 @@ function mappingNotes(account: Account): string[] {
   return notes;
 }
 
+function mappingDecisionReason(
+  account: Account,
+  targetType: string | undefined,
+  targetCode: string,
+  scope: AccountMigrationScope,
+): string | undefined {
+  if (scope.disposition === "excluded_unused_account") return undefined;
+  if (!targetType) {
+    return "The source account type has no deterministic Xero mapping.";
+  }
+  if (!/^[A-Za-z0-9._-]{1,10}$/.test(targetCode)) {
+    return "The source account code is not valid for Xero.";
+  }
+
+  const type = normalizedType(account.sourceAccountType);
+  const roles = new Set(scope.evidence.systemRoles);
+  if (type === "creditcard") {
+    return "Confirm the destination Xero credit-card bank account.";
+  }
+  if (roles.has("accounts_receivable")) {
+    return "Confirm the destination Xero accounts-receivable system account.";
+  }
+  if (roles.has("accounts_payable")) {
+    return "Confirm the destination Xero accounts-payable system account.";
+  }
+  if (roles.has("retained_earnings")) {
+    return "Confirm the destination Xero retained-earnings system account.";
+  }
+  if (roles.has("opening_balance_equity")) {
+    return "Confirm how opening-balance equity will be treated in Xero.";
+  }
+  if (roles.has("undeposited_funds")) {
+    return "Confirm the destination clearing account for undeposited funds.";
+  }
+  if (roles.has("tax_liability")) {
+    return "Confirm the destination Xero tax-liability account.";
+  }
+  return undefined;
+}
+
+function summarizeAccountScope(
+  scopes: readonly AccountMigrationScope[],
+): AccountScopeSummary {
+  return {
+    totalAccounts: scopes.length,
+    relevantAccounts: scopes.filter(
+      (scope) => scope.disposition !== "excluded_unused_account",
+    ).length,
+    autoMappedAccounts: scopes.filter(
+      (scope) => scope.disposition === "auto_mapped",
+    ).length,
+    decisionRequiredAccounts: scopes.filter(
+      (scope) => scope.disposition === "decision_required",
+    ).length,
+    excludedUnusedAccounts: scopes.filter(
+      (scope) => scope.disposition === "excluded_unused_account",
+    ).length,
+  };
+}
+
 export function mapAccounts(snapshot: AccountingSnapshot): {
   mappings: MappingResult[];
   exceptions: MigrationException[];
+  accountScope: AccountMigrationScope[];
+  accountScopeSummary: AccountScopeSummary;
 } {
   const exceptions: MigrationException[] = [];
-  const mappings = snapshot.accounts.map((account, index) => {
+  const scopeById = new Map(
+    assessAccountRelevance(snapshot).map((scope) => [scope.sourceId, scope]),
+  );
+  const accounts = [...snapshot.accounts].sort((left, right) =>
+    left.id.localeCompare(right.id),
+  );
+  const mappings = accounts.map((account, index) => {
     const targetCode = accountCode(account, index);
     const resolvedTargetType = xeroAccountType(account);
-
-    if (!account.active) {
-      exceptions.push({
-        code: "INACTIVE_ACCOUNT",
-        severity: "warning",
-        entityType: "account",
-        entityId: account.id,
-        entityName: account.name,
-        message: "Inactive QuickBooks account detected.",
-        recommendation:
-          "Review whether this account should be imported, archived, or merged in Xero.",
-      });
-    }
-    if (!resolvedTargetType) {
+    const scope = scopeById.get(account.id)!;
+    const decisionReason = mappingDecisionReason(
+      account,
+      resolvedTargetType,
+      targetCode,
+      scope,
+    );
+    if (
+      scope.disposition !== "excluded_unused_account" &&
+      !resolvedTargetType
+    ) {
       exceptions.push({
         code: "UNSUPPORTED_ACCOUNT_TYPE",
         severity: "error",
@@ -125,22 +196,63 @@ export function mapAccounts(snapshot: AccountingSnapshot): {
           "Choose an explicit Xero account type before migration.",
       });
     }
+    scopeById.set(account.id, {
+      ...scope,
+      disposition:
+        scope.disposition === "excluded_unused_account"
+          ? "excluded_unused_account"
+          : decisionReason
+            ? "decision_required"
+            : "auto_mapped",
+      decisionReason,
+    });
 
-    const notes = mappingNotes(account);
     return {
       sourceId: account.id,
       sourceName: account.name,
       targetType: resolvedTargetType ?? "EXPENSE",
       targetCode,
       targetName: account.name,
-      confidence: !resolvedTargetType
-        ? ("low" as const)
-        : notes.length
-          ? ("medium" as const)
-          : ("high" as const),
-      notes,
+      confidence: !resolvedTargetType ? ("low" as const) : ("high" as const),
+      notes: mappingNotes(account),
     };
   });
 
-  return { mappings, exceptions };
+  const relevantCodeGroups = new Map<string, string[]>();
+  for (const mapping of mappings) {
+    const scope = scopeById.get(mapping.sourceId)!;
+    if (
+      scope.disposition === "excluded_unused_account" ||
+      !mapping.targetCode
+    ) {
+      continue;
+    }
+    const key = mapping.targetCode.toLowerCase();
+    relevantCodeGroups.set(key, [
+      ...(relevantCodeGroups.get(key) ?? []),
+      mapping.sourceId,
+    ]);
+  }
+  for (const sourceIds of relevantCodeGroups.values()) {
+    if (sourceIds.length < 2) continue;
+    for (const sourceId of sourceIds) {
+      const scope = scopeById.get(sourceId)!;
+      scopeById.set(sourceId, {
+        ...scope,
+        disposition: "decision_required",
+        decisionReason:
+          "More than one migration-relevant account uses the same Xero account code.",
+      });
+    }
+  }
+
+  const accountScope = [...scopeById.values()].sort((left, right) =>
+    left.sourceId.localeCompare(right.sourceId),
+  );
+  return {
+    mappings,
+    exceptions,
+    accountScope,
+    accountScopeSummary: summarizeAccountScope(accountScope),
+  };
 }

@@ -240,6 +240,62 @@ const scoreDimensionSchema = z
   })
   .strict();
 
+const accountScopeSummarySchema = z
+  .object({
+    totalAccounts: z.number().int().min(0),
+    relevantAccounts: z.number().int().min(0),
+    autoMappedAccounts: z.number().int().min(0),
+    decisionRequiredAccounts: z.number().int().min(0),
+    excludedUnusedAccounts: z.number().int().min(0),
+  })
+  .strict();
+
+const accountScopeEvidenceSchema = z
+  .object({
+    openingBalance: z.number().finite(),
+    conversionBalance: z.number().finite(),
+    closingBalance: z.number().finite(),
+    periodDebitActivity: z.number().finite().min(0),
+    periodCreditActivity: z.number().finite().min(0),
+    transactionCount: z.number().int().min(0),
+    openDocumentReferenceCount: z.number().int().min(0),
+    itemReferenceCount: z.number().int().min(0),
+    taxDependencyCount: z.number().int().min(0),
+    exportedRecordReferenceCount: z.number().int().min(0),
+    unresolvedRelationshipCount: z.number().int().min(0),
+    systemRoles: z.array(z.string().min(1)),
+    active: z.boolean(),
+    tolerance: z.number().finite().min(0),
+  })
+  .strict();
+
+const accountScopeSchema = z
+  .object({
+    sourceId: z.string().min(1),
+    disposition: z.enum([
+      "auto_mapped",
+      "decision_required",
+      "excluded_unused_account",
+    ]),
+    relevanceReasons: z.array(
+      z.enum([
+        "non_zero_opening_balance",
+        "non_zero_conversion_balance",
+        "non_zero_closing_balance",
+        "period_activity",
+        "open_document_dependency",
+        "item_dependency",
+        "tax_dependency",
+        "exported_record_dependency",
+        "required_system_account",
+        "unresolved_relationship",
+      ]),
+    ),
+    decisionReason: z.string().min(1).optional(),
+    evidence: accountScopeEvidenceSchema,
+  })
+  .strict();
+
 export const financialAssessmentV1Schema: z.ZodType<FinancialAssessmentV1> = z
   .object({
     identity: z
@@ -281,6 +337,8 @@ export const financialAssessmentV1Schema: z.ZodType<FinancialAssessmentV1> = z
         sourceRecordWithLineageCount: z.number().int().min(0),
       })
       .strict(),
+    accountScopeSummary: accountScopeSummarySchema.optional(),
+    accountScope: z.array(accountScopeSchema).optional(),
     overallStatus: overallStatusSchema,
     scorecard: z
       .object({

@@ -6,7 +6,11 @@ import type {
   Credit,
   Invoice,
 } from "@preconfin/canonical-model";
-import type { MappingResult, MigrationPlan } from "@preconfin/migration-engine";
+import type {
+  AccountMigrationScope,
+  MappingResult,
+  MigrationPlan,
+} from "@preconfin/migration-engine";
 import type { ValidationReport } from "@preconfin/validation-engine";
 import { toCsv, type CsvRow } from "./csv.js";
 
@@ -62,6 +66,22 @@ function createContext(
   };
 }
 
+function includedAccountIds(plan: MigrationPlan): Set<string> | undefined {
+  if (!plan.accountScope) return undefined;
+  return new Set(
+    plan.accountScope
+      .filter((scope) => scope.disposition !== "excluded_unused_account")
+      .map((scope) => scope.sourceId),
+  );
+}
+
+function includedAccountMappings(plan: MigrationPlan): MappingResult[] {
+  const included = includedAccountIds(plan);
+  return included
+    ? plan.accountMappings.filter((mapping) => included.has(mapping.sourceId))
+    : plan.accountMappings;
+}
+
 function accountCode(ctx: ExportContext, sourceId?: string): string {
   if (!sourceId) return "";
   return ctx.accountCodeById.get(sourceId) ?? sourceId;
@@ -84,7 +104,7 @@ function accountsCsv(
   const accountById = new Map(
     snapshot.accounts.map((account) => [account.id, account]),
   );
-  const rows = plan.accountMappings.map((mapping) => {
+  const rows = includedAccountMappings(plan).map((mapping) => {
     const account = accountById.get(mapping.sourceId);
     return {
       Code: mapping.targetCode,
@@ -366,14 +386,18 @@ function bankStatementsCsv(
 function openingBalancesCsv(
   snapshot: AccountingSnapshot,
   ctx: ExportContext,
+  plan: MigrationPlan,
 ): ExportFile {
-  const rows = snapshot.balances.map((balance) => ({
-    AccountCode: accountCode(ctx, balance.accountId),
-    Date: balance.asOfDate,
-    Amount: amount(balance.amount),
-    Currency: balance.amount.currency,
-    Basis: balance.basis,
-  }));
+  const included = includedAccountIds(plan);
+  const rows = snapshot.balances
+    .filter((balance) => !included || included.has(balance.accountId))
+    .map((balance) => ({
+      AccountCode: accountCode(ctx, balance.accountId),
+      Date: balance.asOfDate,
+      Amount: amount(balance.amount),
+      Currency: balance.amount.currency,
+      Basis: balance.basis,
+    }));
   return {
     path: "manual-configuration/opening-balances.csv",
     content: toCsv(rows, [
@@ -388,8 +412,13 @@ function openingBalancesCsv(
 }
 
 function mappingReportCsv(plan: MigrationPlan): ExportFile {
+  const scopeById = new Map(
+    (plan.accountScope ?? []).map((scope) => [scope.sourceId, scope]),
+  );
   const rows = [
-    ...plan.accountMappings.map((mapping) => mappingRow("Account", mapping)),
+    ...plan.accountMappings.map((mapping) =>
+      mappingRow("Account", mapping, scopeById.get(mapping.sourceId)),
+    ),
     ...plan.taxMappings.map((mapping) => mappingRow("TaxRate", mapping)),
     ...plan.contactMappings.map((mapping) => mappingRow("Contact", mapping)),
     ...plan.itemMappings.map((mapping) => mappingRow("Item", mapping)),
@@ -406,12 +435,19 @@ function mappingReportCsv(plan: MigrationPlan): ExportFile {
       "TargetName",
       "Confidence",
       "Notes",
+      "Disposition",
+      "RelevanceReasons",
+      "DecisionReason",
     ]),
     contentType: "text/csv",
   };
 }
 
-function mappingRow(entity: string, mapping: MappingResult): CsvRow {
+function mappingRow(
+  entity: string,
+  mapping: MappingResult,
+  scope?: AccountMigrationScope,
+): CsvRow {
   return {
     Entity: entity,
     SourceId: mapping.sourceId,
@@ -421,6 +457,61 @@ function mappingRow(entity: string, mapping: MappingResult): CsvRow {
     TargetName: mapping.targetName,
     Confidence: mapping.confidence,
     Notes: mapping.notes.join("; "),
+    Disposition: scope?.disposition,
+    RelevanceReasons: scope?.relevanceReasons.join("; "),
+    DecisionReason: scope?.decisionReason,
+  };
+}
+
+function excludedUnusedAccountsCsv(plan: MigrationPlan): ExportFile {
+  const accountNameById = new Map(
+    plan.accountMappings.map((mapping) => [
+      mapping.sourceId,
+      mapping.sourceName,
+    ]),
+  );
+  const rows = (plan.accountScope ?? [])
+    .filter((scope) => scope.disposition === "excluded_unused_account")
+    .map((scope) => ({
+      SourceId: scope.sourceId,
+      SourceName: accountNameById.get(scope.sourceId),
+      ExclusionReason:
+        "Zero balance, no in-scope activity, and no migration dependency",
+      OpeningBalance: scope.evidence.openingBalance.toFixed(2),
+      ConversionBalance: scope.evidence.conversionBalance.toFixed(2),
+      ClosingBalance: scope.evidence.closingBalance.toFixed(2),
+      PeriodDebitActivity: scope.evidence.periodDebitActivity.toFixed(2),
+      PeriodCreditActivity: scope.evidence.periodCreditActivity.toFixed(2),
+      TransactionCount: scope.evidence.transactionCount,
+      OpenDocumentReferences: scope.evidence.openDocumentReferenceCount,
+      ItemReferences: scope.evidence.itemReferenceCount,
+      TaxDependencies: scope.evidence.taxDependencyCount,
+      ExportedRecordReferences: scope.evidence.exportedRecordReferenceCount,
+      UnresolvedRelationships: scope.evidence.unresolvedRelationshipCount,
+      SystemRoles: scope.evidence.systemRoles.join("; "),
+      Active: scope.evidence.active ? "Yes" : "No",
+    }));
+  return {
+    path: "excluded/excluded-unused-accounts.csv",
+    content: toCsv(rows, [
+      "SourceId",
+      "SourceName",
+      "ExclusionReason",
+      "OpeningBalance",
+      "ConversionBalance",
+      "ClosingBalance",
+      "PeriodDebitActivity",
+      "PeriodCreditActivity",
+      "TransactionCount",
+      "OpenDocumentReferences",
+      "ItemReferences",
+      "TaxDependencies",
+      "ExportedRecordReferences",
+      "UnresolvedRelationships",
+      "SystemRoles",
+      "Active",
+    ]),
+    contentType: "text/csv",
   };
 }
 
@@ -583,6 +674,7 @@ Evidence, mapping, and validation files.
 
 - unsupported/unsupported-records.csv
 - excluded/excluded-records.csv
+- excluded/excluded-unused-accounts.csv
 
 ## Import Guidance
 
@@ -625,11 +717,12 @@ export function createExportFiles(
     creditsCsv(snapshot, ctx),
     journalsCsv(snapshot, ctx),
     bankStatementsCsv(snapshot, ctx),
-    openingBalancesCsv(snapshot, ctx),
+    openingBalancesCsv(snapshot, ctx, plan),
     mappingReportCsv(plan),
     exceptionsCsv(report, plan),
     unsupportedRecordsCsv(report, plan),
     excludedRecordsCsv(report),
+    excludedUnusedAccountsCsv(plan),
     {
       path: "reference-only/validation-report.json",
       content: JSON.stringify(report, null, 2),

@@ -46,6 +46,8 @@ export function createMigrationPlan(
 
   return {
     accountMappings: accountResult.mappings,
+    accountScope: accountResult.accountScope,
+    accountScopeSummary: accountResult.accountScopeSummary,
     taxMappings: (snapshot.taxCodes ?? snapshot.taxRates).map((tax) =>
       byNameMapping(tax.id, tax.name, "TaxRate", [
         "rate" in tax
@@ -76,8 +78,14 @@ export function createMigrationPlan(
 }
 
 export type {
+  AccountMappingDisposition,
+  AccountMigrationScope,
+  AccountRelevanceEvidence,
+  AccountRelevanceReason,
+  AccountScopeSummary,
   MappingResult,
   MigrationException,
   MigrationPlan,
 } from "./types.js";
+export { assessAccountRelevance } from "./account-relevance.js";
 export { mapAccounts } from "./account-mapper.js";

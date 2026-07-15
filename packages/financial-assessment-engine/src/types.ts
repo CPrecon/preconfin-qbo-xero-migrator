@@ -236,6 +236,54 @@ export interface AssessmentCoverage {
   readonly sourceRecordWithLineageCount: number;
 }
 
+export type AssessmentAccountDisposition =
+  "auto_mapped" | "decision_required" | "excluded_unused_account";
+
+export type AssessmentAccountRelevanceReason =
+  | "non_zero_opening_balance"
+  | "non_zero_conversion_balance"
+  | "non_zero_closing_balance"
+  | "period_activity"
+  | "open_document_dependency"
+  | "item_dependency"
+  | "tax_dependency"
+  | "exported_record_dependency"
+  | "required_system_account"
+  | "unresolved_relationship";
+
+export interface AssessmentAccountScopeSummary {
+  readonly totalAccounts: number;
+  readonly relevantAccounts: number;
+  readonly autoMappedAccounts: number;
+  readonly decisionRequiredAccounts: number;
+  readonly excludedUnusedAccounts: number;
+}
+
+export interface AssessmentAccountScopeEvidence {
+  readonly openingBalance: number;
+  readonly conversionBalance: number;
+  readonly closingBalance: number;
+  readonly periodDebitActivity: number;
+  readonly periodCreditActivity: number;
+  readonly transactionCount: number;
+  readonly openDocumentReferenceCount: number;
+  readonly itemReferenceCount: number;
+  readonly taxDependencyCount: number;
+  readonly exportedRecordReferenceCount: number;
+  readonly unresolvedRelationshipCount: number;
+  readonly systemRoles: readonly string[];
+  readonly active: boolean;
+  readonly tolerance: number;
+}
+
+export interface AssessmentAccountScope {
+  readonly sourceId: string;
+  readonly disposition: AssessmentAccountDisposition;
+  readonly relevanceReasons: readonly AssessmentAccountRelevanceReason[];
+  readonly decisionReason?: string;
+  readonly evidence: AssessmentAccountScopeEvidence;
+}
+
 export interface AssessmentSummary {
   readonly primaryRecommendation: string;
   readonly blockingIssueCount: number;
@@ -301,6 +349,8 @@ export interface FinancialAssessmentV1 {
   readonly currency: string;
   readonly sourceSystems: readonly AssessmentSourceSystem[];
   readonly assessmentCoverage: AssessmentCoverage;
+  readonly accountScopeSummary?: AssessmentAccountScopeSummary;
+  readonly accountScope?: readonly AssessmentAccountScope[];
   readonly overallStatus: AssessmentOverallStatus;
   readonly scorecard: FinancialScorecard;
   readonly summary: AssessmentSummary;

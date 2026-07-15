@@ -37,6 +37,7 @@ describe("createExportFiles", () => {
         "reference-only/exceptions.csv",
         "unsupported/unsupported-records.csv",
         "excluded/excluded-records.csv",
+        "excluded/excluded-unused-accounts.csv",
         "reference-only/validation-report.json",
         "README.md",
       ]),
@@ -64,5 +65,47 @@ describe("createExportFiles", () => {
 
     const pkg = await createMigrationPackage(snapshot, plan, report);
     expect(pkg.zip.length).toBeGreaterThan(1000);
+  });
+
+  it("excludes unused accounts from import files and preserves traceable detail", () => {
+    const snapshot = accountingFixture();
+    snapshot.accounts.push({
+      id: "acct_unused",
+      code: "999",
+      name: "Unused Expense",
+      classification: "expense",
+      sourceAccountType: "Expense",
+      active: true,
+      source: {
+        sourceSystem: "quickbooks-online",
+        sourceId: "acct_unused",
+        sourceType: "account",
+        metadata: {},
+      },
+    });
+    const plan = createMigrationPlan(snapshot);
+    const report = validateMigration(snapshot, plan);
+    const files = new Map(
+      createExportFiles(snapshot, plan, report).map((file) => [
+        file.path,
+        String(file.content),
+      ]),
+    );
+
+    expect(files.get("import-ready/chart-of-accounts.csv")).not.toContain(
+      "Unused Expense",
+    );
+    expect(
+      files.get("manual-configuration/opening-balances.csv"),
+    ).not.toContain("999");
+    expect(files.get("excluded/excluded-unused-accounts.csv")).toContain(
+      "acct_unused",
+    );
+    expect(files.get("excluded/excluded-unused-accounts.csv")).toContain(
+      "Unused Expense",
+    );
+    expect(files.get("reference-only/mapping-report.csv")).toContain(
+      "excluded_unused_account",
+    );
   });
 });

@@ -96,9 +96,12 @@ describe("QBO account mappings", () => {
     );
 
     const result = mapAccounts(snapshot(accounts));
-    expect(result.mappings.map((mapping) => mapping.targetType)).toEqual(
-      cases.map((entry) => entry[3]),
+    const targetTypeBySourceId = new Map(
+      result.mappings.map((mapping) => [mapping.sourceId, mapping.targetType]),
     );
+    expect(
+      cases.map((entry, index) => targetTypeBySourceId.get(`acct_${index}`)),
+    ).toEqual(cases.map((entry) => entry[3]));
     expect(result.exceptions).not.toEqual(
       expect.arrayContaining([
         expect.objectContaining({ code: "UNSUPPORTED_ACCOUNT_TYPE" }),
@@ -115,6 +118,7 @@ describe("QBO account mappings", () => {
           classification: "other",
           sourceAccountType: "UnknownType",
           active: true,
+          currentBalance: { amount: 1, currency: "USD" },
           source: source("unknown"),
         },
       ]),

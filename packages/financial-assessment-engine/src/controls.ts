@@ -25,6 +25,14 @@ function sumReport(values: readonly ReportValue[]): number {
   return sum(values.map((value) => value.amount));
 }
 
+function alignComparisonSign(
+  sourceValue: number,
+  comparisonValue: number,
+): number {
+  if (sourceValue === 0 || comparisonValue === 0) return comparisonValue;
+  return Math.sign(sourceValue) * Math.abs(comparisonValue);
+}
+
 function reportEvidence(
   code: string,
   title: string,
@@ -509,12 +517,16 @@ function retainedEarningsControl(
   return comparedControl({
     code: "CONTROL_RETAINED_EARNINGS",
     title: "Retained Earnings",
-    explanationPassed: "Retained earnings agrees across the source reports.",
+    explanationPassed:
+      "Retained earnings agrees across the source reports after sign normalization.",
     explanationFailed: "Retained earnings differs between source reports.",
     sourceLabel: "Trial-balance retained earnings",
     sourceValue: rows.trial.amount.amount,
-    comparisonLabel: "Balance-sheet retained earnings",
-    comparisonValue: rows.balanceSheet.amount.amount,
+    comparisonLabel: "Sign-normalized balance-sheet retained earnings",
+    comparisonValue: alignComparisonSign(
+      rows.trial.amount.amount,
+      rows.balanceSheet.amount.amount,
+    ),
     tolerance: 1,
     currency,
     period,
@@ -599,7 +611,13 @@ function closingBalancesControl(
   }
   const trialTotal = sum(overlapping.map((id) => trial.get(id)!.amount));
   const balanceTotal = sum(
-    overlapping.map((id) => balanceSheet.get(id)!.amount),
+    overlapping.map((id) => ({
+      ...balanceSheet.get(id)!.amount,
+      amount: alignComparisonSign(
+        trial.get(id)!.amount.amount,
+        balanceSheet.get(id)!.amount.amount,
+      ),
+    })),
   );
   const coverage = round(
     (overlapping.length / Math.max(1, balanceSheet.size)) * 100,
@@ -608,12 +626,12 @@ function closingBalancesControl(
     code: "CONTROL_CLOSING_BALANCES",
     title: "Closing Balances",
     explanationPassed:
-      "Comparable closing balances agree across source reports.",
+      "Comparable closing balances agree across source reports after sign normalization.",
     explanationFailed:
       "Comparable closing balances differ across source reports.",
     sourceLabel: "Trial-balance account totals",
     sourceValue: trialTotal,
-    comparisonLabel: "Balance-sheet account totals",
+    comparisonLabel: "Sign-normalized balance-sheet account totals",
     comparisonValue: balanceTotal,
     tolerance: Math.max(1, Math.abs(trialTotal) * 0.005),
     currency,
@@ -681,16 +699,23 @@ function taxLiabilityControl(
     comparable.map((account) => trial.get(account.id)!.amount),
   );
   const balanceTotal = sum(
-    comparable.map((account) => balanceSheet.get(account.id)!.amount),
+    comparable.map((account) => ({
+      ...balanceSheet.get(account.id)!.amount,
+      amount: alignComparisonSign(
+        trial.get(account.id)!.amount.amount,
+        balanceSheet.get(account.id)!.amount.amount,
+      ),
+    })),
   );
   return comparedControl({
     code: "CONTROL_TAX_LIABILITY",
     title: "Tax Liability",
-    explanationPassed: "Tax liabilities agree across the source reports.",
+    explanationPassed:
+      "Tax liabilities agree across the source reports after sign normalization.",
     explanationFailed: "Tax liabilities differ across the source reports.",
     sourceLabel: "Trial-balance tax liabilities",
     sourceValue: trialTotal,
-    comparisonLabel: "Balance-sheet tax liabilities",
+    comparisonLabel: "Sign-normalized balance-sheet tax liabilities",
     comparisonValue: balanceTotal,
     tolerance: Math.max(1, Math.abs(trialTotal) * 0.005),
     currency,

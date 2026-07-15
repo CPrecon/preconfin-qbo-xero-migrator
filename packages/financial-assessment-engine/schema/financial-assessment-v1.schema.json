@@ -155,6 +155,160 @@
         "sourceRecordWithLineageCount"
       ]
     },
+    "accountScopeSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "totalAccounts": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "relevantAccounts": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "autoMappedAccounts": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "decisionRequiredAccounts": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "excludedUnusedAccounts": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "totalAccounts",
+        "relevantAccounts",
+        "autoMappedAccounts",
+        "decisionRequiredAccounts",
+        "excludedUnusedAccounts"
+      ]
+    },
+    "accountScope": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "sourceId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "disposition": {
+            "type": "string",
+            "enum": [
+              "auto_mapped",
+              "decision_required",
+              "excluded_unused_account"
+            ]
+          },
+          "relevanceReasons": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "non_zero_opening_balance",
+                "non_zero_conversion_balance",
+                "non_zero_closing_balance",
+                "period_activity",
+                "open_document_dependency",
+                "item_dependency",
+                "tax_dependency",
+                "exported_record_dependency",
+                "required_system_account",
+                "unresolved_relationship"
+              ]
+            }
+          },
+          "decisionReason": {
+            "type": "string",
+            "minLength": 1
+          },
+          "evidence": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "openingBalance": {
+                "type": "number"
+              },
+              "conversionBalance": {
+                "type": "number"
+              },
+              "closingBalance": {
+                "type": "number"
+              },
+              "periodDebitActivity": {
+                "type": "number",
+                "minimum": 0
+              },
+              "periodCreditActivity": {
+                "type": "number",
+                "minimum": 0
+              },
+              "transactionCount": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "openDocumentReferenceCount": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "itemReferenceCount": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "taxDependencyCount": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "exportedRecordReferenceCount": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "unresolvedRelationshipCount": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "systemRoles": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "active": {
+                "type": "boolean"
+              },
+              "tolerance": {
+                "type": "number",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "openingBalance",
+              "conversionBalance",
+              "closingBalance",
+              "periodDebitActivity",
+              "periodCreditActivity",
+              "transactionCount",
+              "openDocumentReferenceCount",
+              "itemReferenceCount",
+              "taxDependencyCount",
+              "exportedRecordReferenceCount",
+              "unresolvedRelationshipCount",
+              "systemRoles",
+              "active",
+              "tolerance"
+            ]
+          }
+        },
+        "required": ["sourceId", "disposition", "relevanceReasons", "evidence"]
+      }
+    },
     "overallStatus": {
       "type": "string",
       "enum": [

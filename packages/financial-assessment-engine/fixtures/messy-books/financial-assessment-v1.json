@@ -1,4 +1,202 @@
 {
+  "accountScope": [
+    {
+      "decisionReason": "Confirm the destination Xero accounts-payable system account.",
+      "disposition": "decision_required",
+      "evidence": {
+        "active": true,
+        "closingBalance": -500,
+        "conversionBalance": -500,
+        "exportedRecordReferenceCount": 0,
+        "itemReferenceCount": 0,
+        "openDocumentReferenceCount": 1,
+        "openingBalance": 0,
+        "periodCreditActivity": 0,
+        "periodDebitActivity": 0,
+        "systemRoles": [
+          "accounts_payable"
+        ],
+        "taxDependencyCount": 0,
+        "tolerance": 0.01,
+        "transactionCount": 0,
+        "unresolvedRelationshipCount": 0
+      },
+      "relevanceReasons": [
+        "non_zero_conversion_balance",
+        "non_zero_closing_balance",
+        "open_document_dependency",
+        "required_system_account"
+      ],
+      "sourceId": "acct_ap"
+    },
+    {
+      "decisionReason": "Confirm the destination Xero accounts-receivable system account.",
+      "disposition": "decision_required",
+      "evidence": {
+        "active": true,
+        "closingBalance": 1000,
+        "conversionBalance": 1000,
+        "exportedRecordReferenceCount": 0,
+        "itemReferenceCount": 0,
+        "openDocumentReferenceCount": 2,
+        "openingBalance": 0,
+        "periodCreditActivity": 0,
+        "periodDebitActivity": 0,
+        "systemRoles": [
+          "accounts_receivable"
+        ],
+        "taxDependencyCount": 0,
+        "tolerance": 0.01,
+        "transactionCount": 0,
+        "unresolvedRelationshipCount": 0
+      },
+      "relevanceReasons": [
+        "non_zero_conversion_balance",
+        "non_zero_closing_balance",
+        "open_document_dependency",
+        "required_system_account"
+      ],
+      "sourceId": "acct_ar"
+    },
+    {
+      "disposition": "auto_mapped",
+      "evidence": {
+        "active": true,
+        "closingBalance": 10050,
+        "conversionBalance": 10050,
+        "exportedRecordReferenceCount": 1,
+        "itemReferenceCount": 0,
+        "openDocumentReferenceCount": 0,
+        "openingBalance": 0,
+        "periodCreditActivity": 0,
+        "periodDebitActivity": 100,
+        "systemRoles": [],
+        "taxDependencyCount": 0,
+        "tolerance": 0.01,
+        "transactionCount": 1,
+        "unresolvedRelationshipCount": 0
+      },
+      "relevanceReasons": [
+        "non_zero_conversion_balance",
+        "non_zero_closing_balance",
+        "period_activity",
+        "exported_record_dependency"
+      ],
+      "sourceId": "acct_bank"
+    },
+    {
+      "disposition": "auto_mapped",
+      "evidence": {
+        "active": false,
+        "closingBalance": 1500,
+        "conversionBalance": 1500,
+        "exportedRecordReferenceCount": 1,
+        "itemReferenceCount": 1,
+        "openDocumentReferenceCount": 1,
+        "openingBalance": 0,
+        "periodCreditActivity": 0,
+        "periodDebitActivity": 500,
+        "systemRoles": [],
+        "taxDependencyCount": 0,
+        "tolerance": 0.01,
+        "transactionCount": 1,
+        "unresolvedRelationshipCount": 0
+      },
+      "relevanceReasons": [
+        "non_zero_conversion_balance",
+        "non_zero_closing_balance",
+        "period_activity",
+        "open_document_dependency",
+        "item_dependency",
+        "exported_record_dependency"
+      ],
+      "sourceId": "acct_expense"
+    },
+    {
+      "disposition": "excluded_unused_account",
+      "evidence": {
+        "active": true,
+        "closingBalance": 0,
+        "conversionBalance": 0,
+        "exportedRecordReferenceCount": 0,
+        "itemReferenceCount": 0,
+        "openDocumentReferenceCount": 0,
+        "openingBalance": 0,
+        "periodCreditActivity": 0,
+        "periodDebitActivity": 0,
+        "systemRoles": [],
+        "taxDependencyCount": 0,
+        "tolerance": 0.01,
+        "transactionCount": 0,
+        "unresolvedRelationshipCount": 0
+      },
+      "relevanceReasons": [],
+      "sourceId": "acct_expense_duplicate"
+    },
+    {
+      "decisionReason": "Confirm the destination Xero retained-earnings system account.",
+      "disposition": "decision_required",
+      "evidence": {
+        "active": true,
+        "closingBalance": -5000,
+        "conversionBalance": -5000,
+        "exportedRecordReferenceCount": 0,
+        "itemReferenceCount": 0,
+        "openDocumentReferenceCount": 0,
+        "openingBalance": 0,
+        "periodCreditActivity": 0,
+        "periodDebitActivity": 0,
+        "systemRoles": [
+          "retained_earnings"
+        ],
+        "taxDependencyCount": 0,
+        "tolerance": 0.01,
+        "transactionCount": 0,
+        "unresolvedRelationshipCount": 0
+      },
+      "relevanceReasons": [
+        "non_zero_conversion_balance",
+        "non_zero_closing_balance",
+        "required_system_account"
+      ],
+      "sourceId": "acct_retained"
+    },
+    {
+      "disposition": "auto_mapped",
+      "evidence": {
+        "active": true,
+        "closingBalance": -7000,
+        "conversionBalance": -7000,
+        "exportedRecordReferenceCount": 2,
+        "itemReferenceCount": 1,
+        "openDocumentReferenceCount": 1,
+        "openingBalance": 0,
+        "periodCreditActivity": 180,
+        "periodDebitActivity": 0,
+        "systemRoles": [],
+        "taxDependencyCount": 0,
+        "tolerance": 0.01,
+        "transactionCount": 2,
+        "unresolvedRelationshipCount": 0
+      },
+      "relevanceReasons": [
+        "non_zero_conversion_balance",
+        "non_zero_closing_balance",
+        "period_activity",
+        "open_document_dependency",
+        "item_dependency",
+        "exported_record_dependency"
+      ],
+      "sourceId": "acct_revenue"
+    }
+  ],
+  "accountScopeSummary": {
+    "autoMappedAccounts": 3,
+    "decisionRequiredAccounts": 3,
+    "excludedUnusedAccounts": 1,
+    "relevantAccounts": 6,
+    "totalAccounts": 7
+  },
   "assessmentCoverage": {
     "applicableControlCount": 9,
     "availableControlCount": 9,
@@ -159,7 +357,7 @@
       "blockingGate": true,
       "code": "CONTROL_RETAINED_EARNINGS",
       "comparison": {
-        "comparisonLabel": "Balance-sheet retained earnings",
+        "comparisonLabel": "Sign-normalized balance-sheet retained earnings",
         "comparisonValue": -4800,
         "currency": "USD",
         "difference": -200,
@@ -231,7 +429,7 @@
       "blockingGate": true,
       "code": "CONTROL_CLOSING_BALANCES",
       "comparison": {
-        "comparisonLabel": "Balance-sheet account totals",
+        "comparisonLabel": "Sign-normalized balance-sheet account totals",
         "comparisonValue": 5700,
         "currency": "USD",
         "difference": -150,
@@ -368,63 +566,132 @@
     {
       "affectedRecords": [
         {
-          "label": "Operating Expense",
-          "sourceId": "acct_expense",
-          "sourceSystem": "quickbooks-online",
-          "sourceType": "account"
-        },
-        {
-          "label": "Operating Expense",
-          "sourceId": "acct_expense_duplicate",
+          "label": "Accounts Receivable",
+          "sourceId": "acct_ar",
           "sourceSystem": "quickbooks-online",
           "sourceType": "account"
         }
       ],
       "businessImpact": "The migration cannot be finalized until the target treatment is confirmed.",
       "category": "migration_mapping",
-      "confidence": 1,
-      "decisionKey": "decision_316fc5943108aade",
-      "estimatedEffort": "Accountant Review",
+      "confidence": 0.9,
+      "decisionKey": "decision_5d2e5d0963af7d21",
+      "estimatedEffort": "Manual Mapping",
       "evidence": [
         {
-          "evidenceId": "evidence_ea3cc16ff39bd3eb",
-          "evidenceType": "source_record",
-          "label": "Operating Expense",
-          "sourceRecordId": "acct_expense",
-          "sourceSystem": "quickbooks-online"
-        },
-        {
-          "evidenceId": "evidence_46e0c66165e07605",
-          "evidenceType": "source_record",
-          "label": "Operating Expense",
-          "sourceRecordId": "acct_expense_duplicate",
-          "sourceSystem": "quickbooks-online"
-        },
-        {
-          "evidenceId": "evidence_f48528c1bd931855",
+          "evidenceId": "evidence_212d41b522135b7d",
           "evidenceType": "rule_signal",
-          "label": "Deterministic rule DUPLICATE_XERO_ACCOUNT_CODE",
+          "label": "Deterministic rule MAPPING_ACCOUNT",
           "sourceSystem": "preconfin"
+        },
+        {
+          "evidenceId": "evidence_4a77656c9b6ecd94",
+          "evidenceType": "source_record",
+          "label": "Accounts Receivable",
+          "sourceRecordId": "acct_ar",
+          "sourceSystem": "quickbooks-online"
         }
       ],
-      "explanation": "5000 is assigned to more than one account.",
+      "explanation": "Confirm the destination Xero accounts-receivable system account.",
       "fixLocation": "xero",
       "issueClass": "migration_decision",
-      "occurrenceId": "occurrence_8745813cd92d3394",
+      "occurrenceId": "occurrence_986d267ce5309d50",
       "owner": "migration_specialist",
-      "recommendedAction": "Assign unique account codes before importing to Xero.",
+      "recommendedAction": "Confirm the account type and code before generating final import files.",
       "resolutionEvidence": [],
       "ruleVersion": "1.0.0",
       "status": "open",
-      "title": "Duplicate Xero account code",
-      "workflowImpact": "action_required"
+      "title": "Confirm account treatment",
+      "workflowImpact": "review_required"
+    },
+    {
+      "affectedRecords": [
+        {
+          "label": "Accounts Payable",
+          "sourceId": "acct_ap",
+          "sourceSystem": "quickbooks-online",
+          "sourceType": "account"
+        }
+      ],
+      "businessImpact": "The migration cannot be finalized until the target treatment is confirmed.",
+      "category": "migration_mapping",
+      "confidence": 0.9,
+      "decisionKey": "decision_8120eb6f0d98fbdb",
+      "estimatedEffort": "Manual Mapping",
+      "evidence": [
+        {
+          "evidenceId": "evidence_212d41b522135b7d",
+          "evidenceType": "rule_signal",
+          "label": "Deterministic rule MAPPING_ACCOUNT",
+          "sourceSystem": "preconfin"
+        },
+        {
+          "evidenceId": "evidence_34a0153234f316a6",
+          "evidenceType": "source_record",
+          "label": "Accounts Payable",
+          "sourceRecordId": "acct_ap",
+          "sourceSystem": "quickbooks-online"
+        }
+      ],
+      "explanation": "Confirm the destination Xero accounts-payable system account.",
+      "fixLocation": "xero",
+      "issueClass": "migration_decision",
+      "occurrenceId": "occurrence_e1817c915db6b109",
+      "owner": "migration_specialist",
+      "recommendedAction": "Confirm the account type and code before generating final import files.",
+      "resolutionEvidence": [],
+      "ruleVersion": "1.0.0",
+      "status": "open",
+      "title": "Confirm account treatment",
+      "workflowImpact": "review_required"
+    },
+    {
+      "affectedRecords": [
+        {
+          "label": "Retained Earnings",
+          "sourceId": "acct_retained",
+          "sourceSystem": "quickbooks-online",
+          "sourceType": "account"
+        }
+      ],
+      "businessImpact": "The migration cannot be finalized until the target treatment is confirmed.",
+      "category": "migration_mapping",
+      "confidence": 0.9,
+      "decisionKey": "decision_fa3c972ca1c9f898",
+      "estimatedEffort": "Manual Mapping",
+      "evidence": [
+        {
+          "evidenceId": "evidence_212d41b522135b7d",
+          "evidenceType": "rule_signal",
+          "label": "Deterministic rule MAPPING_ACCOUNT",
+          "sourceSystem": "preconfin"
+        },
+        {
+          "evidenceId": "evidence_805309fba51dcd97",
+          "evidenceType": "source_record",
+          "label": "Retained Earnings",
+          "sourceRecordId": "acct_retained",
+          "sourceSystem": "quickbooks-online"
+        }
+      ],
+      "explanation": "Confirm the destination Xero retained-earnings system account.",
+      "fixLocation": "xero",
+      "issueClass": "migration_decision",
+      "occurrenceId": "occurrence_92dcc87582d03ba9",
+      "owner": "migration_specialist",
+      "recommendedAction": "Confirm the account type and code before generating final import files.",
+      "resolutionEvidence": [],
+      "ruleVersion": "1.0.0",
+      "status": "open",
+      "title": "Confirm account treatment",
+      "workflowImpact": "review_required"
     }
   ],
   "evidenceSummary": {
     "coveragePercentage": 100,
-    "evidenceReferenceCount": 27,
-    "findingCount": 10,
-    "findingWithEvidenceCount": 10,
+    "evidenceReferenceCount": 29,
+    "findingCount": 11,
+    "findingWithEvidenceCount": 11,
     "sourceSystems": [
       "preconfin",
       "quickbooks-online"
@@ -433,65 +700,21 @@
   "findingGroups": [
     {
       "code": "resolve_in_source",
-      "count": 9,
+      "count": 8,
       "issueKeys": [
-        "issue_08e88821fdd54ab5",
         "issue_0e3501f3bf2d54af",
         "issue_25051dd13df50961",
         "issue_a2eafe560c315b86",
         "issue_bb69406b23406bf7",
         "issue_c0293605b5258609",
         "issue_cff76547f5a1436b",
-        "issue_e4041c5623f38d82",
+        "issue_eab6b32b303e4367",
         "issue_f04937c0e23f454c"
       ],
       "title": "Resolve in QuickBooks"
     }
   ],
   "findings": [
-    {
-      "affectedRecords": [
-        {
-          "label": "Operating Expense",
-          "sourceId": "acct_expense",
-          "sourceSystem": "quickbooks-online",
-          "sourceType": "account"
-        }
-      ],
-      "businessImpact": "Affected records may not migrate or reconcile cleanly.",
-      "category": "chart_of_accounts",
-      "confidence": 1,
-      "estimatedEffort": "Source System Change",
-      "evidence": [
-        {
-          "evidenceId": "evidence_bcffebaaa31d006a",
-          "evidenceType": "rule_signal",
-          "label": "Deterministic rule INACTIVE_ACCOUNT",
-          "sourceSystem": "preconfin"
-        },
-        {
-          "evidenceId": "evidence_ea3cc16ff39bd3eb",
-          "evidenceType": "source_record",
-          "label": "Operating Expense",
-          "sourceRecordId": "acct_expense",
-          "sourceSystem": "quickbooks-online"
-        }
-      ],
-      "explanation": "Inactive QuickBooks account detected.",
-      "fixLocation": "quickbooks",
-      "issueClass": "source_data_quality",
-      "issueKey": "issue_08e88821fdd54ab5",
-      "occurrenceId": "occurrence_dd271f4068ca6122",
-      "owner": "bookkeeper",
-      "recommendedAction": "Review whether this account should be imported, archived, or merged in Xero.",
-      "resolutionEvidence": [],
-      "ruleCode": "INACTIVE_ACCOUNT",
-      "ruleVersion": "1.0.0",
-      "severity": "medium",
-      "status": "open",
-      "title": "Inactive account",
-      "workflowImpact": "review_required"
-    },
     {
       "affectedRecords": [
         {
@@ -797,17 +1020,17 @@
       "estimatedEffort": "Source System Change",
       "evidence": [
         {
-          "evidenceId": "evidence_1647d4c61740b20c",
-          "evidenceType": "rule_signal",
-          "label": "Deterministic rule DUPLICATE_ACCOUNT",
-          "sourceSystem": "preconfin"
-        },
-        {
           "evidenceId": "evidence_46e0c66165e07605",
           "evidenceType": "source_record",
           "label": "Operating Expense",
           "sourceRecordId": "acct_expense_duplicate",
           "sourceSystem": "quickbooks-online"
+        },
+        {
+          "evidenceId": "evidence_e30b8ea3be26aeef",
+          "evidenceType": "rule_signal",
+          "label": "Deterministic rule UNUSED_DUPLICATE_ACCOUNT",
+          "sourceSystem": "preconfin"
         },
         {
           "evidenceId": "evidence_ea3cc16ff39bd3eb",
@@ -817,19 +1040,19 @@
           "sourceSystem": "quickbooks-online"
         }
       ],
-      "explanation": "Operating Expense appears more than once.",
+      "explanation": "Operating Expense has an unused duplicate that is excluded from migration. Operating Expense: closing balance 1500.00, period activity 500.00, dependencies 3.",
       "fixLocation": "quickbooks",
       "issueClass": "source_data_quality",
-      "issueKey": "issue_e4041c5623f38d82",
-      "occurrenceId": "occurrence_dbe35c73ce13ba6f",
+      "issueKey": "issue_eab6b32b303e4367",
+      "occurrenceId": "occurrence_95d3b71322595e0f",
       "owner": "bookkeeper",
-      "recommendedAction": "Merge or rename duplicates before importing to Xero.",
+      "recommendedAction": "Optionally archive or rename the unused duplicate in QuickBooks.",
       "resolutionEvidence": [],
-      "ruleCode": "DUPLICATE_ACCOUNT",
+      "ruleCode": "UNUSED_DUPLICATE_ACCOUNT",
       "ruleVersion": "1.0.0",
-      "severity": "medium",
+      "severity": "low",
       "status": "open",
-      "title": "Duplicate account",
+      "title": "Unused duplicate account",
       "workflowImpact": "review_required"
     },
     {
@@ -880,7 +1103,7 @@
   "identity": {
     "assessmentKey": "assessment_d3ba2d974f6c995b",
     "organizationId": "org_messy_books_company",
-    "reportId": "report_3e138341a6ba68a9"
+    "reportId": "report_21afc6be6d6c70ea"
   },
   "lineage": {
     "assessmentEngineVersion": "1.0.0",
@@ -890,7 +1113,7 @@
       "deterministic-rule-catalogue",
       "financial-controls"
     ],
-    "inputFingerprint": "bf86610be6848cc7",
+    "inputFingerprint": "908e4bad54f190e1",
     "normalizationVersion": "qbo-canonical-v1",
     "snapshotPulledAt": "2026-06-30T11:30:00.000Z",
     "sourceRecordCounts": {
@@ -1019,14 +1242,13 @@
       "priority": 2,
       "reason": "Source corrections are required before the migration package can be finalized.",
       "relatedIssueKeys": [
-        "issue_08e88821fdd54ab5",
         "issue_0e3501f3bf2d54af",
         "issue_25051dd13df50961",
         "issue_a2eafe560c315b86",
         "issue_bb69406b23406bf7",
         "issue_c0293605b5258609",
         "issue_cff76547f5a1436b",
-        "issue_e4041c5623f38d82",
+        "issue_eab6b32b303e4367",
         "issue_f04937c0e23f454c"
       ],
       "title": "Resolve source-system findings"
@@ -1039,7 +1261,9 @@
       "priority": 3,
       "reason": "Mapping decisions are target-system choices, not accounting defects.",
       "relatedIssueKeys": [
-        "decision_316fc5943108aade"
+        "decision_5d2e5d0963af7d21",
+        "decision_8120eb6f0d98fbdb",
+        "decision_fa3c972ca1c9f898"
       ],
       "title": "Confirm migration decisions"
     }
@@ -1050,24 +1274,22 @@
     "AR_AGING_MISMATCH": "1.0.0",
     "ASSESSMENT_ENGINE": "1.0.0",
     "CONTROL_RULES": "1.0.0",
-    "DUPLICATE_ACCOUNT": "1.0.0",
     "DUPLICATE_CONTACT": "1.0.0",
     "DUPLICATE_INVOICE_NUMBER": "1.0.0",
-    "DUPLICATE_XERO_ACCOUNT_CODE": "1.0.0",
-    "INACTIVE_ACCOUNT": "1.0.0",
     "INACTIVE_ACCOUNT_USED": "1.0.0",
     "INVOICE_TOTAL_MISMATCH": "1.0.0",
     "MISSING_ACCOUNT_REFERENCE": "1.0.0",
     "MISSING_SUPPLIER_REFERENCE": "1.0.0",
     "TRIAL_BALANCE_NOT_ZERO": "1.0.0",
-    "UNBALANCED_JOURNAL": "1.0.0"
+    "UNBALANCED_JOURNAL": "1.0.0",
+    "UNUSED_DUPLICATE_ACCOUNT": "1.0.0"
   },
   "scorecard": {
     "dataQuality": {
       "code": "data_quality",
       "explanation": "Measures source-record completeness, references, duplicates, and transaction quality.",
       "label": "Data Quality",
-      "score": 40
+      "score": 50
     },
     "evidenceCoverage": {
       "code": "evidence_coverage",
@@ -1085,7 +1307,7 @@
       "code": "migration_readiness",
       "explanation": "Measures whether blocking issues and migration decisions have been resolved.",
       "label": "Migration Readiness",
-      "score": 17
+      "score": 11
     },
     "reconciliation": {
       "code": "reconciliation",
@@ -1103,14 +1325,14 @@
     }
   ],
   "summary": {
-    "actionRequiredCount": 3,
+    "actionRequiredCount": 2,
     "blockingIssueCount": 9,
-    "decisionCount": 1,
+    "decisionCount": 3,
     "failedControlCount": 7,
     "informationalCount": 0,
     "passedControlCount": 2,
     "primaryRecommendation": "Resolve failed financial controls before continuing.",
-    "reviewItemCount": 5,
+    "reviewItemCount": 7,
     "unavailableControlCount": 0
   }
 }
