@@ -17,7 +17,13 @@ import {
 import { MigrationService } from "./services/migration-service.js";
 import { Repository, RepositoryError } from "./services/repository.js";
 
-type WorkerBindings = Record<string, string | undefined>;
+type WorkerVersionMetadata = { id?: string };
+type WorkerBindings = Record<
+  string,
+  string | WorkerVersionMetadata | undefined
+> & {
+  CF_VERSION_METADATA?: WorkerVersionMetadata;
+};
 
 const requiredRuntimeBindings = [
   "INTUIT_CLIENT_ID",
@@ -36,19 +42,26 @@ type WorkerContext = {
   repo: Repository;
   oauth: IntuitOAuthClient;
   migrationService: MigrationService;
+  workerVersion?: string;
 };
 
 let contextPromise: Promise<WorkerContext> | undefined;
 
 async function context(envBindings: WorkerBindings): Promise<WorkerContext> {
   if (!contextPromise) {
-    const env = loadEnv({ ...process.env, ...envBindings });
+    const stringBindings = Object.fromEntries(
+      Object.entries(envBindings).filter(
+        (entry): entry is [string, string] => typeof entry[1] === "string",
+      ),
+    );
+    const env = loadEnv({ ...process.env, ...stringBindings });
     const repo = new Repository(createSupabase(env));
     contextPromise = Promise.resolve({
       env,
       repo,
       oauth: new IntuitOAuthClient(env),
       migrationService: new MigrationService(env, repo),
+      workerVersion: envBindings.CF_VERSION_METADATA?.id,
     });
   }
   return contextPromise;
@@ -204,7 +217,7 @@ async function handleRequest(
   request: Request,
   ctx: WorkerContext,
 ): Promise<Response> {
-  const { env, repo, oauth, migrationService } = ctx;
+  const { env, repo, oauth, migrationService, workerVersion } = ctx;
   const url = new URL(request.url);
   const path = url.pathname;
 
@@ -323,7 +336,16 @@ async function handleRequest(
     if (!token) return json({ error: "Migration token required" }, 401);
 
     if (request.method === "POST" && action === "run") {
-      return json(await migrationService.runJob(id, token));
+      const correlationId =
+        request.headers.get("cf-ray") ??
+        request.headers.get("x-request-id") ??
+        crypto.randomUUID();
+      return json(
+        await migrationService.runJob(id, token, {
+          correlationId,
+          workerVersion,
+        }),
+      );
     }
 
     if (request.method === "GET" && !action) {

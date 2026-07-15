@@ -21,6 +21,8 @@ export interface MigrationPackage {
   zip: Buffer;
 }
 
+export type MigrationPackageStage = "csv_generation" | "zip_generation";
+
 interface ExportContext {
   accountCodeById: Map<string, string>;
   taxCodeById: Map<string, string>;
@@ -649,8 +651,11 @@ export async function createMigrationPackage(
   plan: MigrationPlan,
   report: ValidationReport,
   pdf?: Buffer,
+  onStage?: (stage: MigrationPackageStage) => void,
 ): Promise<MigrationPackage> {
+  onStage?.("csv_generation");
   const files = createExportFiles(snapshot, plan, report, pdf);
+  onStage?.("zip_generation");
   return { files, zip: await zipFiles(files) };
 }
 
