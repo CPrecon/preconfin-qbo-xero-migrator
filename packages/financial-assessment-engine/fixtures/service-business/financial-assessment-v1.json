@@ -1,0 +1,553 @@
+{
+  "assessmentCoverage": {
+    "applicableControlCount": 9,
+    "availableControlCount": 9,
+    "percentage": 100,
+    "sourceRecordCount": 19,
+    "sourceRecordWithLineageCount": 19,
+    "unavailableControlCodes": []
+  },
+  "assessmentType": "migration_readiness",
+  "basis": "accrual",
+  "controls": [
+    {
+      "basis": "accrual",
+      "blockingGate": true,
+      "code": "CONTROL_TRIAL_BALANCE",
+      "comparison": {
+        "comparisonLabel": "Expected net balance",
+        "comparisonValue": 0,
+        "currency": "USD",
+        "difference": 0,
+        "sourceLabel": "Total debits less credits",
+        "sourceValue": 0
+      },
+      "coverage": {
+        "explanation": "All required comparison data was available.",
+        "percentage": 100,
+        "status": "complete"
+      },
+      "evidence": [
+        {
+          "evidenceId": "evidence_0f5adb21bd859c6d",
+          "evidenceType": "report",
+          "label": "QuickBooks Trial Balance",
+          "observedAt": "2026-06-30T11:30:00.000Z",
+          "sourceSystem": "quickbooks-online"
+        }
+      ],
+      "explanation": "Total debits and credits agree within tolerance.",
+      "period": {
+        "endDate": "2026-06-30",
+        "startDate": "2026-01-01"
+      },
+      "status": "passed",
+      "title": "Trial Balance",
+      "tolerance": 1,
+      "version": "1.0.0"
+    },
+    {
+      "basis": "accrual",
+      "blockingGate": true,
+      "code": "CONTROL_ACCOUNTS_RECEIVABLE",
+      "comparison": {
+        "comparisonLabel": "AR aging balance",
+        "comparisonValue": 1000,
+        "currency": "USD",
+        "difference": 0,
+        "sourceLabel": "Open invoice balance",
+        "sourceValue": 1000
+      },
+      "coverage": {
+        "explanation": "All required comparison data was available.",
+        "percentage": 100,
+        "status": "complete"
+      },
+      "evidence": [
+        {
+          "evidenceId": "evidence_8688c4847c02b2d6",
+          "evidenceType": "report",
+          "label": "QuickBooks AR Aging",
+          "observedAt": "2026-06-30T11:30:00.000Z",
+          "sourceSystem": "quickbooks-online"
+        }
+      ],
+      "explanation": "Open invoices agree with the AR aging report.",
+      "period": {
+        "endDate": "2026-06-30",
+        "startDate": "2026-01-01"
+      },
+      "status": "passed",
+      "title": "Accounts Receivable",
+      "tolerance": 5,
+      "version": "1.0.0"
+    },
+    {
+      "basis": "accrual",
+      "blockingGate": true,
+      "code": "CONTROL_ACCOUNTS_PAYABLE",
+      "comparison": {
+        "comparisonLabel": "AP aging balance",
+        "comparisonValue": 500,
+        "currency": "USD",
+        "difference": 0,
+        "sourceLabel": "Open bill balance",
+        "sourceValue": 500
+      },
+      "coverage": {
+        "explanation": "All required comparison data was available.",
+        "percentage": 100,
+        "status": "complete"
+      },
+      "evidence": [
+        {
+          "evidenceId": "evidence_50381fe04868355c",
+          "evidenceType": "report",
+          "label": "QuickBooks AP Aging",
+          "observedAt": "2026-06-30T11:30:00.000Z",
+          "sourceSystem": "quickbooks-online"
+        }
+      ],
+      "explanation": "Open bills agree with the AP aging report.",
+      "period": {
+        "endDate": "2026-06-30",
+        "startDate": "2026-01-01"
+      },
+      "status": "passed",
+      "title": "Accounts Payable",
+      "tolerance": 2.5,
+      "version": "1.0.0"
+    },
+    {
+      "basis": "accrual",
+      "blockingGate": true,
+      "code": "CONTROL_BANK_RECONCILIATION",
+      "comparison": {
+        "comparisonLabel": "Trial-balance bank balances",
+        "comparisonValue": 10000,
+        "currency": "USD",
+        "difference": 0,
+        "sourceLabel": "Bank account balances",
+        "sourceValue": 10000
+      },
+      "coverage": {
+        "explanation": "All required comparison data was available.",
+        "percentage": 100,
+        "status": "complete"
+      },
+      "evidence": [
+        {
+          "evidenceId": "evidence_d8bf15b0e574a950",
+          "evidenceType": "report",
+          "label": "QuickBooks Trial Balance",
+          "observedAt": "2026-06-30T11:30:00.000Z",
+          "sourceSystem": "quickbooks-online"
+        }
+      ],
+      "explanation": "Bank account balances agree with the trial balance.",
+      "period": {
+        "endDate": "2026-06-30",
+        "startDate": "2026-01-01"
+      },
+      "status": "passed",
+      "title": "Bank Reconciliation",
+      "tolerance": 50,
+      "version": "1.0.0"
+    },
+    {
+      "basis": "accrual",
+      "blockingGate": true,
+      "code": "CONTROL_RETAINED_EARNINGS",
+      "comparison": {
+        "comparisonLabel": "Balance-sheet retained earnings",
+        "comparisonValue": -5000,
+        "currency": "USD",
+        "difference": 0,
+        "sourceLabel": "Trial-balance retained earnings",
+        "sourceValue": -5000
+      },
+      "coverage": {
+        "explanation": "All required comparison data was available.",
+        "percentage": 100,
+        "status": "complete"
+      },
+      "evidence": [
+        {
+          "evidenceId": "evidence_138c084241a81eba",
+          "evidenceType": "report",
+          "label": "QuickBooks Trial Balance and Balance Sheet",
+          "observedAt": "2026-06-30T11:30:00.000Z",
+          "sourceSystem": "quickbooks-online"
+        }
+      ],
+      "explanation": "Retained earnings agrees across the source reports.",
+      "period": {
+        "endDate": "2026-06-30",
+        "startDate": "2026-01-01"
+      },
+      "status": "passed",
+      "title": "Retained Earnings",
+      "tolerance": 1,
+      "version": "1.0.0"
+    },
+    {
+      "basis": "accrual",
+      "blockingGate": true,
+      "code": "CONTROL_OPENING_BALANCES",
+      "comparison": {
+        "comparisonLabel": "Expected net balance",
+        "comparisonValue": 0,
+        "currency": "USD",
+        "difference": 0,
+        "sourceLabel": "Conversion balance net",
+        "sourceValue": 0
+      },
+      "coverage": {
+        "explanation": "All required comparison data was available.",
+        "percentage": 100,
+        "status": "complete"
+      },
+      "evidence": [
+        {
+          "evidenceId": "evidence_01c33b2712441673",
+          "evidenceType": "control",
+          "label": "Trial-balance-derived conversion balances",
+          "observedAt": "2026-06-30T11:30:00.000Z",
+          "sourceSystem": "preconfin"
+        }
+      ],
+      "explanation": "Conversion balances net to zero.",
+      "period": {
+        "endDate": "2026-06-30",
+        "startDate": "2026-01-01"
+      },
+      "status": "passed",
+      "title": "Opening Balances",
+      "tolerance": 1,
+      "version": "1.0.0"
+    },
+    {
+      "basis": "accrual",
+      "blockingGate": true,
+      "code": "CONTROL_CLOSING_BALANCES",
+      "comparison": {
+        "comparisonLabel": "Balance-sheet account totals",
+        "comparisonValue": 5500,
+        "currency": "USD",
+        "difference": 0,
+        "sourceLabel": "Trial-balance account totals",
+        "sourceValue": 5500
+      },
+      "coverage": {
+        "explanation": "All required comparison data was available.",
+        "percentage": 100,
+        "status": "complete"
+      },
+      "evidence": [
+        {
+          "evidenceId": "evidence_badad3713a35d7e1",
+          "evidenceType": "report",
+          "label": "QuickBooks Trial Balance and Balance Sheet",
+          "observedAt": "2026-06-30T11:30:00.000Z",
+          "sourceSystem": "quickbooks-online"
+        }
+      ],
+      "explanation": "Comparable closing balances agree across source reports.",
+      "period": {
+        "endDate": "2026-06-30",
+        "startDate": "2026-01-01"
+      },
+      "status": "passed",
+      "title": "Closing Balances",
+      "tolerance": 27.5,
+      "version": "1.0.0"
+    },
+    {
+      "basis": "accrual",
+      "blockingGate": false,
+      "code": "CONTROL_TAX_LIABILITY",
+      "comparison": {
+        "comparisonLabel": "Comparison total",
+        "comparisonValue": null,
+        "currency": "USD",
+        "difference": null,
+        "sourceLabel": "Source total",
+        "sourceValue": null
+      },
+      "coverage": {
+        "explanation": "No tax-liability account was identified in the extracted chart.",
+        "percentage": 100,
+        "status": "not_applicable"
+      },
+      "evidence": [],
+      "explanation": "No tax-liability account was identified in the extracted chart.",
+      "period": {
+        "endDate": "2026-06-30",
+        "startDate": "2026-01-01"
+      },
+      "status": "not_applicable",
+      "title": "Tax Liability",
+      "tolerance": 0,
+      "version": "1.0.0"
+    },
+    {
+      "basis": "accrual",
+      "blockingGate": false,
+      "code": "CONTROL_EVIDENCE_COVERAGE",
+      "comparison": {
+        "comparisonLabel": "Assessed source records",
+        "comparisonValue": 19,
+        "currency": "USD",
+        "difference": 0,
+        "sourceLabel": "Records with source lineage",
+        "sourceValue": 19
+      },
+      "coverage": {
+        "explanation": "Coverage is based on stable source references.",
+        "percentage": 100,
+        "status": "complete"
+      },
+      "evidence": [
+        {
+          "evidenceId": "evidence_db752789de8ca4a5",
+          "evidenceType": "control",
+          "label": "Canonical source lineage",
+          "observedAt": "2026-06-30T11:30:00.000Z",
+          "sourceSystem": "preconfin"
+        }
+      ],
+      "explanation": "Source lineage is available for the assessed records.",
+      "period": {
+        "endDate": "2026-06-30",
+        "startDate": "2026-01-01"
+      },
+      "status": "passed",
+      "title": "Evidence Coverage",
+      "tolerance": 10,
+      "version": "1.0.0"
+    },
+    {
+      "basis": "accrual",
+      "blockingGate": false,
+      "code": "CONTROL_SOURCE_FRESHNESS",
+      "comparison": {
+        "comparisonLabel": "Freshness target in hours",
+        "comparisonValue": 24,
+        "currency": "USD",
+        "difference": -23.5,
+        "sourceLabel": "Source age in hours",
+        "sourceValue": 0.5
+      },
+      "coverage": {
+        "explanation": "A valid extraction timestamp was available.",
+        "percentage": 100,
+        "status": "complete"
+      },
+      "evidence": [
+        {
+          "evidenceId": "evidence_837931c896e2847c",
+          "evidenceType": "control",
+          "label": "QuickBooks extraction timestamp",
+          "observedAt": "2026-06-30T11:30:00.000Z",
+          "sourceSystem": "preconfin"
+        }
+      ],
+      "explanation": "The assessment uses a recent source extraction.",
+      "period": {
+        "endDate": "2026-06-30",
+        "startDate": "2026-01-01"
+      },
+      "status": "passed",
+      "title": "Source Freshness",
+      "tolerance": 24,
+      "version": "1.0.0"
+    }
+  ],
+  "currency": "USD",
+  "decisions": [],
+  "evidenceSummary": {
+    "coveragePercentage": 100,
+    "evidenceReferenceCount": 9,
+    "findingCount": 0,
+    "findingWithEvidenceCount": 0,
+    "sourceSystems": [
+      "preconfin",
+      "quickbooks-online"
+    ]
+  },
+  "findingGroups": [],
+  "findings": [],
+  "generatedAt": "2026-06-30T12:00:00.000Z",
+  "identity": {
+    "assessmentKey": "assessment_8daaa85eba04ea6c",
+    "organizationId": "org_northwind_advisory",
+    "reportId": "report_065ae476240c4fb6"
+  },
+  "lineage": {
+    "assessmentEngineVersion": "1.0.0",
+    "generatedFrom": [
+      "canonical-accounting-snapshot",
+      "migration-plan",
+      "deterministic-rule-catalogue",
+      "financial-controls"
+    ],
+    "inputFingerprint": "9439877305b92e2f",
+    "normalizationVersion": "qbo-canonical-v1",
+    "snapshotPulledAt": "2026-06-30T11:30:00.000Z",
+    "sourceRecordCounts": {
+      "accounts": 6,
+      "balances": 6,
+      "bills": 1,
+      "contacts": 2,
+      "credits": 0,
+      "currencies": 1,
+      "invoices": 1,
+      "items": 1,
+      "journals": 0,
+      "organization": 1,
+      "payments": 0,
+      "taxCodes": 0,
+      "taxRates": 0,
+      "tracking": 0
+    }
+  },
+  "nextSteps": [
+    {
+      "code": "CONFIRM_PERIOD_AND_BASIS",
+      "dependsOn": [],
+      "description": "Confirm that the assessment period and accounting basis match the migration scope.",
+      "required": true,
+      "sequence": 1,
+      "title": "Confirm reporting period and basis"
+    },
+    {
+      "code": "COMPLETE_CONTROLS",
+      "dependsOn": [
+        "CONFIRM_PERIOD_AND_BASIS"
+      ],
+      "description": "Resolve failed controls and refresh any unavailable required reports.",
+      "required": false,
+      "sequence": 2,
+      "title": "Complete financial controls"
+    },
+    {
+      "code": "RESOLVE_SOURCE_DATA",
+      "dependsOn": [
+        "COMPLETE_CONTROLS"
+      ],
+      "description": "Correct genuine accounting and source-record issues in QuickBooks.",
+      "required": false,
+      "sequence": 3,
+      "title": "Resolve source-data issues"
+    },
+    {
+      "code": "CONFIRM_MAPPINGS",
+      "dependsOn": [
+        "RESOLVE_SOURCE_DATA"
+      ],
+      "description": "Confirm account, tax, and tracking treatment for Xero.",
+      "required": false,
+      "sequence": 4,
+      "title": "Confirm migration decisions"
+    },
+    {
+      "code": "REGENERATE_ASSESSMENT",
+      "dependsOn": [
+        "COMPLETE_CONTROLS",
+        "RESOLVE_SOURCE_DATA",
+        "CONFIRM_MAPPINGS"
+      ],
+      "description": "Run the deterministic assessment again after corrections and decisions.",
+      "required": false,
+      "sequence": 5,
+      "title": "Regenerate the assessment"
+    },
+    {
+      "code": "IMPORT_XERO_DEMO",
+      "dependsOn": [
+        "REGENERATE_ASSESSMENT"
+      ],
+      "description": "Test the reviewed migration files in a disposable Xero organisation.",
+      "required": true,
+      "sequence": 6,
+      "title": "Import into a Xero demo organisation"
+    },
+    {
+      "code": "VERIFY_DESTINATION",
+      "dependsOn": [
+        "IMPORT_XERO_DEMO"
+      ],
+      "description": "Reconcile trial balance, AR, AP, bank, retained earnings, and tax balances before go-live.",
+      "required": true,
+      "sequence": 7,
+      "title": "Verify destination balances"
+    }
+  ],
+  "organization": {
+    "displayName": "Northwind Advisory",
+    "id": "org_northwind_advisory",
+    "legalName": "Northwind Advisory LLC"
+  },
+  "overallStatus": "migration_ready",
+  "period": {
+    "endDate": "2026-06-30",
+    "startDate": "2026-01-01"
+  },
+  "recommendations": [],
+  "reportVersion": "1.0.0",
+  "ruleVersions": {
+    "ASSESSMENT_ENGINE": "1.0.0",
+    "CONTROL_RULES": "1.0.0"
+  },
+  "scorecard": {
+    "dataQuality": {
+      "code": "data_quality",
+      "explanation": "Measures source-record completeness, references, duplicates, and transaction quality.",
+      "label": "Data Quality",
+      "score": 100
+    },
+    "evidenceCoverage": {
+      "code": "evidence_coverage",
+      "explanation": "Measures stable source lineage available for assessed records.",
+      "label": "Evidence Coverage",
+      "score": 100
+    },
+    "financialIntegrity": {
+      "code": "financial_integrity",
+      "explanation": "Measures deterministic agreement of core financial totals and controls.",
+      "label": "Financial Integrity",
+      "score": 100
+    },
+    "migrationReadiness": {
+      "code": "migration_readiness",
+      "explanation": "Measures whether blocking issues and migration decisions have been resolved.",
+      "label": "Migration Readiness",
+      "score": 100
+    },
+    "reconciliation": {
+      "code": "reconciliation",
+      "explanation": "Measures agreement across trial balance, receivables, payables, banking, and retained earnings controls.",
+      "label": "Reconciliation",
+      "score": 100
+    }
+  },
+  "sourceSystems": [
+    {
+      "pulledAt": "2026-06-30T11:30:00.000Z",
+      "recordCount": 19,
+      "status": "available",
+      "system": "quickbooks-online"
+    }
+  ],
+  "summary": {
+    "actionRequiredCount": 0,
+    "blockingIssueCount": 0,
+    "decisionCount": 0,
+    "failedControlCount": 0,
+    "informationalCount": 0,
+    "passedControlCount": 9,
+    "primaryRecommendation": "The books are ready for a controlled Xero migration review.",
+    "reviewItemCount": 0,
+    "unavailableControlCount": 0
+  }
+}

@@ -21,6 +21,7 @@
     "@fastify/swagger": "^9.4.0",
     "@fastify/swagger-ui": "^5.1.0",
     "@preconfin/canonical-model": "0.1.0",
+    "@preconfin/financial-assessment-engine": "1.0.0",
     "@preconfin/migration-engine": "0.1.0",
     "@preconfin/pdf-report": "0.1.0",
     "@preconfin/validation-engine": "0.1.0",

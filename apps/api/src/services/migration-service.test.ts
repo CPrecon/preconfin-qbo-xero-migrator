@@ -1,3 +1,5 @@
+import type { QboRawDataset } from "@preconfin/canonical-model";
+import { parseFinancialAssessmentV1 } from "@preconfin/financial-assessment-engine";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { AppEnv } from "../env.js";
 import { encryptJson } from "../security/crypto.js";
@@ -60,6 +62,11 @@ function repository(): Repository {
     }),
     updateJob: vi.fn().mockResolvedValue(undefined),
     audit: vi.fn().mockResolvedValue(undefined),
+    uploadArtifact: vi.fn().mockResolvedValue(undefined),
+    createArtifact: vi.fn().mockImplementation(async (input) => ({
+      id: "00000000-0000-4000-8000-000000000003",
+      ...input,
+    })),
   } as unknown as Repository;
 }
 
@@ -102,6 +109,78 @@ describe("migration failure diagnostics", () => {
         name: "ReferenceError",
         message: "missingWorkerGlobal is not defined",
         stack: expect.stringContaining("worker-module.ts:42:7"),
+      }),
+    );
+  });
+
+  it("persists FinancialAssessmentV1 as the authoritative JSON artifact", async () => {
+    const raw: QboRawDataset = {
+      realmId: "realm",
+      companyInfo: {
+        CompanyName: "Contract Fixture",
+        LegalName: "Contract Fixture LLC",
+        CurrencyRef: { value: "USD" },
+      },
+      accounts: [],
+      customers: [],
+      vendors: [],
+      items: [],
+      invoices: [],
+      bills: [],
+      payments: [],
+      creditMemos: [],
+      vendorCredits: [],
+      journalEntries: [],
+      taxRates: [],
+      taxCodes: [],
+      classes: [],
+      departments: [],
+      currencies: [],
+      reports: {},
+      pulledAt: "2026-06-30T12:00:00.000Z",
+    };
+    vi.spyOn(QboClient.prototype, "fetchDataset").mockResolvedValue(raw);
+    const repo = repository();
+    const service = new MigrationService(env, repo);
+
+    const result = await service.runJob(
+      "00000000-0000-4000-8000-000000000001",
+      "job-token",
+    );
+
+    const uploads = vi
+      .mocked(repo.uploadArtifact)
+      .mock.calls.map(([input]) => input);
+    expect(uploads).toHaveLength(3);
+    expect(uploads.map((upload) => upload.contentType)).toEqual(
+      expect.arrayContaining([
+        "application/zip",
+        "application/pdf",
+        "application/json",
+      ]),
+    );
+    const jsonUpload = uploads.find(
+      (upload) => upload.contentType === "application/json",
+    );
+    expect(jsonUpload?.path).toMatch(/financial-assessment-v1\.json$/);
+    expect(
+      uploads.some((upload) => upload.path.endsWith("/validation-report.json")),
+    ).toBe(false);
+
+    const assessment = parseFinancialAssessmentV1(
+      JSON.parse(jsonUpload!.body.toString("utf8")),
+    );
+    expect(assessment.reportVersion).toBe("1.0.0");
+    expect(result).toEqual({
+      score: assessment.scorecard.migrationReadiness.score,
+      readiness: assessment.overallStatus,
+    });
+    expect(repo.updateJob).toHaveBeenCalledWith(
+      "00000000-0000-4000-8000-000000000001",
+      expect.objectContaining({
+        status: "completed",
+        readinessScore: assessment.scorecard.migrationReadiness.score,
+        readinessStatus: assessment.overallStatus,
       }),
     );
   });

@@ -1,0 +1,1363 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.preconfin.com/financial-assessment/v1.json",
+  "title": "PreconFin Financial Assessment V1",
+  "description": "Immutable deterministic output consumed by PreconFin assessment renderers.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "reportId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "assessmentKey": {
+          "type": "string",
+          "minLength": 1
+        },
+        "organizationId": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": ["reportId", "assessmentKey", "organizationId"]
+    },
+    "organization": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "displayName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "legalName": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": ["id", "displayName"]
+    },
+    "assessmentType": {
+      "type": "string",
+      "enum": [
+        "financial_health",
+        "migration_readiness",
+        "post_migration_reconciliation",
+        "year_end_review",
+        "bookkeeping_health",
+        "due_diligence",
+        "continuous_monitoring"
+      ]
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "period": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "startDate": {
+          "type": "string",
+          "format": "date"
+        },
+        "endDate": {
+          "type": "string",
+          "format": "date"
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": ["endDate"]
+    },
+    "basis": {
+      "type": "string",
+      "enum": ["cash", "accrual", "unknown"]
+    },
+    "currency": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$"
+    },
+    "sourceSystems": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "system": {
+            "type": "string",
+            "minLength": 1
+          },
+          "recordCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "pulledAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["available", "partial", "unavailable"]
+          }
+        },
+        "required": ["system", "recordCount", "status"]
+      }
+    },
+    "assessmentCoverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "percentage": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "availableControlCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "applicableControlCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unavailableControlCodes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "sourceRecordCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sourceRecordWithLineageCount": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "percentage",
+        "availableControlCount",
+        "applicableControlCount",
+        "unavailableControlCodes",
+        "sourceRecordCount",
+        "sourceRecordWithLineageCount"
+      ]
+    },
+    "overallStatus": {
+      "type": "string",
+      "enum": [
+        "blocked",
+        "incomplete",
+        "action_required",
+        "review_recommended",
+        "migration_ready",
+        "verified"
+      ]
+    },
+    "scorecard": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "financialIntegrity": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "code": {
+              "type": "string",
+              "enum": [
+                "financial_integrity",
+                "reconciliation",
+                "migration_readiness",
+                "data_quality",
+                "evidence_coverage"
+              ]
+            },
+            "label": {
+              "type": "string",
+              "minLength": 1
+            },
+            "score": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "explanation": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": ["code", "label", "score", "explanation"]
+        },
+        "reconciliation": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "code": {
+              "type": "string",
+              "enum": [
+                "financial_integrity",
+                "reconciliation",
+                "migration_readiness",
+                "data_quality",
+                "evidence_coverage"
+              ]
+            },
+            "label": {
+              "type": "string",
+              "minLength": 1
+            },
+            "score": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "explanation": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": ["code", "label", "score", "explanation"]
+        },
+        "migrationReadiness": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "code": {
+              "type": "string",
+              "enum": [
+                "financial_integrity",
+                "reconciliation",
+                "migration_readiness",
+                "data_quality",
+                "evidence_coverage"
+              ]
+            },
+            "label": {
+              "type": "string",
+              "minLength": 1
+            },
+            "score": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "explanation": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": ["code", "label", "score", "explanation"]
+        },
+        "dataQuality": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "code": {
+              "type": "string",
+              "enum": [
+                "financial_integrity",
+                "reconciliation",
+                "migration_readiness",
+                "data_quality",
+                "evidence_coverage"
+              ]
+            },
+            "label": {
+              "type": "string",
+              "minLength": 1
+            },
+            "score": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "explanation": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": ["code", "label", "score", "explanation"]
+        },
+        "evidenceCoverage": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "code": {
+              "type": "string",
+              "enum": [
+                "financial_integrity",
+                "reconciliation",
+                "migration_readiness",
+                "data_quality",
+                "evidence_coverage"
+              ]
+            },
+            "label": {
+              "type": "string",
+              "minLength": 1
+            },
+            "score": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "explanation": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": ["code", "label", "score", "explanation"]
+        }
+      },
+      "required": [
+        "financialIntegrity",
+        "reconciliation",
+        "migrationReadiness",
+        "dataQuality",
+        "evidenceCoverage"
+      ]
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "primaryRecommendation": {
+          "type": "string",
+          "minLength": 1
+        },
+        "blockingIssueCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "actionRequiredCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "reviewItemCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "informationalCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "decisionCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "passedControlCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "failedControlCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unavailableControlCount": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "primaryRecommendation",
+        "blockingIssueCount",
+        "actionRequiredCount",
+        "reviewItemCount",
+        "informationalCount",
+        "decisionCount",
+        "passedControlCount",
+        "failedControlCount",
+        "unavailableControlCount"
+      ]
+    },
+    "controls": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1
+          },
+          "version": {
+            "type": "string",
+            "minLength": 1
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "passed",
+              "warning",
+              "failed",
+              "unavailable",
+              "not_applicable"
+            ]
+          },
+          "explanation": {
+            "type": "string",
+            "minLength": 1
+          },
+          "comparison": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "sourceLabel": {
+                "type": "string",
+                "minLength": 1
+              },
+              "sourceValue": {
+                "type": ["number", "null"]
+              },
+              "comparisonLabel": {
+                "type": "string",
+                "minLength": 1
+              },
+              "comparisonValue": {
+                "type": ["number", "null"]
+              },
+              "difference": {
+                "type": ["number", "null"]
+              },
+              "currency": {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$"
+              }
+            },
+            "required": [
+              "sourceLabel",
+              "sourceValue",
+              "comparisonLabel",
+              "comparisonValue",
+              "difference",
+              "currency"
+            ]
+          },
+          "tolerance": {
+            "type": "number",
+            "minimum": 0
+          },
+          "period": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "startDate": {
+                "type": "string",
+                "format": "date"
+              },
+              "endDate": {
+                "type": "string",
+                "format": "date"
+              },
+              "label": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": ["endDate"]
+          },
+          "basis": {
+            "type": "string",
+            "enum": ["cash", "accrual", "unknown"]
+          },
+          "coverage": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": ["complete", "partial", "unavailable", "not_applicable"]
+              },
+              "percentage": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 100
+              },
+              "explanation": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": ["status", "percentage", "explanation"]
+          },
+          "blockingGate": {
+            "type": "boolean"
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "evidenceId": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "evidenceType": {
+                  "type": "string",
+                  "enum": [
+                    "source_record",
+                    "report",
+                    "control",
+                    "rule_signal",
+                    "document",
+                    "reconciliation"
+                  ]
+                },
+                "sourceSystem": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "label": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "sourceRecordId": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "observedAt": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              },
+              "required": [
+                "evidenceId",
+                "evidenceType",
+                "sourceSystem",
+                "label"
+              ]
+            }
+          }
+        },
+        "required": [
+          "code",
+          "version",
+          "title",
+          "status",
+          "explanation",
+          "comparison",
+          "tolerance",
+          "period",
+          "basis",
+          "coverage",
+          "blockingGate",
+          "evidence"
+        ]
+      }
+    },
+    "findingGroups": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "resolve_in_source",
+              "resolve_in_preconfin",
+              "review_supporting_evidence",
+              "optional_cleanup"
+            ]
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "issueKeys": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": ["code", "title", "issueKeys", "count"]
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "issueKey": {
+            "type": "string",
+            "minLength": 1
+          },
+          "occurrenceId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "ruleCode": {
+            "type": "string",
+            "minLength": 1
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "financial_integrity",
+              "reconciliation",
+              "receivables",
+              "payables",
+              "banking",
+              "chart_of_accounts",
+              "transaction_quality",
+              "vendors",
+              "customers",
+              "tax",
+              "evidence",
+              "migration_mapping",
+              "system_coverage",
+              "informational"
+            ]
+          },
+          "issueClass": {
+            "type": "string",
+            "enum": [
+              "financial_integrity",
+              "source_data_quality",
+              "product_limitation",
+              "information"
+            ]
+          },
+          "severity": {
+            "type": "string",
+            "enum": ["critical", "high", "medium", "low", "informational"]
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "businessImpact": {
+            "type": "string",
+            "minLength": 1
+          },
+          "explanation": {
+            "type": "string",
+            "minLength": 1
+          },
+          "affectedRecords": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "sourceSystem": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "sourceType": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "sourceId": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "label": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": ["sourceSystem", "sourceType", "sourceId"]
+            }
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "evidenceId": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "evidenceType": {
+                  "type": "string",
+                  "enum": [
+                    "source_record",
+                    "report",
+                    "control",
+                    "rule_signal",
+                    "document",
+                    "reconciliation"
+                  ]
+                },
+                "sourceSystem": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "label": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "sourceRecordId": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "observedAt": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              },
+              "required": [
+                "evidenceId",
+                "evidenceType",
+                "sourceSystem",
+                "label"
+              ]
+            }
+          },
+          "recommendedAction": {
+            "type": "string",
+            "minLength": 1
+          },
+          "fixLocation": {
+            "type": "string",
+            "enum": [
+              "quickbooks",
+              "xero",
+              "preconfin",
+              "source_system",
+              "accountant",
+              "none"
+            ]
+          },
+          "owner": {
+            "type": "string",
+            "enum": [
+              "business_owner",
+              "bookkeeper",
+              "accountant",
+              "preconfin",
+              "migration_specialist",
+              "system"
+            ]
+          },
+          "workflowImpact": {
+            "type": "string",
+            "enum": [
+              "blocks_workflow",
+              "action_required",
+              "review_required",
+              "none"
+            ]
+          },
+          "confidence": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "ruleVersion": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "type": "string",
+            "enum": ["open", "acknowledged", "resolved", "accepted"]
+          },
+          "resolutionEvidence": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "evidenceId": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "evidenceType": {
+                  "type": "string",
+                  "enum": [
+                    "source_record",
+                    "report",
+                    "control",
+                    "rule_signal",
+                    "document",
+                    "reconciliation"
+                  ]
+                },
+                "sourceSystem": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "label": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "sourceRecordId": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "observedAt": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              },
+              "required": [
+                "evidenceId",
+                "evidenceType",
+                "sourceSystem",
+                "label"
+              ]
+            }
+          },
+          "estimatedEffort": {
+            "type": "string",
+            "enum": [
+              "Quick Review",
+              "Source System Change",
+              "Manual Mapping",
+              "Accountant Review"
+            ]
+          }
+        },
+        "required": [
+          "issueKey",
+          "occurrenceId",
+          "ruleCode",
+          "category",
+          "issueClass",
+          "severity",
+          "title",
+          "businessImpact",
+          "explanation",
+          "affectedRecords",
+          "evidence",
+          "recommendedAction",
+          "fixLocation",
+          "owner",
+          "workflowImpact",
+          "confidence",
+          "ruleVersion",
+          "status",
+          "resolutionEvidence",
+          "estimatedEffort"
+        ]
+      }
+    },
+    "decisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "decisionKey": {
+            "type": "string",
+            "minLength": 1
+          },
+          "occurrenceId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "category": {
+            "const": "migration_mapping"
+          },
+          "issueClass": {
+            "const": "migration_decision"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "explanation": {
+            "type": "string",
+            "minLength": 1
+          },
+          "businessImpact": {
+            "type": "string",
+            "minLength": 1
+          },
+          "recommendedAction": {
+            "type": "string",
+            "minLength": 1
+          },
+          "affectedRecords": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "sourceSystem": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "sourceType": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "sourceId": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "label": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": ["sourceSystem", "sourceType", "sourceId"]
+            }
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "evidenceId": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "evidenceType": {
+                  "type": "string",
+                  "enum": [
+                    "source_record",
+                    "report",
+                    "control",
+                    "rule_signal",
+                    "document",
+                    "reconciliation"
+                  ]
+                },
+                "sourceSystem": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "label": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "sourceRecordId": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "observedAt": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              },
+              "required": [
+                "evidenceId",
+                "evidenceType",
+                "sourceSystem",
+                "label"
+              ]
+            }
+          },
+          "owner": {
+            "type": "string",
+            "enum": [
+              "business_owner",
+              "bookkeeper",
+              "accountant",
+              "preconfin",
+              "migration_specialist",
+              "system"
+            ]
+          },
+          "fixLocation": {
+            "type": "string",
+            "enum": [
+              "quickbooks",
+              "xero",
+              "preconfin",
+              "source_system",
+              "accountant",
+              "none"
+            ]
+          },
+          "workflowImpact": {
+            "type": "string",
+            "enum": ["action_required", "review_required"]
+          },
+          "confidence": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "ruleVersion": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "type": "string",
+            "enum": ["open", "acknowledged", "resolved", "accepted"]
+          },
+          "resolutionEvidence": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "evidenceId": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "evidenceType": {
+                  "type": "string",
+                  "enum": [
+                    "source_record",
+                    "report",
+                    "control",
+                    "rule_signal",
+                    "document",
+                    "reconciliation"
+                  ]
+                },
+                "sourceSystem": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "label": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "sourceRecordId": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "observedAt": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              },
+              "required": [
+                "evidenceId",
+                "evidenceType",
+                "sourceSystem",
+                "label"
+              ]
+            }
+          },
+          "estimatedEffort": {
+            "type": "string",
+            "enum": ["Quick Review", "Manual Mapping", "Accountant Review"]
+          }
+        },
+        "required": [
+          "decisionKey",
+          "occurrenceId",
+          "category",
+          "issueClass",
+          "title",
+          "explanation",
+          "businessImpact",
+          "recommendedAction",
+          "affectedRecords",
+          "evidence",
+          "owner",
+          "fixLocation",
+          "workflowImpact",
+          "confidence",
+          "ruleVersion",
+          "status",
+          "resolutionEvidence",
+          "estimatedEffort"
+        ]
+      }
+    },
+    "recommendations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1
+          },
+          "priority": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "action": {
+            "type": "string",
+            "minLength": 1
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          },
+          "relatedIssueKeys": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "estimatedEffort": {
+            "type": "string",
+            "enum": [
+              "Quick Review",
+              "Source System Change",
+              "Manual Mapping",
+              "Accountant Review"
+            ]
+          },
+          "fixLocation": {
+            "type": "string",
+            "enum": [
+              "quickbooks",
+              "xero",
+              "preconfin",
+              "source_system",
+              "accountant",
+              "none"
+            ]
+          }
+        },
+        "required": [
+          "code",
+          "priority",
+          "title",
+          "action",
+          "reason",
+          "relatedIssueKeys",
+          "estimatedEffort",
+          "fixLocation"
+        ]
+      }
+    },
+    "nextSteps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "sequence": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "code": {
+            "type": "string",
+            "minLength": 1
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "dependsOn": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "required": [
+          "sequence",
+          "code",
+          "title",
+          "description",
+          "required",
+          "dependsOn"
+        ]
+      }
+    },
+    "evidenceSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "evidenceReferenceCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "findingWithEvidenceCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "findingCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "coveragePercentage": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "sourceSystems": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "required": [
+        "evidenceReferenceCount",
+        "findingWithEvidenceCount",
+        "findingCount",
+        "coveragePercentage",
+        "sourceSystems"
+      ]
+    },
+    "verificationEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "verifiedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "destinationSystem": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "evidenceId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "evidenceType": {
+                "type": "string",
+                "enum": [
+                  "source_record",
+                  "report",
+                  "control",
+                  "rule_signal",
+                  "document",
+                  "reconciliation"
+                ]
+              },
+              "sourceSystem": {
+                "type": "string",
+                "minLength": 1
+              },
+              "label": {
+                "type": "string",
+                "minLength": 1
+              },
+              "sourceRecordId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "observedAt": {
+                "type": "string",
+                "format": "date-time"
+              }
+            },
+            "required": ["evidenceId", "evidenceType", "sourceSystem", "label"]
+          },
+          "minItems": 1
+        }
+      },
+      "required": ["verifiedAt", "destinationSystem", "evidence"]
+    },
+    "lineage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "snapshotPulledAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "normalizationVersion": {
+          "type": "string",
+          "minLength": 1
+        },
+        "assessmentEngineVersion": {
+          "type": "string",
+          "minLength": 1
+        },
+        "inputFingerprint": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sourceRecordCounts": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "generatedFrom": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "required": [
+        "snapshotPulledAt",
+        "normalizationVersion",
+        "assessmentEngineVersion",
+        "inputFingerprint",
+        "sourceRecordCounts",
+        "generatedFrom"
+      ]
+    },
+    "ruleVersions": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "reportVersion": {
+      "const": "1.0.0"
+    }
+  },
+  "required": [
+    "identity",
+    "organization",
+    "assessmentType",
+    "generatedAt",
+    "period",
+    "basis",
+    "currency",
+    "sourceSystems",
+    "assessmentCoverage",
+    "overallStatus",
+    "scorecard",
+    "summary",
+    "controls",
+    "findingGroups",
+    "findings",
+    "decisions",
+    "recommendations",
+    "nextSteps",
+    "evidenceSummary",
+    "lineage",
+    "ruleVersions",
+    "reportVersion"
+  ]
+}

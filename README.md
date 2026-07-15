@@ -13,7 +13,8 @@ This repository is intentionally independent from the core PreconFin application
 
 - `packages/canonical-model` — canonical accounting types and QBO normalization.
 - `packages/migration-engine` — QBO-to-Xero mapping and exception detection.
-- `packages/validation-engine` — migration readiness checks and scoring.
+- `packages/financial-assessment-engine` — canonical deterministic controls, findings, classification, scoring, status, recommendations, evidence, and immutable FinancialAssessmentV1 contract.
+- `packages/validation-engine` — temporary compatibility projection for existing PDF and ZIP renderers; it does not own rules or scoring.
 - `packages/xero-export` — Xero-compatible CSV and ZIP generation.
 - `packages/pdf-report` — branded Migration Health PDF generation.
 - `packages/shared-ui` — PreconFin-branded UI primitives used by the web app.
@@ -31,6 +32,7 @@ This repository is intentionally independent from the core PreconFin application
 ```bash
 npm run typecheck
 npm run test
+npm run test:contract
 npm run build
 ```
 

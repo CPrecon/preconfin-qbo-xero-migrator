@@ -1,7 +1,8 @@
 import { normalizeQboDataset } from "@preconfin/canonical-model";
+import { createFinancialAssessment } from "@preconfin/financial-assessment-engine";
 import { createMigrationPlan } from "@preconfin/migration-engine";
 import { generateMigrationHealthPdf } from "@preconfin/pdf-report";
-import { validateMigration } from "@preconfin/validation-engine";
+import { toLegacyValidationReport } from "@preconfin/validation-engine";
 import { createMigrationPackage } from "@preconfin/xero-export";
 import type { AppEnv } from "../env.js";
 import { decryptJson, encryptJson } from "../security/crypto.js";
@@ -204,9 +205,17 @@ export class MigrationService {
       sourceOperation = "createMigrationPlan";
       const plan = createMigrationPlan(snapshot);
 
+      const assessmentGeneratedAt = new Date().toISOString();
       stage = "validation";
-      sourceOperation = "validateMigration";
-      const validation = validateMigration(snapshot, plan);
+      sourceOperation = "createFinancialAssessment";
+      const assessment = createFinancialAssessment({
+        snapshot,
+        plan,
+        assessmentType: "migration_readiness",
+        generatedAt: assessmentGeneratedAt,
+      });
+      sourceOperation = "toLegacyValidationReport";
+      const validation = toLegacyValidationReport(assessment);
 
       stage = "pdf_generation";
       sourceOperation = "generateMigrationHealthPdf";
@@ -233,7 +242,8 @@ export class MigrationService {
       const prefix = `${job.id}/${randomToken(18)}`;
       const zipPath = `${prefix}/qbo-xero-migration-package.zip`;
       const pdfPath = `${prefix}/migration-health-report.pdf`;
-      const jsonPath = `${prefix}/validation-report.json`;
+      const jsonPath = `${prefix}/financial-assessment-v1.json`;
+      const json = JSON.stringify(assessment, null, 2);
 
       stage = "artifact_persistence";
       sourceOperation = "repository.uploadArtifact:zip";
@@ -254,7 +264,7 @@ export class MigrationService {
       await this.repo.uploadArtifact({
         bucket: this.env.SUPABASE_STORAGE_BUCKET,
         path: jsonPath,
-        body: Buffer.from(JSON.stringify(validation, null, 2)),
+        body: Buffer.from(json),
         contentType: "application/json",
       });
 
@@ -285,7 +295,7 @@ export class MigrationService {
         kind: "json",
         path: jsonPath,
         contentType: "application/json",
-        sizeBytes: Buffer.byteLength(JSON.stringify(validation)),
+        sizeBytes: Buffer.byteLength(json),
         expiresAt,
       });
 
@@ -293,18 +303,18 @@ export class MigrationService {
       sourceOperation = "repository.updateJob:completed";
       await this.repo.updateJob(job.id, {
         status: "completed",
-        readinessScore: validation.summary.score,
-        readinessStatus: validation.summary.readiness,
+        readinessScore: assessment.scorecard.migrationReadiness.score,
+        readinessStatus: assessment.overallStatus,
       });
       sourceOperation = "repository.audit:migration_job_completed";
       await this.repo.audit("migration_job_completed", {
         jobId: job.id,
-        score: validation.summary.score,
-        readiness: validation.summary.readiness,
+        score: assessment.scorecard.migrationReadiness.score,
+        readiness: assessment.overallStatus,
       });
       return {
-        score: validation.summary.score,
-        readiness: validation.summary.readiness,
+        score: assessment.scorecard.migrationReadiness.score,
+        readiness: assessment.overallStatus,
       };
     } catch (error) {
       this.diagnosticLogger("migration_scan_failed", {

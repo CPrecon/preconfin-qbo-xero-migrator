@@ -1,0 +1,1116 @@
+{
+  "assessmentCoverage": {
+    "applicableControlCount": 9,
+    "availableControlCount": 9,
+    "percentage": 100,
+    "sourceRecordCount": 23,
+    "sourceRecordWithLineageCount": 23,
+    "unavailableControlCodes": []
+  },
+  "assessmentType": "migration_readiness",
+  "basis": "accrual",
+  "controls": [
+    {
+      "basis": "accrual",
+      "blockingGate": true,
+      "code": "CONTROL_TRIAL_BALANCE",
+      "comparison": {
+        "comparisonLabel": "Expected net balance",
+        "comparisonValue": 0,
+        "currency": "USD",
+        "difference": 50,
+        "sourceLabel": "Total debits less credits",
+        "sourceValue": 50
+      },
+      "coverage": {
+        "explanation": "All required comparison data was available.",
+        "percentage": 100,
+        "status": "complete"
+      },
+      "evidence": [
+        {
+          "evidenceId": "evidence_0f5adb21bd859c6d",
+          "evidenceType": "report",
+          "label": "QuickBooks Trial Balance",
+          "observedAt": "2026-06-30T11:30:00.000Z",
+          "sourceSystem": "quickbooks-online"
+        }
+      ],
+      "explanation": "Total debits and credits do not agree.",
+      "period": {
+        "endDate": "2026-06-30",
+        "startDate": "2026-01-01"
+      },
+      "status": "failed",
+      "title": "Trial Balance",
+      "tolerance": 1,
+      "version": "1.0.0"
+    },
+    {
+      "basis": "accrual",
+      "blockingGate": true,
+      "code": "CONTROL_ACCOUNTS_RECEIVABLE",
+      "comparison": {
+        "comparisonLabel": "AR aging balance",
+        "comparisonValue": 700,
+        "currency": "USD",
+        "difference": 400,
+        "sourceLabel": "Open invoice balance",
+        "sourceValue": 1100
+      },
+      "coverage": {
+        "explanation": "All required comparison data was available.",
+        "percentage": 100,
+        "status": "complete"
+      },
+      "evidence": [
+        {
+          "evidenceId": "evidence_8688c4847c02b2d6",
+          "evidenceType": "report",
+          "label": "QuickBooks AR Aging",
+          "observedAt": "2026-06-30T11:30:00.000Z",
+          "sourceSystem": "quickbooks-online"
+        }
+      ],
+      "explanation": "Open invoices do not agree with the AR aging report.",
+      "period": {
+        "endDate": "2026-06-30",
+        "startDate": "2026-01-01"
+      },
+      "status": "failed",
+      "title": "Accounts Receivable",
+      "tolerance": 5.5,
+      "version": "1.0.0"
+    },
+    {
+      "basis": "accrual",
+      "blockingGate": true,
+      "code": "CONTROL_ACCOUNTS_PAYABLE",
+      "comparison": {
+        "comparisonLabel": "AP aging balance",
+        "comparisonValue": 400,
+        "currency": "USD",
+        "difference": 100,
+        "sourceLabel": "Open bill balance",
+        "sourceValue": 500
+      },
+      "coverage": {
+        "explanation": "All required comparison data was available.",
+        "percentage": 100,
+        "status": "complete"
+      },
+      "evidence": [
+        {
+          "evidenceId": "evidence_50381fe04868355c",
+          "evidenceType": "report",
+          "label": "QuickBooks AP Aging",
+          "observedAt": "2026-06-30T11:30:00.000Z",
+          "sourceSystem": "quickbooks-online"
+        }
+      ],
+      "explanation": "Open bills do not agree with the AP aging report.",
+      "period": {
+        "endDate": "2026-06-30",
+        "startDate": "2026-01-01"
+      },
+      "status": "failed",
+      "title": "Accounts Payable",
+      "tolerance": 2.5,
+      "version": "1.0.0"
+    },
+    {
+      "basis": "accrual",
+      "blockingGate": true,
+      "code": "CONTROL_BANK_RECONCILIATION",
+      "comparison": {
+        "comparisonLabel": "Trial-balance bank balances",
+        "comparisonValue": 10050,
+        "currency": "USD",
+        "difference": -1050,
+        "sourceLabel": "Bank account balances",
+        "sourceValue": 9000
+      },
+      "coverage": {
+        "explanation": "All required comparison data was available.",
+        "percentage": 100,
+        "status": "complete"
+      },
+      "evidence": [
+        {
+          "evidenceId": "evidence_d8bf15b0e574a950",
+          "evidenceType": "report",
+          "label": "QuickBooks Trial Balance",
+          "observedAt": "2026-06-30T11:30:00.000Z",
+          "sourceSystem": "quickbooks-online"
+        }
+      ],
+      "explanation": "Bank account balances do not agree with the trial balance.",
+      "period": {
+        "endDate": "2026-06-30",
+        "startDate": "2026-01-01"
+      },
+      "status": "failed",
+      "title": "Bank Reconciliation",
+      "tolerance": 45,
+      "version": "1.0.0"
+    },
+    {
+      "basis": "accrual",
+      "blockingGate": true,
+      "code": "CONTROL_RETAINED_EARNINGS",
+      "comparison": {
+        "comparisonLabel": "Balance-sheet retained earnings",
+        "comparisonValue": -4800,
+        "currency": "USD",
+        "difference": -200,
+        "sourceLabel": "Trial-balance retained earnings",
+        "sourceValue": -5000
+      },
+      "coverage": {
+        "explanation": "All required comparison data was available.",
+        "percentage": 100,
+        "status": "complete"
+      },
+      "evidence": [
+        {
+          "evidenceId": "evidence_138c084241a81eba",
+          "evidenceType": "report",
+          "label": "QuickBooks Trial Balance and Balance Sheet",
+          "observedAt": "2026-06-30T11:30:00.000Z",
+          "sourceSystem": "quickbooks-online"
+        }
+      ],
+      "explanation": "Retained earnings differs between source reports.",
+      "period": {
+        "endDate": "2026-06-30",
+        "startDate": "2026-01-01"
+      },
+      "status": "failed",
+      "title": "Retained Earnings",
+      "tolerance": 1,
+      "version": "1.0.0"
+    },
+    {
+      "basis": "accrual",
+      "blockingGate": true,
+      "code": "CONTROL_OPENING_BALANCES",
+      "comparison": {
+        "comparisonLabel": "Expected net balance",
+        "comparisonValue": 0,
+        "currency": "USD",
+        "difference": 50,
+        "sourceLabel": "Conversion balance net",
+        "sourceValue": 50
+      },
+      "coverage": {
+        "explanation": "All required comparison data was available.",
+        "percentage": 100,
+        "status": "complete"
+      },
+      "evidence": [
+        {
+          "evidenceId": "evidence_01c33b2712441673",
+          "evidenceType": "control",
+          "label": "Trial-balance-derived conversion balances",
+          "observedAt": "2026-06-30T11:30:00.000Z",
+          "sourceSystem": "preconfin"
+        }
+      ],
+      "explanation": "Conversion balances do not net to zero.",
+      "period": {
+        "endDate": "2026-06-30",
+        "startDate": "2026-01-01"
+      },
+      "status": "failed",
+      "title": "Opening Balances",
+      "tolerance": 1,
+      "version": "1.0.0"
+    },
+    {
+      "basis": "accrual",
+      "blockingGate": true,
+      "code": "CONTROL_CLOSING_BALANCES",
+      "comparison": {
+        "comparisonLabel": "Balance-sheet account totals",
+        "comparisonValue": 5700,
+        "currency": "USD",
+        "difference": -150,
+        "sourceLabel": "Trial-balance account totals",
+        "sourceValue": 5550
+      },
+      "coverage": {
+        "explanation": "All required comparison data was available.",
+        "percentage": 100,
+        "status": "complete"
+      },
+      "evidence": [
+        {
+          "evidenceId": "evidence_badad3713a35d7e1",
+          "evidenceType": "report",
+          "label": "QuickBooks Trial Balance and Balance Sheet",
+          "observedAt": "2026-06-30T11:30:00.000Z",
+          "sourceSystem": "quickbooks-online"
+        }
+      ],
+      "explanation": "Comparable closing balances differ across source reports.",
+      "period": {
+        "endDate": "2026-06-30",
+        "startDate": "2026-01-01"
+      },
+      "status": "failed",
+      "title": "Closing Balances",
+      "tolerance": 27.75,
+      "version": "1.0.0"
+    },
+    {
+      "basis": "accrual",
+      "blockingGate": false,
+      "code": "CONTROL_TAX_LIABILITY",
+      "comparison": {
+        "comparisonLabel": "Comparison total",
+        "comparisonValue": null,
+        "currency": "USD",
+        "difference": null,
+        "sourceLabel": "Source total",
+        "sourceValue": null
+      },
+      "coverage": {
+        "explanation": "No tax-liability account was identified in the extracted chart.",
+        "percentage": 100,
+        "status": "not_applicable"
+      },
+      "evidence": [],
+      "explanation": "No tax-liability account was identified in the extracted chart.",
+      "period": {
+        "endDate": "2026-06-30",
+        "startDate": "2026-01-01"
+      },
+      "status": "not_applicable",
+      "title": "Tax Liability",
+      "tolerance": 0,
+      "version": "1.0.0"
+    },
+    {
+      "basis": "accrual",
+      "blockingGate": false,
+      "code": "CONTROL_EVIDENCE_COVERAGE",
+      "comparison": {
+        "comparisonLabel": "Assessed source records",
+        "comparisonValue": 23,
+        "currency": "USD",
+        "difference": 0,
+        "sourceLabel": "Records with source lineage",
+        "sourceValue": 23
+      },
+      "coverage": {
+        "explanation": "Coverage is based on stable source references.",
+        "percentage": 100,
+        "status": "complete"
+      },
+      "evidence": [
+        {
+          "evidenceId": "evidence_db752789de8ca4a5",
+          "evidenceType": "control",
+          "label": "Canonical source lineage",
+          "observedAt": "2026-06-30T11:30:00.000Z",
+          "sourceSystem": "preconfin"
+        }
+      ],
+      "explanation": "Source lineage is available for the assessed records.",
+      "period": {
+        "endDate": "2026-06-30",
+        "startDate": "2026-01-01"
+      },
+      "status": "passed",
+      "title": "Evidence Coverage",
+      "tolerance": 10,
+      "version": "1.0.0"
+    },
+    {
+      "basis": "accrual",
+      "blockingGate": false,
+      "code": "CONTROL_SOURCE_FRESHNESS",
+      "comparison": {
+        "comparisonLabel": "Freshness target in hours",
+        "comparisonValue": 24,
+        "currency": "USD",
+        "difference": -23.5,
+        "sourceLabel": "Source age in hours",
+        "sourceValue": 0.5
+      },
+      "coverage": {
+        "explanation": "A valid extraction timestamp was available.",
+        "percentage": 100,
+        "status": "complete"
+      },
+      "evidence": [
+        {
+          "evidenceId": "evidence_837931c896e2847c",
+          "evidenceType": "control",
+          "label": "QuickBooks extraction timestamp",
+          "observedAt": "2026-06-30T11:30:00.000Z",
+          "sourceSystem": "preconfin"
+        }
+      ],
+      "explanation": "The assessment uses a recent source extraction.",
+      "period": {
+        "endDate": "2026-06-30",
+        "startDate": "2026-01-01"
+      },
+      "status": "passed",
+      "title": "Source Freshness",
+      "tolerance": 24,
+      "version": "1.0.0"
+    }
+  ],
+  "currency": "USD",
+  "decisions": [
+    {
+      "affectedRecords": [
+        {
+          "label": "Operating Expense",
+          "sourceId": "acct_expense",
+          "sourceSystem": "quickbooks-online",
+          "sourceType": "account"
+        },
+        {
+          "label": "Operating Expense",
+          "sourceId": "acct_expense_duplicate",
+          "sourceSystem": "quickbooks-online",
+          "sourceType": "account"
+        }
+      ],
+      "businessImpact": "The migration cannot be finalized until the target treatment is confirmed.",
+      "category": "migration_mapping",
+      "confidence": 1,
+      "decisionKey": "decision_316fc5943108aade",
+      "estimatedEffort": "Accountant Review",
+      "evidence": [
+        {
+          "evidenceId": "evidence_ea3cc16ff39bd3eb",
+          "evidenceType": "source_record",
+          "label": "Operating Expense",
+          "sourceRecordId": "acct_expense",
+          "sourceSystem": "quickbooks-online"
+        },
+        {
+          "evidenceId": "evidence_46e0c66165e07605",
+          "evidenceType": "source_record",
+          "label": "Operating Expense",
+          "sourceRecordId": "acct_expense_duplicate",
+          "sourceSystem": "quickbooks-online"
+        },
+        {
+          "evidenceId": "evidence_f48528c1bd931855",
+          "evidenceType": "rule_signal",
+          "label": "Deterministic rule DUPLICATE_XERO_ACCOUNT_CODE",
+          "sourceSystem": "preconfin"
+        }
+      ],
+      "explanation": "5000 is assigned to more than one account.",
+      "fixLocation": "xero",
+      "issueClass": "migration_decision",
+      "occurrenceId": "occurrence_8745813cd92d3394",
+      "owner": "migration_specialist",
+      "recommendedAction": "Assign unique account codes before importing to Xero.",
+      "resolutionEvidence": [],
+      "ruleVersion": "1.0.0",
+      "status": "open",
+      "title": "Duplicate Xero account code",
+      "workflowImpact": "action_required"
+    }
+  ],
+  "evidenceSummary": {
+    "coveragePercentage": 100,
+    "evidenceReferenceCount": 27,
+    "findingCount": 10,
+    "findingWithEvidenceCount": 10,
+    "sourceSystems": [
+      "preconfin",
+      "quickbooks-online"
+    ]
+  },
+  "findingGroups": [
+    {
+      "code": "resolve_in_source",
+      "count": 9,
+      "issueKeys": [
+        "issue_08e88821fdd54ab5",
+        "issue_0e3501f3bf2d54af",
+        "issue_25051dd13df50961",
+        "issue_a2eafe560c315b86",
+        "issue_bb69406b23406bf7",
+        "issue_c0293605b5258609",
+        "issue_cff76547f5a1436b",
+        "issue_e4041c5623f38d82",
+        "issue_f04937c0e23f454c"
+      ],
+      "title": "Resolve in QuickBooks"
+    }
+  ],
+  "findings": [
+    {
+      "affectedRecords": [
+        {
+          "label": "Operating Expense",
+          "sourceId": "acct_expense",
+          "sourceSystem": "quickbooks-online",
+          "sourceType": "account"
+        }
+      ],
+      "businessImpact": "Affected records may not migrate or reconcile cleanly.",
+      "category": "chart_of_accounts",
+      "confidence": 1,
+      "estimatedEffort": "Source System Change",
+      "evidence": [
+        {
+          "evidenceId": "evidence_bcffebaaa31d006a",
+          "evidenceType": "rule_signal",
+          "label": "Deterministic rule INACTIVE_ACCOUNT",
+          "sourceSystem": "preconfin"
+        },
+        {
+          "evidenceId": "evidence_ea3cc16ff39bd3eb",
+          "evidenceType": "source_record",
+          "label": "Operating Expense",
+          "sourceRecordId": "acct_expense",
+          "sourceSystem": "quickbooks-online"
+        }
+      ],
+      "explanation": "Inactive QuickBooks account detected.",
+      "fixLocation": "quickbooks",
+      "issueClass": "source_data_quality",
+      "issueKey": "issue_08e88821fdd54ab5",
+      "occurrenceId": "occurrence_dd271f4068ca6122",
+      "owner": "bookkeeper",
+      "recommendedAction": "Review whether this account should be imported, archived, or merged in Xero.",
+      "resolutionEvidence": [],
+      "ruleCode": "INACTIVE_ACCOUNT",
+      "ruleVersion": "1.0.0",
+      "severity": "medium",
+      "status": "open",
+      "title": "Inactive account",
+      "workflowImpact": "review_required"
+    },
+    {
+      "affectedRecords": [
+        {
+          "label": "INV-1001",
+          "sourceId": "invoice_1",
+          "sourceSystem": "quickbooks-online",
+          "sourceType": "invoice"
+        },
+        {
+          "label": "INV-1001",
+          "sourceId": "invoice_2",
+          "sourceSystem": "quickbooks-online",
+          "sourceType": "invoice"
+        }
+      ],
+      "businessImpact": "Affected records may not migrate or reconcile cleanly.",
+      "category": "transaction_quality",
+      "confidence": 1,
+      "estimatedEffort": "Source System Change",
+      "evidence": [
+        {
+          "evidenceId": "evidence_8f3b667565dd02b9",
+          "evidenceType": "source_record",
+          "label": "INV-1001",
+          "sourceRecordId": "invoice_2",
+          "sourceSystem": "quickbooks-online"
+        },
+        {
+          "evidenceId": "evidence_d1eec048700978f0",
+          "evidenceType": "source_record",
+          "label": "INV-1001",
+          "sourceRecordId": "invoice_1",
+          "sourceSystem": "quickbooks-online"
+        },
+        {
+          "evidenceId": "evidence_e30bf6206aa85914",
+          "evidenceType": "rule_signal",
+          "label": "Deterministic rule DUPLICATE_INVOICE_NUMBER",
+          "sourceSystem": "preconfin"
+        }
+      ],
+      "explanation": "INV-1001 appears on more than one invoice.",
+      "fixLocation": "quickbooks",
+      "issueClass": "source_data_quality",
+      "issueKey": "issue_0e3501f3bf2d54af",
+      "occurrenceId": "occurrence_56687ce8608dc3ce",
+      "owner": "bookkeeper",
+      "recommendedAction": "Resolve duplicate document numbers before importing to Xero to avoid import conflicts.",
+      "resolutionEvidence": [],
+      "ruleCode": "DUPLICATE_INVOICE_NUMBER",
+      "ruleVersion": "1.0.0",
+      "severity": "medium",
+      "status": "open",
+      "title": "Duplicate invoice number",
+      "workflowImpact": "review_required"
+    },
+    {
+      "affectedRecords": [
+        {
+          "label": "Acme Customer",
+          "sourceId": "customer_1",
+          "sourceSystem": "quickbooks-online",
+          "sourceType": "customer"
+        },
+        {
+          "label": "Acme Customer",
+          "sourceId": "customer_duplicate",
+          "sourceSystem": "quickbooks-online",
+          "sourceType": "customer"
+        }
+      ],
+      "businessImpact": "Affected records may not migrate or reconcile cleanly.",
+      "category": "customers",
+      "confidence": 1,
+      "estimatedEffort": "Source System Change",
+      "evidence": [
+        {
+          "evidenceId": "evidence_7492435cdf6a1bfc",
+          "evidenceType": "source_record",
+          "label": "Acme Customer",
+          "sourceRecordId": "customer_1",
+          "sourceSystem": "quickbooks-online"
+        },
+        {
+          "evidenceId": "evidence_c2e5abd2b5565306",
+          "evidenceType": "source_record",
+          "label": "Acme Customer",
+          "sourceRecordId": "customer_duplicate",
+          "sourceSystem": "quickbooks-online"
+        },
+        {
+          "evidenceId": "evidence_d5439dfdbfd75739",
+          "evidenceType": "rule_signal",
+          "label": "Deterministic rule DUPLICATE_CONTACT",
+          "sourceSystem": "preconfin"
+        }
+      ],
+      "explanation": "Acme Customer appears more than once.",
+      "fixLocation": "quickbooks",
+      "issueClass": "source_data_quality",
+      "issueKey": "issue_25051dd13df50961",
+      "occurrenceId": "occurrence_37aa165bbb185507",
+      "owner": "bookkeeper",
+      "recommendedAction": "Merge or rename duplicates before importing to Xero.",
+      "resolutionEvidence": [],
+      "ruleCode": "DUPLICATE_CONTACT",
+      "ruleVersion": "1.0.0",
+      "severity": "medium",
+      "status": "open",
+      "title": "Duplicate contact",
+      "workflowImpact": "review_required"
+    },
+    {
+      "affectedRecords": [
+        {
+          "label": "INV-1001",
+          "sourceId": "invoice_1",
+          "sourceSystem": "quickbooks-online",
+          "sourceType": "invoice"
+        }
+      ],
+      "businessImpact": "Affected records may not migrate or reconcile cleanly.",
+      "category": "chart_of_accounts",
+      "confidence": 1,
+      "estimatedEffort": "Source System Change",
+      "evidence": [
+        {
+          "evidenceId": "evidence_64eb1a158a535215",
+          "evidenceType": "rule_signal",
+          "label": "Deterministic rule MISSING_ACCOUNT_REFERENCE",
+          "sourceSystem": "preconfin"
+        },
+        {
+          "evidenceId": "evidence_d1eec048700978f0",
+          "evidenceType": "source_record",
+          "label": "INV-1001",
+          "sourceRecordId": "invoice_1",
+          "sourceSystem": "quickbooks-online"
+        }
+      ],
+      "explanation": "invoice INV-1001 has a line without an account.",
+      "fixLocation": "quickbooks",
+      "issueClass": "source_data_quality",
+      "issueKey": "issue_a2eafe560c315b86",
+      "occurrenceId": "occurrence_004243e48f57aaca",
+      "owner": "bookkeeper",
+      "recommendedAction": "Assign an account to every transaction line before export.",
+      "resolutionEvidence": [],
+      "ruleCode": "MISSING_ACCOUNT_REFERENCE",
+      "ruleVersion": "1.0.0",
+      "severity": "high",
+      "status": "open",
+      "title": "Missing account reference",
+      "workflowImpact": "action_required"
+    },
+    {
+      "affectedRecords": [
+        {
+          "label": "Operating Expense",
+          "sourceId": "acct_expense",
+          "sourceSystem": "quickbooks-online",
+          "sourceType": "account"
+        }
+      ],
+      "businessImpact": "Affected records may not migrate or reconcile cleanly.",
+      "category": "chart_of_accounts",
+      "confidence": 1,
+      "estimatedEffort": "Source System Change",
+      "evidence": [
+        {
+          "evidenceId": "evidence_6a93864c5fd6f1a6",
+          "evidenceType": "rule_signal",
+          "label": "Deterministic rule INACTIVE_ACCOUNT_USED",
+          "sourceSystem": "preconfin"
+        },
+        {
+          "evidenceId": "evidence_ea3cc16ff39bd3eb",
+          "evidenceType": "source_record",
+          "label": "Operating Expense",
+          "sourceRecordId": "acct_expense",
+          "sourceSystem": "quickbooks-online"
+        }
+      ],
+      "explanation": "Operating Expense is inactive but appears in migration data.",
+      "fixLocation": "quickbooks",
+      "issueClass": "source_data_quality",
+      "issueKey": "issue_bb69406b23406bf7",
+      "occurrenceId": "occurrence_3385ba76105e6ee0",
+      "owner": "bookkeeper",
+      "recommendedAction": "Reactivate, map, or exclude this record before import.",
+      "resolutionEvidence": [],
+      "ruleCode": "INACTIVE_ACCOUNT_USED",
+      "ruleVersion": "1.0.0",
+      "severity": "medium",
+      "status": "open",
+      "title": "Inactive account used",
+      "workflowImpact": "review_required"
+    },
+    {
+      "affectedRecords": [
+        {
+          "label": "INV-1001",
+          "sourceId": "invoice_1",
+          "sourceSystem": "quickbooks-online",
+          "sourceType": "invoice"
+        }
+      ],
+      "businessImpact": "Financial totals or allocations may be unreliable until this is resolved.",
+      "category": "transaction_quality",
+      "confidence": 1,
+      "estimatedEffort": "Accountant Review",
+      "evidence": [
+        {
+          "evidenceId": "evidence_d17c986c5966a5a0",
+          "evidenceType": "rule_signal",
+          "label": "Deterministic rule INVOICE_TOTAL_MISMATCH",
+          "sourceSystem": "preconfin"
+        },
+        {
+          "evidenceId": "evidence_d1eec048700978f0",
+          "evidenceType": "source_record",
+          "label": "INV-1001",
+          "sourceRecordId": "invoice_1",
+          "sourceSystem": "quickbooks-online"
+        }
+      ],
+      "explanation": "INV-1001 total does not match line totals plus tax.",
+      "fixLocation": "quickbooks",
+      "issueClass": "financial_integrity",
+      "issueKey": "issue_c0293605b5258609",
+      "occurrenceId": "occurrence_8c08d296b5469854",
+      "owner": "accountant",
+      "recommendedAction": "Review the invoice in QuickBooks before export.",
+      "resolutionEvidence": [],
+      "ruleCode": "INVOICE_TOTAL_MISMATCH",
+      "ruleVersion": "1.0.0",
+      "severity": "high",
+      "status": "open",
+      "title": "Invoice total mismatch",
+      "workflowImpact": "blocks_workflow"
+    },
+    {
+      "affectedRecords": [
+        {
+          "label": "BILL-1001",
+          "sourceId": "bill_1",
+          "sourceSystem": "quickbooks-online",
+          "sourceType": "bill"
+        }
+      ],
+      "businessImpact": "Affected records may not migrate or reconcile cleanly.",
+      "category": "vendors",
+      "confidence": 1,
+      "estimatedEffort": "Source System Change",
+      "evidence": [
+        {
+          "evidenceId": "evidence_d74d45e67b8789f2",
+          "evidenceType": "source_record",
+          "label": "BILL-1001",
+          "sourceRecordId": "bill_1",
+          "sourceSystem": "quickbooks-online"
+        },
+        {
+          "evidenceId": "evidence_fa83e31420613540",
+          "evidenceType": "rule_signal",
+          "label": "Deterministic rule MISSING_SUPPLIER_REFERENCE",
+          "sourceSystem": "preconfin"
+        }
+      ],
+      "explanation": "BILL-1001 does not reference an extracted supplier.",
+      "fixLocation": "quickbooks",
+      "issueClass": "source_data_quality",
+      "issueKey": "issue_cff76547f5a1436b",
+      "occurrenceId": "occurrence_11ccdf6ff4774b53",
+      "owner": "bookkeeper",
+      "recommendedAction": "Repair the supplier reference before export.",
+      "resolutionEvidence": [],
+      "ruleCode": "MISSING_SUPPLIER_REFERENCE",
+      "ruleVersion": "1.0.0",
+      "severity": "high",
+      "status": "open",
+      "title": "Missing supplier",
+      "workflowImpact": "action_required"
+    },
+    {
+      "affectedRecords": [
+        {
+          "label": "Operating Expense",
+          "sourceId": "acct_expense",
+          "sourceSystem": "quickbooks-online",
+          "sourceType": "account"
+        },
+        {
+          "label": "Operating Expense",
+          "sourceId": "acct_expense_duplicate",
+          "sourceSystem": "quickbooks-online",
+          "sourceType": "account"
+        }
+      ],
+      "businessImpact": "Affected records may not migrate or reconcile cleanly.",
+      "category": "chart_of_accounts",
+      "confidence": 1,
+      "estimatedEffort": "Source System Change",
+      "evidence": [
+        {
+          "evidenceId": "evidence_1647d4c61740b20c",
+          "evidenceType": "rule_signal",
+          "label": "Deterministic rule DUPLICATE_ACCOUNT",
+          "sourceSystem": "preconfin"
+        },
+        {
+          "evidenceId": "evidence_46e0c66165e07605",
+          "evidenceType": "source_record",
+          "label": "Operating Expense",
+          "sourceRecordId": "acct_expense_duplicate",
+          "sourceSystem": "quickbooks-online"
+        },
+        {
+          "evidenceId": "evidence_ea3cc16ff39bd3eb",
+          "evidenceType": "source_record",
+          "label": "Operating Expense",
+          "sourceRecordId": "acct_expense",
+          "sourceSystem": "quickbooks-online"
+        }
+      ],
+      "explanation": "Operating Expense appears more than once.",
+      "fixLocation": "quickbooks",
+      "issueClass": "source_data_quality",
+      "issueKey": "issue_e4041c5623f38d82",
+      "occurrenceId": "occurrence_dbe35c73ce13ba6f",
+      "owner": "bookkeeper",
+      "recommendedAction": "Merge or rename duplicates before importing to Xero.",
+      "resolutionEvidence": [],
+      "ruleCode": "DUPLICATE_ACCOUNT",
+      "ruleVersion": "1.0.0",
+      "severity": "medium",
+      "status": "open",
+      "title": "Duplicate account",
+      "workflowImpact": "review_required"
+    },
+    {
+      "affectedRecords": [
+        {
+          "label": "JRN-1",
+          "sourceId": "journal_unbalanced",
+          "sourceSystem": "quickbooks-online",
+          "sourceType": "journal"
+        }
+      ],
+      "businessImpact": "Financial totals or allocations may be unreliable until this is resolved.",
+      "category": "transaction_quality",
+      "confidence": 1,
+      "estimatedEffort": "Accountant Review",
+      "evidence": [
+        {
+          "evidenceId": "evidence_990b008c719cb3e0",
+          "evidenceType": "rule_signal",
+          "label": "Deterministic rule UNBALANCED_JOURNAL",
+          "sourceSystem": "preconfin"
+        },
+        {
+          "evidenceId": "evidence_c4f9c8b48872587e",
+          "evidenceType": "source_record",
+          "label": "JRN-1",
+          "sourceRecordId": "journal_unbalanced",
+          "sourceSystem": "quickbooks-online"
+        }
+      ],
+      "explanation": "JRN-1 has debits of 100 and credits of 80.",
+      "fixLocation": "quickbooks",
+      "issueClass": "financial_integrity",
+      "issueKey": "issue_f04937c0e23f454c",
+      "occurrenceId": "occurrence_f28e2bebca339eb7",
+      "owner": "accountant",
+      "recommendedAction": "Correct or exclude unbalanced journal entries before migration.",
+      "resolutionEvidence": [],
+      "ruleCode": "UNBALANCED_JOURNAL",
+      "ruleVersion": "1.0.0",
+      "severity": "high",
+      "status": "open",
+      "title": "Unbalanced journal",
+      "workflowImpact": "blocks_workflow"
+    }
+  ],
+  "generatedAt": "2026-06-30T12:00:00.000Z",
+  "identity": {
+    "assessmentKey": "assessment_d3ba2d974f6c995b",
+    "organizationId": "org_messy_books_company",
+    "reportId": "report_3e138341a6ba68a9"
+  },
+  "lineage": {
+    "assessmentEngineVersion": "1.0.0",
+    "generatedFrom": [
+      "canonical-accounting-snapshot",
+      "migration-plan",
+      "deterministic-rule-catalogue",
+      "financial-controls"
+    ],
+    "inputFingerprint": "bf86610be6848cc7",
+    "normalizationVersion": "qbo-canonical-v1",
+    "snapshotPulledAt": "2026-06-30T11:30:00.000Z",
+    "sourceRecordCounts": {
+      "accounts": 7,
+      "balances": 6,
+      "bills": 1,
+      "contacts": 3,
+      "credits": 0,
+      "currencies": 1,
+      "invoices": 2,
+      "items": 1,
+      "journals": 1,
+      "organization": 1,
+      "payments": 0,
+      "taxCodes": 0,
+      "taxRates": 0,
+      "tracking": 0
+    }
+  },
+  "nextSteps": [
+    {
+      "code": "CONFIRM_PERIOD_AND_BASIS",
+      "dependsOn": [],
+      "description": "Confirm that the assessment period and accounting basis match the migration scope.",
+      "required": true,
+      "sequence": 1,
+      "title": "Confirm reporting period and basis"
+    },
+    {
+      "code": "COMPLETE_CONTROLS",
+      "dependsOn": [
+        "CONFIRM_PERIOD_AND_BASIS"
+      ],
+      "description": "Resolve failed controls and refresh any unavailable required reports.",
+      "required": true,
+      "sequence": 2,
+      "title": "Complete financial controls"
+    },
+    {
+      "code": "RESOLVE_SOURCE_DATA",
+      "dependsOn": [
+        "COMPLETE_CONTROLS"
+      ],
+      "description": "Correct genuine accounting and source-record issues in QuickBooks.",
+      "required": true,
+      "sequence": 3,
+      "title": "Resolve source-data issues"
+    },
+    {
+      "code": "CONFIRM_MAPPINGS",
+      "dependsOn": [
+        "RESOLVE_SOURCE_DATA"
+      ],
+      "description": "Confirm account, tax, and tracking treatment for Xero.",
+      "required": true,
+      "sequence": 4,
+      "title": "Confirm migration decisions"
+    },
+    {
+      "code": "REGENERATE_ASSESSMENT",
+      "dependsOn": [
+        "COMPLETE_CONTROLS",
+        "RESOLVE_SOURCE_DATA",
+        "CONFIRM_MAPPINGS"
+      ],
+      "description": "Run the deterministic assessment again after corrections and decisions.",
+      "required": true,
+      "sequence": 5,
+      "title": "Regenerate the assessment"
+    },
+    {
+      "code": "IMPORT_XERO_DEMO",
+      "dependsOn": [
+        "REGENERATE_ASSESSMENT"
+      ],
+      "description": "Test the reviewed migration files in a disposable Xero organisation.",
+      "required": true,
+      "sequence": 6,
+      "title": "Import into a Xero demo organisation"
+    },
+    {
+      "code": "VERIFY_DESTINATION",
+      "dependsOn": [
+        "IMPORT_XERO_DEMO"
+      ],
+      "description": "Reconcile trial balance, AR, AP, bank, retained earnings, and tax balances before go-live.",
+      "required": true,
+      "sequence": 7,
+      "title": "Verify destination balances"
+    }
+  ],
+  "organization": {
+    "displayName": "Messy Books Company",
+    "id": "org_messy_books_company",
+    "legalName": "Messy Books Company LLC"
+  },
+  "overallStatus": "blocked",
+  "period": {
+    "endDate": "2026-06-30",
+    "startDate": "2026-01-01"
+  },
+  "recommendations": [
+    {
+      "action": "Review and correct the source balances behind the failed controls, then rerun the assessment.",
+      "code": "RESOLVE_FINANCIAL_CONTROLS",
+      "estimatedEffort": "Accountant Review",
+      "fixLocation": "quickbooks",
+      "priority": 1,
+      "reason": "Trial Balance, Accounts Receivable, Accounts Payable, Bank Reconciliation, Retained Earnings, Opening Balances, Closing Balances did not pass deterministic comparison.",
+      "relatedIssueKeys": [
+        "CONTROL_ACCOUNTS_PAYABLE",
+        "CONTROL_ACCOUNTS_RECEIVABLE",
+        "CONTROL_BANK_RECONCILIATION",
+        "CONTROL_CLOSING_BALANCES",
+        "CONTROL_OPENING_BALANCES",
+        "CONTROL_RETAINED_EARNINGS",
+        "CONTROL_TRIAL_BALANCE"
+      ],
+      "title": "Resolve failed financial controls"
+    },
+    {
+      "action": "Correct the affected records in QuickBooks and regenerate the assessment.",
+      "code": "RESOLVE_SOURCE_FINDINGS",
+      "estimatedEffort": "Accountant Review",
+      "fixLocation": "quickbooks",
+      "priority": 2,
+      "reason": "Source corrections are required before the migration package can be finalized.",
+      "relatedIssueKeys": [
+        "issue_08e88821fdd54ab5",
+        "issue_0e3501f3bf2d54af",
+        "issue_25051dd13df50961",
+        "issue_a2eafe560c315b86",
+        "issue_bb69406b23406bf7",
+        "issue_c0293605b5258609",
+        "issue_cff76547f5a1436b",
+        "issue_e4041c5623f38d82",
+        "issue_f04937c0e23f454c"
+      ],
+      "title": "Resolve source-system findings"
+    },
+    {
+      "action": "Review account, tax, and tracking suggestions before generating final Xero files.",
+      "code": "CONFIRM_MIGRATION_DECISIONS",
+      "estimatedEffort": "Manual Mapping",
+      "fixLocation": "xero",
+      "priority": 3,
+      "reason": "Mapping decisions are target-system choices, not accounting defects.",
+      "relatedIssueKeys": [
+        "decision_316fc5943108aade"
+      ],
+      "title": "Confirm migration decisions"
+    }
+  ],
+  "reportVersion": "1.0.0",
+  "ruleVersions": {
+    "AP_AGING_MISMATCH": "1.0.0",
+    "AR_AGING_MISMATCH": "1.0.0",
+    "ASSESSMENT_ENGINE": "1.0.0",
+    "CONTROL_RULES": "1.0.0",
+    "DUPLICATE_ACCOUNT": "1.0.0",
+    "DUPLICATE_CONTACT": "1.0.0",
+    "DUPLICATE_INVOICE_NUMBER": "1.0.0",
+    "DUPLICATE_XERO_ACCOUNT_CODE": "1.0.0",
+    "INACTIVE_ACCOUNT": "1.0.0",
+    "INACTIVE_ACCOUNT_USED": "1.0.0",
+    "INVOICE_TOTAL_MISMATCH": "1.0.0",
+    "MISSING_ACCOUNT_REFERENCE": "1.0.0",
+    "MISSING_SUPPLIER_REFERENCE": "1.0.0",
+    "TRIAL_BALANCE_NOT_ZERO": "1.0.0",
+    "UNBALANCED_JOURNAL": "1.0.0"
+  },
+  "scorecard": {
+    "dataQuality": {
+      "code": "data_quality",
+      "explanation": "Measures source-record completeness, references, duplicates, and transaction quality.",
+      "label": "Data Quality",
+      "score": 40
+    },
+    "evidenceCoverage": {
+      "code": "evidence_coverage",
+      "explanation": "Measures stable source lineage available for assessed records.",
+      "label": "Evidence Coverage",
+      "score": 100
+    },
+    "financialIntegrity": {
+      "code": "financial_integrity",
+      "explanation": "Measures deterministic agreement of core financial totals and controls.",
+      "label": "Financial Integrity",
+      "score": 0
+    },
+    "migrationReadiness": {
+      "code": "migration_readiness",
+      "explanation": "Measures whether blocking issues and migration decisions have been resolved.",
+      "label": "Migration Readiness",
+      "score": 17
+    },
+    "reconciliation": {
+      "code": "reconciliation",
+      "explanation": "Measures agreement across trial balance, receivables, payables, banking, and retained earnings controls.",
+      "label": "Reconciliation",
+      "score": 0
+    }
+  },
+  "sourceSystems": [
+    {
+      "pulledAt": "2026-06-30T11:30:00.000Z",
+      "recordCount": 23,
+      "status": "available",
+      "system": "quickbooks-online"
+    }
+  ],
+  "summary": {
+    "actionRequiredCount": 3,
+    "blockingIssueCount": 9,
+    "decisionCount": 1,
+    "failedControlCount": 7,
+    "informationalCount": 0,
+    "passedControlCount": 2,
+    "primaryRecommendation": "Resolve failed financial controls before continuing.",
+    "reviewItemCount": 5,
+    "unavailableControlCount": 0
+  }
+}

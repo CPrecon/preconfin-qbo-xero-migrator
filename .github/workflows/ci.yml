@@ -14,10 +14,16 @@ jobs:
         with:
           node-version: 22
           cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r packages/financial-assessment-engine/requirements-contract.txt
       - run: npm ci
       - run: npm run format
       - run: npm run lint
       - run: npm run typecheck
       - run: npm run test
+      - run: npm run test:contract
       - run: npm run build
       - run: npm run pages:build:staging -w apps/web
