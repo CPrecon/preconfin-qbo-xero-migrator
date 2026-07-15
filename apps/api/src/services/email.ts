@@ -23,6 +23,7 @@ export class EmailDeliveryError extends Error {
     message: string,
     readonly status?: number,
     readonly code?: string,
+    readonly providerCode?: string,
   ) {
     super(message);
     this.name = "EmailDeliveryError";
@@ -44,6 +45,28 @@ function sanitizedTransportMessage(
     .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, "[email]")
     .replace(/re_[A-Za-z0-9_-]+/g, "[redacted]")
     .slice(0, 240);
+}
+
+async function resendFailure(
+  response: Response,
+  sensitiveValues: readonly string[],
+): Promise<{ providerCode?: string; message?: string }> {
+  try {
+    const payload: unknown = await response.json();
+    if (!payload || typeof payload !== "object") return {};
+    const record = payload as { name?: unknown; message?: unknown };
+    const providerCode =
+      typeof record.name === "string" && /^[a-z0-9_]{1,80}$/.test(record.name)
+        ? record.name
+        : undefined;
+    const message =
+      typeof record.message === "string"
+        ? sanitizedTransportMessage(new Error(record.message), sensitiveValues)
+        : undefined;
+    return { providerCode, message };
+  } catch {
+    return {};
+  }
 }
 
 export class ResendEmailSender implements EmailSender {
@@ -91,10 +114,19 @@ export class ResendEmailSender implements EmailSender {
     }
 
     if (!response.ok) {
+      const failure = await resendFailure(response, [
+        this.apiKey,
+        this.from,
+        message.to,
+        message.replyTo ?? "",
+      ]);
       throw new EmailDeliveryError(
-        `Email provider returned HTTP ${response.status}.`,
+        `Email provider returned HTTP ${response.status}${
+          failure.message ? `: ${failure.message}` : "."
+        }`,
         response.status,
         "EMAIL_PROVIDER_REJECTED",
+        failure.providerCode,
       );
     }
 

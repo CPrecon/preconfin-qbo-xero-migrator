@@ -99,7 +99,7 @@ describe("ResendEmailSender", () => {
     );
   });
 
-  it("returns a sanitized provider error without response content", async () => {
+  it("returns actionable provider errors without sensitive response content", async () => {
     const sender = new ResendEmailSender(
       "re_secret",
       "PreconFin <hello@preconfin.com>",
@@ -107,6 +107,7 @@ describe("ResendEmailSender", () => {
       vi.fn().mockResolvedValue(
         new Response(
           JSON.stringify({
+            name: "validation_error",
             message: "operator@example.com and re_secret were rejected",
           }),
           { status: 422 },
@@ -126,9 +127,11 @@ describe("ResendEmailSender", () => {
     ).rejects.toEqual(
       expect.objectContaining({
         name: "EmailDeliveryError",
-        message: "Email provider returned HTTP 422.",
+        message:
+          "Email provider returned HTTP 422: [redacted] and [redacted] were rejected",
         status: 422,
         code: "EMAIL_PROVIDER_REJECTED",
+        providerCode: "validation_error",
       } satisfies Partial<EmailDeliveryError>),
     );
   });

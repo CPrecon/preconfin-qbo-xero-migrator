@@ -65,6 +65,7 @@ function safeEmailFailure(error: unknown): Record<string, unknown> {
       exceptionMessage: error.message,
       status: error.status,
       code: error.code,
+      providerCode: error.providerCode,
     };
   }
   return {
