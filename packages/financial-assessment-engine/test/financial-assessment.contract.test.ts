@@ -8,6 +8,7 @@ import {
   createFinancialAssessment,
   financialAssessmentV1Schema,
   stableStringify,
+  toPublicMigrationAssessment,
   type FinancialAssessmentV1,
 } from "../src/index.js";
 import {
@@ -136,6 +137,24 @@ describe("FinancialAssessmentV1 golden conformance", () => {
     expect(generate("migration-edge-cases").overallStatus).toBe("incomplete");
   });
 
+  it("presents mapping-only work as Ready with Review, never Blocked", () => {
+    const assessment = generate("clean-company");
+    const report = toPublicMigrationAssessment(assessment);
+
+    expect(assessment.decisions.length).toBeGreaterThan(0);
+    expect(assessment.summary.blockingIssueCount).toBe(0);
+    expect(assessment.summary.actionRequiredCount).toBe(0);
+    expect(report.readiness).toMatchObject({
+      state: "ready_with_review",
+      label: "Ready with Review",
+    });
+    expect(report.scores).toEqual({
+      financialHealth: assessment.scorecard.financialIntegrity.score,
+      migrationReadiness: assessment.scorecard.migrationReadiness.score,
+      manualReviewRequired: assessment.decisions.length,
+    });
+  });
+
   it("limits mapping decisions to migration readiness scoring", () => {
     const assessment = generate("manufacturing-company");
     expect(assessment.decisions.length).toBeGreaterThan(0);
@@ -143,6 +162,68 @@ describe("FinancialAssessmentV1 golden conformance", () => {
     expect(assessment.scorecard.reconciliation.score).toBe(100);
     expect(assessment.scorecard.dataQuality.score).toBe(100);
     expect(assessment.scorecard.migrationReadiness.score).toBeLessThan(100);
+  });
+
+  it("adds deterministic priority, effort, impact, and timing to recommendations", () => {
+    const assessment = generate("messy-books");
+    expect(assessment.recommendations.length).toBeGreaterThan(0);
+    expect(
+      assessment.recommendations.every(
+        (recommendation) =>
+          recommendation.priority > 0 &&
+          Boolean(recommendation.businessImpact) &&
+          Boolean(recommendation.expectedCompletionTime),
+      ),
+    ).toBe(true);
+    expect(assessment.recommendations.map((item) => item.priority)).toEqual(
+      assessment.recommendations.map((_, index) => index + 1),
+    );
+  });
+
+  it("exposes mapping confidence and rationale without source IDs", () => {
+    const report = toPublicMigrationAssessment(generate("clean-company"));
+    expect(report.mappingReview.requiresReview).toBeGreaterThan(0);
+    const reviewMappings = report.mappingReview.mappings.filter(
+      (mapping) => mapping.reviewStatus === "requires_review",
+    );
+    const automaticMappings = report.mappingReview.mappings.filter(
+      (mapping) => mapping.reviewStatus === "automatically_accepted",
+    );
+    expect(reviewMappings).toHaveLength(report.mappingReview.requiresReview);
+    expect(
+      reviewMappings.every((mapping) =>
+        mapping.reason.includes("Review required:"),
+      ),
+    ).toBe(true);
+    expect(automaticMappings).toHaveLength(
+      report.mappingReview.automaticallyAccepted,
+    );
+    expect(
+      report.mappingReview.mappings.every(
+        (mapping) =>
+          mapping.confidencePercentage >= 0 &&
+          mapping.confidencePercentage <= 100 &&
+          mapping.reason.length > 0 &&
+          mapping.target.length > 0,
+      ),
+    ).toBe(true);
+    expect(JSON.stringify(report.mappingReview.mappings)).not.toMatch(
+      /sourceId|decisionKey|occurrenceId/,
+    );
+  });
+
+  it("ends with an actionable migration sequence and no generic consultation step", () => {
+    const report = toPublicMigrationAssessment(generate("clean-company"));
+    expect(report.nextSteps.map((step) => step.title)).toEqual(
+      expect.arrayContaining([
+        "Review mappings",
+        "Generate the migration package",
+        "Import into a Xero demo organisation",
+        "Verify destination balances",
+      ]),
+    );
+    expect(JSON.stringify(report.nextSteps)).not.toMatch(/consultation/i);
+    expect(report.supportRecommended).toBe(false);
   });
 
   it("aggregates one account mapping decision per root account", () => {

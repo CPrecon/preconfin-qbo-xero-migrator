@@ -11,13 +11,25 @@ function byNameMapping(
   sourceName: string,
   targetType: string,
   notes: string[] = [],
+  reviewStatus: MappingResult["reviewStatus"] = "automatically_accepted",
+  rationale = "The source record has one standard Xero treatment.",
 ): MappingResult {
+  const confidencePercentage =
+    reviewStatus === "requires_review" ? 75 : notes.length ? 95 : 99;
   return {
     sourceId,
     sourceName,
     targetType,
     targetName: sourceName,
-    confidence: notes.length ? "medium" : "high",
+    confidence:
+      confidencePercentage >= 90
+        ? "high"
+        : confidencePercentage >= 70
+          ? "medium"
+          : "low",
+    confidencePercentage,
+    rationale,
+    reviewStatus,
     notes,
   };
 }
@@ -49,11 +61,18 @@ export function createMigrationPlan(
     accountScope: accountResult.accountScope,
     accountScopeSummary: accountResult.accountScopeSummary,
     taxMappings: (snapshot.taxCodes ?? snapshot.taxRates).map((tax) =>
-      byNameMapping(tax.id, tax.name, "TaxRate", [
-        "rate" in tax
-          ? `Rate: ${tax.rate}%`
-          : `Sales rate: ${tax.salesRate ?? 0}%`,
-      ]),
+      byNameMapping(
+        tax.id,
+        tax.name,
+        "TaxRate",
+        [
+          "rate" in tax
+            ? `Rate: ${tax.rate}%`
+            : `Sales rate: ${tax.salesRate ?? 0}%`,
+        ],
+        "requires_review",
+        "The QuickBooks tax rate must be matched to an available Xero tax rate.",
+      ),
     ),
     contactMappings: snapshot.contacts.map((contact) =>
       byNameMapping(
@@ -67,10 +86,22 @@ export function createMigrationPlan(
         item.id,
         item.name,
         item.isInventory ? "InventoryItemReview" : "Item",
+        [],
+        item.isInventory ? "requires_review" : "automatically_accepted",
+        item.isInventory
+          ? "Tracked inventory treatment requires confirmation in Xero."
+          : "The QuickBooks product or service has a standard Xero item treatment.",
       ),
     ),
     trackingMappings: snapshot.tracking.map((tracking) =>
-      byNameMapping(tracking.id, tracking.option, tracking.name),
+      byNameMapping(
+        tracking.id,
+        tracking.option,
+        tracking.name,
+        [],
+        "requires_review",
+        "QuickBooks classes and locations require a confirmed Xero tracking-category design.",
+      ),
     ),
     exceptions,
     generatedAt: new Date().toISOString(),

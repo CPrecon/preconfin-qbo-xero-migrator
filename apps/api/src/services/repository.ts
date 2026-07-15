@@ -1,5 +1,11 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { hashToken, randomToken } from "../security/tokens.js";
+import type {
+  LeadDeliveryUpdate,
+  LeadEmailKind,
+  LeadRecord,
+  LeadSubmission,
+} from "./lead-service.js";
 
 export interface OAuthStateRecord {
   nonce: string;
@@ -381,21 +387,47 @@ export class Repository {
     return data.signedUrl;
   }
 
-  async saveLead(input: {
-    email: string;
-    name?: string;
-    company?: string;
-    jobId?: string;
-    source: string;
-  }): Promise<void> {
-    const { error } = await this.supabase.from("migration_leads").insert({
-      email: input.email,
-      name: input.name,
-      company: input.company,
-      migration_job_id: input.jobId,
-      source: input.source,
-    });
-    if (error) throw error;
+  async saveLead(input: LeadSubmission): Promise<LeadRecord> {
+    const result = await this.supabase
+      .from("migration_leads")
+      .insert({
+        email: input.email,
+        name: input.name,
+        company: input.company,
+        migration_job_id: input.jobId,
+        source: input.source,
+      })
+      .select("id")
+      .single();
+    if (result.error) {
+      throwRepositoryError("migration_leads", "insert", result.error, result);
+    }
+    return { id: result.data.id };
+  }
+
+  async updateLeadDelivery(
+    leadId: string,
+    kind: LeadEmailKind,
+    update: LeadDeliveryUpdate,
+  ): Promise<void> {
+    const prefix = kind === "admin" ? "admin_email" : "confirmation_email";
+    const result = await this.supabase
+      .from("migration_leads")
+      .update({
+        [`${prefix}_status`]: update.status,
+        [`${prefix}_attempted_at`]: update.attemptedAt,
+        [`${prefix}_provider_message_id`]: update.providerMessageId ?? null,
+        [`${prefix}_failure_code`]: update.failureCode ?? null,
+      })
+      .eq("id", leadId);
+    if (result.error) {
+      throwRepositoryError(
+        "migration_leads",
+        `update_${kind}_email`,
+        result.error,
+        result,
+      );
+    }
   }
 
   async audit(event: string, payload: Record<string, unknown>): Promise<void> {

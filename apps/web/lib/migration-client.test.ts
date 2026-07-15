@@ -46,6 +46,59 @@ describe("migration client handoff", () => {
     });
   });
 
+  it("passes the sanitized assessment report through without recomputing scores", async () => {
+    const report = {
+      readiness: {
+        state: "ready_with_review",
+        label: "Ready with Review",
+        explanation: "Review mappings.",
+      },
+      scores: {
+        financialHealth: 98,
+        migrationReadiness: 84,
+        manualReviewRequired: 2,
+      },
+      summary: {
+        primaryRecommendation: "Review mappings.",
+        blockingIssueCount: 0,
+        actionRequiredCount: 0,
+        reviewItemCount: 2,
+      },
+      controls: [],
+      recommendations: [],
+      mappingReview: {
+        automaticallyAccepted: 12,
+        requiresReview: 2,
+        excludedUnused: 5,
+        mappings: [],
+      },
+      nextSteps: [],
+      supportRecommended: false,
+    };
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse({ jobId, jobToken }, 201))
+      .mockResolvedValueOnce(
+        jsonResponse({
+          score: 84,
+          readiness: "review_recommended",
+          report,
+        }),
+      );
+
+    const result = await createAndRunMigration({
+      apiUrl: "https://api-migrate.preconfin.com",
+      connectionId: "08305f01-4eb9-483c-9367-54e85ec351f0",
+      connectionToken: "connection-token",
+      fetchImpl,
+      correlationId: "correlation-report",
+      diagnostic: () => undefined,
+    });
+
+    expect(result.result.report).toEqual(report);
+    expect(result.result.report?.scores.financialHealth).toBe(98);
+  });
+
   it("does not call run when the create-job response has no token", async () => {
     const fetchImpl = vi
       .fn()

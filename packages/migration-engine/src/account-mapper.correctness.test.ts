@@ -128,6 +128,54 @@ describe("QBO account mappings", () => {
         expect.objectContaining({ code: "UNSUPPORTED_ACCOUNT_TYPE" }),
       ]),
     );
+    expect(result.mappings[0]).toMatchObject({
+      confidencePercentage: 50,
+      reviewStatus: "requires_review",
+    });
+    expect(result.mappings[0]?.rationale).toMatch(/no single supported/i);
+  });
+
+  it("explains deterministic mappings and identifies manual system-account review", () => {
+    const result = mapAccounts(
+      snapshot([
+        {
+          id: "acct_expense",
+          name: "Office expense",
+          classification: "expense",
+          sourceAccountType: "Expense",
+          code: "600",
+          active: true,
+          currentBalance: { amount: 10, currency: "USD" },
+          source: source("expense"),
+        },
+        {
+          id: "acct_retained",
+          name: "Retained Earnings",
+          classification: "equity",
+          sourceAccountType: "Equity",
+          sourceAccountSubType: "RetainedEarnings",
+          code: "320",
+          active: true,
+          currentBalance: { amount: 100, currency: "USD" },
+          source: source("retained"),
+        },
+      ]),
+    );
+
+    expect(
+      result.mappings.find((mapping) => mapping.sourceId === "acct_expense"),
+    ).toMatchObject({
+      confidencePercentage: 99,
+      reviewStatus: "automatically_accepted",
+      rationale: expect.stringMatching(/one standard Xero EXPENSE treatment/i),
+    });
+    expect(
+      result.mappings.find((mapping) => mapping.sourceId === "acct_retained"),
+    ).toMatchObject({
+      confidencePercentage: 99,
+      reviewStatus: "requires_review",
+      rationale: "Retained earnings is a standard Xero system account.",
+    });
   });
 
   it("does not duplicate source-data findings in the migration plan", () => {

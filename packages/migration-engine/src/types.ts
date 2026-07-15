@@ -7,6 +7,9 @@ export interface MappingResult {
   targetCode?: string;
   targetName: string;
   confidence: "high" | "medium" | "low";
+  confidencePercentage?: number;
+  rationale?: string;
+  reviewStatus?: "automatically_accepted" | "requires_review";
   notes: string[];
 }
 

@@ -1,15 +1,12 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowRight, Download, Loader2, Trash2 } from "lucide-react";
-import { apiUrl, supportUrl } from "../lib/config";
+import type { PublicMigrationAssessment } from "@preconfin/financial-assessment-engine";
+import { apiUrl } from "../lib/config";
 import { track } from "../lib/analytics";
-import {
-  captureAttribution,
-  hasAttribution,
-  withAttribution,
-} from "../lib/attribution";
+import { captureAttribution, hasAttribution } from "../lib/attribution";
+import { AssessmentReport } from "./assessment-report";
 import { LeadForm } from "./lead-form";
 import {
   createAndRunMigration,
@@ -61,6 +58,7 @@ export function MigrationWizard() {
   const [status, setStatus] = useState<WizardStatus>("");
   const [score, setScore] = useState<number | null>(null);
   const [readiness, setReadiness] = useState("");
+  const [report, setReport] = useState<PublicMigrationAssessment | null>(null);
   const [downloads, setDownloads] = useState<DownloadLink[]>([]);
   const [leadSubmitted, setLeadSubmitted] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -146,6 +144,7 @@ export function MigrationWizard() {
 
         setScore(result.score);
         setReadiness(result.readiness);
+        setReport(result.report ?? null);
         setStatus("completed");
         track("migration_scan_completed", {
           source: "migration_wizard",
@@ -200,20 +199,10 @@ export function MigrationWizard() {
     setStatus("");
     setScore(null);
     setReadiness("");
+    setReport(null);
     setDownloads([]);
     setLeadSubmitted(false);
     for (const key of storageKeys) window.sessionStorage.removeItem(key);
-  }
-
-  function openPreconfinConsultation(event: React.MouseEvent) {
-    event.preventDefault();
-    track("preconfin_cta_clicked", {
-      source: "migration_wizard_completion",
-    });
-    window.location.href = withAttribution(
-      supportUrl,
-      "qbo_xero_migrator_completion",
-    );
   }
 
   return (
@@ -302,7 +291,8 @@ export function MigrationWizard() {
         </ol>
         {readiness && (
           <p className="mt-4 rounded-md bg-[#e9f5f3] p-3 text-sm font-medium text-teal">
-            Readiness: {readiness.replace("_", " ")}
+            Readiness:{" "}
+            {report?.readiness.label ?? readiness.replaceAll("_", " ")}
           </p>
         )}
         {downloads.length > 0 && (
@@ -364,40 +354,12 @@ export function MigrationWizard() {
             </button>
           </div>
         )}
-        {status === "completed" && leadSubmitted && (
-          <div className="mt-8 border-t border-ink/10 pt-6">
-            <h3 className="text-lg font-semibold">
-              Want help reviewing the report?
-            </h3>
-            <p className="mt-2 text-sm leading-6 text-ink/70">
-              PreconFin can help review exceptions, mappings, and next steps
-              before your Xero import.
-            </p>
-            <a
-              href={supportUrl}
-              onClick={openPreconfinConsultation}
-              className="mt-4 inline-flex min-h-11 items-center rounded-full bg-teal px-5 text-sm font-semibold text-white hover:bg-[#185c60]"
-            >
-              Talk to PreconFin
-            </a>
-          </div>
-        )}
         <p className="mt-6 text-xs leading-5 text-ink/50">
           Generated files should be reviewed before import. Test in a Xero demo
           organization first.
         </p>
-        <Link
-          href="/contact"
-          onClick={() =>
-            track("preconfin_cta_clicked", {
-              source: "migration_wizard_contact",
-            })
-          }
-          className="mt-4 inline-flex text-sm font-semibold text-teal"
-        >
-          Talk to PreconFin
-        </Link>
       </section>
+      {report && <AssessmentReport report={report} />}
     </div>
   );
 }

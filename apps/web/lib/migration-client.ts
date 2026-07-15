@@ -19,6 +19,7 @@ export type CreatedMigrationJob = {
 export type MigrationRunResult = {
   score: number;
   readiness: string;
+  report?: PublicMigrationAssessment;
 };
 
 type FetchOptions = {
@@ -171,7 +172,39 @@ export async function createAndRunMigration(
     );
   }
 
-  return { created, result: { score, readiness } };
+  const report = publicReportValue(resultPayload.report);
+  if (resultPayload.report !== undefined && !report) {
+    throw new MigrationClientError(
+      "The migration scan returned an incomplete report. Please retry the scan.",
+      "MIGRATION_REPORT_INVALID",
+      "run_response",
+      correlationId,
+      runResponse.status,
+    );
+  }
+
+  return { created, result: { score, readiness, report } };
+}
+
+function publicReportValue(
+  value: unknown,
+): PublicMigrationAssessment | undefined {
+  if (!value || typeof value !== "object") return undefined;
+  const report = value as Record<string, unknown>;
+  if (
+    !report.readiness ||
+    typeof report.readiness !== "object" ||
+    !report.scores ||
+    typeof report.scores !== "object" ||
+    !Array.isArray(report.controls) ||
+    !Array.isArray(report.recommendations) ||
+    !report.mappingReview ||
+    typeof report.mappingReview !== "object" ||
+    !Array.isArray(report.nextSteps)
+  ) {
+    return undefined;
+  }
+  return value as PublicMigrationAssessment;
 }
 
 export function createInFlightGuard() {
@@ -262,3 +295,4 @@ async function readOptionalJsonObject(
 function stringValue(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";
 }
+import type { PublicMigrationAssessment } from "@preconfin/financial-assessment-engine";

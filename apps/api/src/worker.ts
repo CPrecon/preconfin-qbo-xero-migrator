@@ -14,6 +14,8 @@ import {
   IntuitOAuthClient,
   IntuitOAuthError,
 } from "./services/intuit-oauth.js";
+import { createEmailSender } from "./services/email.js";
+import { LeadService, leadSubmissionSchema } from "./services/lead-service.js";
 import { MigrationService } from "./services/migration-service.js";
 import { Repository, RepositoryError } from "./services/repository.js";
 
@@ -33,6 +35,9 @@ const requiredRuntimeBindings = [
   "OAUTH_STATE_SIGNING_SECRET",
   "SUPABASE_URL",
   "SUPABASE_SERVICE_ROLE_KEY",
+  "RESEND_API_KEY",
+  "CONTACT_ADMIN_EMAIL",
+  "CONTACT_FROM_EMAIL",
 ] as const;
 
 const oauthCallbackPath = "/api/oauth/qbo/callback";
@@ -42,6 +47,7 @@ type WorkerContext = {
   repo: Repository;
   oauth: IntuitOAuthClient;
   migrationService: MigrationService;
+  leadService: LeadService;
   workerVersion?: string;
 };
 
@@ -56,11 +62,15 @@ async function context(envBindings: WorkerBindings): Promise<WorkerContext> {
     );
     const env = loadEnv({ ...process.env, ...stringBindings });
     const repo = new Repository(createSupabase(env));
+    const emailSender = createEmailSender(env);
     contextPromise = Promise.resolve({
       env,
       repo,
       oauth: new IntuitOAuthClient(env),
       migrationService: new MigrationService(env, repo),
+      leadService: new LeadService(env, repo, emailSender, (event, details) =>
+        console.error(event, details),
+      ),
       workerVersion: envBindings.CF_VERSION_METADATA?.id,
     });
   }
@@ -218,7 +228,8 @@ async function handleRequest(
   request: Request,
   ctx: WorkerContext,
 ): Promise<Response> {
-  const { env, repo, oauth, migrationService, workerVersion } = ctx;
+  const { env, repo, oauth, migrationService, leadService, workerVersion } =
+    ctx;
   const url = new URL(request.url);
   const path = url.pathname;
 
@@ -400,21 +411,8 @@ async function handleRequest(
   }
 
   if (request.method === "POST" && path === "/api/leads") {
-    const body = z
-      .object({
-        email: z.string().email(),
-        name: z.string().optional(),
-        company: z.string().optional(),
-        jobId: z.string().uuid().optional(),
-        source: z.string().default("migration-report"),
-      })
-      .parse(await readJson(request));
-    await repo.saveLead(body);
-    await repo.audit("lead_captured", {
-      jobId: body.jobId,
-      source: body.source,
-    });
-    return json({ ok: true }, 201);
+    const body = leadSubmissionSchema.parse(await readJson(request));
+    return json(await leadService.submit(body), 201);
   }
 
   return json({ error: "Not found" }, 404);

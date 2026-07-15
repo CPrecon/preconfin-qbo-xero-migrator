@@ -74,6 +74,9 @@ export type EstimatedEffort =
   | "Manual Mapping"
   | "Accountant Review";
 
+export type ExpectedCompletionTime =
+  "2-5 minutes" | "5-15 minutes" | "15-30 minutes" | "15-60 minutes";
+
 export interface AssessmentIdentity {
   readonly reportId: string;
   readonly assessmentKey: string;
@@ -281,6 +284,13 @@ export interface AssessmentAccountScope {
   readonly disposition: AssessmentAccountDisposition;
   readonly relevanceReasons: readonly AssessmentAccountRelevanceReason[];
   readonly decisionReason?: string;
+  readonly displayName?: string;
+  readonly targetType?: string;
+  readonly targetCode?: string;
+  readonly targetName?: string;
+  readonly confidencePercentage?: number;
+  readonly rationale?: string;
+  readonly reviewStatus?: "automatically_accepted" | "requires_review";
   readonly evidence: AssessmentAccountScopeEvidence;
 }
 
@@ -305,6 +315,8 @@ export interface AssessmentRecommendation {
   readonly relatedIssueKeys: readonly string[];
   readonly estimatedEffort: EstimatedEffort;
   readonly fixLocation: FixLocation;
+  readonly businessImpact?: string;
+  readonly expectedCompletionTime?: ExpectedCompletionTime;
 }
 
 export interface AssessmentNextStep {

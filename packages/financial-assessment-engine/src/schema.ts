@@ -292,6 +292,15 @@ const accountScopeSchema = z
       ]),
     ),
     decisionReason: z.string().min(1).optional(),
+    displayName: z.string().min(1).optional(),
+    targetType: z.string().min(1).optional(),
+    targetCode: z.string().min(1).optional(),
+    targetName: z.string().min(1).optional(),
+    confidencePercentage: percentageSchema.optional(),
+    rationale: z.string().min(1).optional(),
+    reviewStatus: z
+      .enum(["automatically_accepted", "requires_review"])
+      .optional(),
     evidence: accountScopeEvidenceSchema,
   })
   .strict();
@@ -391,6 +400,15 @@ export const financialAssessmentV1Schema: z.ZodType<FinancialAssessmentV1> = z
           relatedIssueKeys: z.array(z.string().min(1)),
           estimatedEffort: effortSchema,
           fixLocation: fixLocationSchema,
+          businessImpact: z.string().min(1).optional(),
+          expectedCompletionTime: z
+            .enum([
+              "2-5 minutes",
+              "5-15 minutes",
+              "15-30 minutes",
+              "15-60 minutes",
+            ])
+            .optional(),
         })
         .strict(),
     ),

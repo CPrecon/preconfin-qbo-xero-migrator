@@ -1,5 +1,9 @@
 import { normalizeQboDataset } from "@preconfin/canonical-model";
-import { createFinancialAssessment } from "@preconfin/financial-assessment-engine";
+import {
+  createFinancialAssessment,
+  toPublicMigrationAssessment,
+  type PublicMigrationAssessment,
+} from "@preconfin/financial-assessment-engine";
 import { createMigrationPlan } from "@preconfin/migration-engine";
 import { generateMigrationHealthPdf } from "@preconfin/pdf-report";
 import { toLegacyValidationReport } from "@preconfin/validation-engine";
@@ -126,7 +130,11 @@ export class MigrationService {
     jobId: string,
     jobToken: string,
     executionContext: MigrationExecutionContext = {},
-  ): Promise<{ score: number; readiness: string }> {
+  ): Promise<{
+    score: number;
+    readiness: string;
+    report: PublicMigrationAssessment;
+  }> {
     const startedAt = Date.now();
     let stage: MigrationExecutionStage = "connection_load";
     let sourceOperation = "repository.getJob";
@@ -223,6 +231,7 @@ export class MigrationService {
         snapshot,
         plan,
         validation,
+        assessment,
       });
 
       const migrationPackage = await createMigrationPackage(
@@ -307,6 +316,7 @@ export class MigrationService {
         readinessStatus: assessment.overallStatus,
       });
       sourceOperation = "repository.audit:migration_job_completed";
+      const publicReport = toPublicMigrationAssessment(assessment);
       await this.repo.audit("migration_job_completed", {
         jobId: job.id,
         score: assessment.scorecard.migrationReadiness.score,
@@ -315,6 +325,7 @@ export class MigrationService {
       return {
         score: assessment.scorecard.migrationReadiness.score,
         readiness: assessment.overallStatus,
+        report: publicReport,
       };
     } catch (error) {
       this.diagnosticLogger("migration_scan_failed", {

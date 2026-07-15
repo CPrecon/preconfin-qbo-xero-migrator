@@ -1,7 +1,9 @@
 {
   "accountScope": [
     {
+      "confidencePercentage": 99,
       "decisionReason": "Confirm the destination Xero accounts-payable system account.",
+      "displayName": "Accounts Payable",
       "disposition": "decision_required",
       "evidence": {
         "active": true,
@@ -21,16 +23,23 @@
         "transactionCount": 0,
         "unresolvedRelationshipCount": 0
       },
+      "rationale": "Accounts payable is a standard Xero system account.",
       "relevanceReasons": [
         "non_zero_conversion_balance",
         "non_zero_closing_balance",
         "open_document_dependency",
         "required_system_account"
       ],
-      "sourceId": "acct_ap"
+      "reviewStatus": "requires_review",
+      "sourceId": "acct_ap",
+      "targetCode": "2000",
+      "targetName": "Accounts Payable",
+      "targetType": "CURRLIAB"
     },
     {
+      "confidencePercentage": 99,
       "decisionReason": "Confirm the destination Xero accounts-receivable system account.",
+      "displayName": "Accounts Receivable",
       "disposition": "decision_required",
       "evidence": {
         "active": true,
@@ -50,15 +59,22 @@
         "transactionCount": 0,
         "unresolvedRelationshipCount": 0
       },
+      "rationale": "Accounts receivable is a standard Xero system account.",
       "relevanceReasons": [
         "non_zero_conversion_balance",
         "non_zero_closing_balance",
         "open_document_dependency",
         "required_system_account"
       ],
-      "sourceId": "acct_ar"
+      "reviewStatus": "requires_review",
+      "sourceId": "acct_ar",
+      "targetCode": "1100",
+      "targetName": "Accounts Receivable",
+      "targetType": "CURRENT"
     },
     {
+      "confidencePercentage": 99,
+      "displayName": "Operating Bank",
       "disposition": "auto_mapped",
       "evidence": {
         "active": true,
@@ -76,15 +92,22 @@
         "transactionCount": 1,
         "unresolvedRelationshipCount": 0
       },
+      "rationale": "QuickBooks Bank has one standard Xero BANK treatment.",
       "relevanceReasons": [
         "non_zero_conversion_balance",
         "non_zero_closing_balance",
         "period_activity",
         "exported_record_dependency"
       ],
-      "sourceId": "acct_bank"
+      "reviewStatus": "automatically_accepted",
+      "sourceId": "acct_bank",
+      "targetCode": "1000",
+      "targetName": "Operating Bank",
+      "targetType": "BANK"
     },
     {
+      "confidencePercentage": 99,
+      "displayName": "Operating Expense",
       "disposition": "auto_mapped",
       "evidence": {
         "active": false,
@@ -102,6 +125,7 @@
         "transactionCount": 1,
         "unresolvedRelationshipCount": 0
       },
+      "rationale": "QuickBooks Expense has one standard Xero EXPENSE treatment.",
       "relevanceReasons": [
         "non_zero_conversion_balance",
         "non_zero_closing_balance",
@@ -110,9 +134,15 @@
         "item_dependency",
         "exported_record_dependency"
       ],
-      "sourceId": "acct_expense"
+      "reviewStatus": "automatically_accepted",
+      "sourceId": "acct_expense",
+      "targetCode": "5000",
+      "targetName": "Operating Expense",
+      "targetType": "EXPENSE"
     },
     {
+      "confidencePercentage": 99,
+      "displayName": "Operating Expense",
       "disposition": "excluded_unused_account",
       "evidence": {
         "active": true,
@@ -130,11 +160,18 @@
         "transactionCount": 0,
         "unresolvedRelationshipCount": 0
       },
+      "rationale": "QuickBooks Expense has one standard Xero EXPENSE treatment.",
       "relevanceReasons": [],
-      "sourceId": "acct_expense_duplicate"
+      "reviewStatus": "automatically_accepted",
+      "sourceId": "acct_expense_duplicate",
+      "targetCode": "5000",
+      "targetName": "Operating Expense",
+      "targetType": "EXPENSE"
     },
     {
+      "confidencePercentage": 99,
       "decisionReason": "Confirm the destination Xero retained-earnings system account.",
+      "displayName": "Retained Earnings",
       "disposition": "decision_required",
       "evidence": {
         "active": true,
@@ -154,14 +191,21 @@
         "transactionCount": 0,
         "unresolvedRelationshipCount": 0
       },
+      "rationale": "Retained earnings is a standard Xero system account.",
       "relevanceReasons": [
         "non_zero_conversion_balance",
         "non_zero_closing_balance",
         "required_system_account"
       ],
-      "sourceId": "acct_retained"
+      "reviewStatus": "requires_review",
+      "sourceId": "acct_retained",
+      "targetCode": "3200",
+      "targetName": "Retained Earnings",
+      "targetType": "EQUITY"
     },
     {
+      "confidencePercentage": 99,
+      "displayName": "Service Revenue",
       "disposition": "auto_mapped",
       "evidence": {
         "active": true,
@@ -179,6 +223,7 @@
         "transactionCount": 2,
         "unresolvedRelationshipCount": 0
       },
+      "rationale": "QuickBooks Income has one standard Xero REVENUE treatment.",
       "relevanceReasons": [
         "non_zero_conversion_balance",
         "non_zero_closing_balance",
@@ -187,7 +232,11 @@
         "item_dependency",
         "exported_record_dependency"
       ],
-      "sourceId": "acct_revenue"
+      "reviewStatus": "automatically_accepted",
+      "sourceId": "acct_revenue",
+      "targetCode": "4000",
+      "targetName": "Service Revenue",
+      "targetType": "REVENUE"
     }
   ],
   "accountScopeSummary": {
@@ -574,7 +623,7 @@
       ],
       "businessImpact": "The migration cannot be finalized until the target treatment is confirmed.",
       "category": "migration_mapping",
-      "confidence": 0.9,
+      "confidence": 0.99,
       "decisionKey": "decision_5d2e5d0963af7d21",
       "estimatedEffort": "Manual Mapping",
       "evidence": [
@@ -592,7 +641,7 @@
           "sourceSystem": "quickbooks-online"
         }
       ],
-      "explanation": "Confirm the destination Xero accounts-receivable system account.",
+      "explanation": "Accounts receivable is a standard Xero system account. Confirm the destination Xero accounts-receivable system account.",
       "fixLocation": "xero",
       "issueClass": "migration_decision",
       "occurrenceId": "occurrence_986d267ce5309d50",
@@ -615,7 +664,7 @@
       ],
       "businessImpact": "The migration cannot be finalized until the target treatment is confirmed.",
       "category": "migration_mapping",
-      "confidence": 0.9,
+      "confidence": 0.99,
       "decisionKey": "decision_8120eb6f0d98fbdb",
       "estimatedEffort": "Manual Mapping",
       "evidence": [
@@ -633,7 +682,7 @@
           "sourceSystem": "quickbooks-online"
         }
       ],
-      "explanation": "Confirm the destination Xero accounts-payable system account.",
+      "explanation": "Accounts payable is a standard Xero system account. Confirm the destination Xero accounts-payable system account.",
       "fixLocation": "xero",
       "issueClass": "migration_decision",
       "occurrenceId": "occurrence_e1817c915db6b109",
@@ -656,7 +705,7 @@
       ],
       "businessImpact": "The migration cannot be finalized until the target treatment is confirmed.",
       "category": "migration_mapping",
-      "confidence": 0.9,
+      "confidence": 0.99,
       "decisionKey": "decision_fa3c972ca1c9f898",
       "estimatedEffort": "Manual Mapping",
       "evidence": [
@@ -674,7 +723,7 @@
           "sourceSystem": "quickbooks-online"
         }
       ],
-      "explanation": "Confirm the destination Xero retained-earnings system account.",
+      "explanation": "Retained earnings is a standard Xero system account. Confirm the destination Xero retained-earnings system account.",
       "fixLocation": "xero",
       "issueClass": "migration_decision",
       "occurrenceId": "occurrence_92dcc87582d03ba9",
@@ -1103,7 +1152,7 @@
   "identity": {
     "assessmentKey": "assessment_d3ba2d974f6c995b",
     "organizationId": "org_messy_books_company",
-    "reportId": "report_21afc6be6d6c70ea"
+    "reportId": "report_2bb787c3e63fb79f"
   },
   "lineage": {
     "assessmentEngineVersion": "1.0.0",
@@ -1113,7 +1162,7 @@
       "deterministic-rule-catalogue",
       "financial-controls"
     ],
-    "inputFingerprint": "908e4bad54f190e1",
+    "inputFingerprint": "a1345495202fdbb9",
     "normalizationVersion": "qbo-canonical-v1",
     "snapshotPulledAt": "2026-06-30T11:30:00.000Z",
     "sourceRecordCounts": {
@@ -1170,24 +1219,24 @@
       "description": "Confirm account, tax, and tracking treatment for Xero.",
       "required": true,
       "sequence": 4,
-      "title": "Confirm migration decisions"
+      "title": "Review mappings"
     },
     {
-      "code": "REGENERATE_ASSESSMENT",
+      "code": "GENERATE_MIGRATION_PACKAGE",
       "dependsOn": [
         "COMPLETE_CONTROLS",
         "RESOLVE_SOURCE_DATA",
         "CONFIRM_MAPPINGS"
       ],
-      "description": "Run the deterministic assessment again after corrections and decisions.",
+      "description": "Generate the reviewed Xero-ready files and Financial Assessment.",
       "required": true,
       "sequence": 5,
-      "title": "Regenerate the assessment"
+      "title": "Generate the migration package"
     },
     {
       "code": "IMPORT_XERO_DEMO",
       "dependsOn": [
-        "REGENERATE_ASSESSMENT"
+        "GENERATE_MIGRATION_PACKAGE"
       ],
       "description": "Test the reviewed migration files in a disposable Xero organisation.",
       "required": true,
@@ -1217,48 +1266,223 @@
   },
   "recommendations": [
     {
-      "action": "Review and correct the source balances behind the failed controls, then rerun the assessment.",
-      "code": "RESOLVE_FINANCIAL_CONTROLS",
-      "estimatedEffort": "Accountant Review",
+      "action": "Compare open bills with the QuickBooks AP aging report and correct the unmatched balance.",
+      "businessImpact": "Supplier balances may be misstated after migration if payables do not agree.",
+      "code": "RESOLVE_CONTROL_ACCOUNTS_PAYABLE",
+      "estimatedEffort": "Quick Review",
+      "expectedCompletionTime": "5-15 minutes",
       "fixLocation": "quickbooks",
       "priority": 1,
-      "reason": "Trial Balance, Accounts Receivable, Accounts Payable, Bank Reconciliation, Retained Earnings, Opening Balances, Closing Balances did not pass deterministic comparison.",
+      "reason": "Open bills do not agree with the AP aging report.",
       "relatedIssueKeys": [
-        "CONTROL_ACCOUNTS_PAYABLE",
-        "CONTROL_ACCOUNTS_RECEIVABLE",
-        "CONTROL_BANK_RECONCILIATION",
-        "CONTROL_CLOSING_BALANCES",
-        "CONTROL_OPENING_BALANCES",
-        "CONTROL_RETAINED_EARNINGS",
-        "CONTROL_TRIAL_BALANCE"
+        "CONTROL_ACCOUNTS_PAYABLE"
       ],
-      "title": "Resolve failed financial controls"
+      "title": "Resolve Accounts Payable difference"
     },
     {
-      "action": "Correct the affected records in QuickBooks and regenerate the assessment.",
-      "code": "RESOLVE_SOURCE_FINDINGS",
-      "estimatedEffort": "Accountant Review",
+      "action": "Compare open invoices with the QuickBooks AR aging report and correct the unmatched balance.",
+      "businessImpact": "Customer balances may be misstated after migration if receivables do not agree.",
+      "code": "RESOLVE_CONTROL_ACCOUNTS_RECEIVABLE",
+      "estimatedEffort": "Quick Review",
+      "expectedCompletionTime": "5-15 minutes",
       "fixLocation": "quickbooks",
       "priority": 2,
-      "reason": "Source corrections are required before the migration package can be finalized.",
+      "reason": "Open invoices do not agree with the AR aging report.",
       "relatedIssueKeys": [
-        "issue_0e3501f3bf2d54af",
-        "issue_25051dd13df50961",
-        "issue_a2eafe560c315b86",
-        "issue_bb69406b23406bf7",
-        "issue_c0293605b5258609",
-        "issue_cff76547f5a1436b",
-        "issue_eab6b32b303e4367",
+        "CONTROL_ACCOUNTS_RECEIVABLE"
+      ],
+      "title": "Resolve Accounts Receivable difference"
+    },
+    {
+      "action": "Reconcile QuickBooks bank balances to the ledger balance for the conversion date.",
+      "businessImpact": "Unreconciled bank balances reduce confidence in opening cash positions.",
+      "code": "RESOLVE_CONTROL_BANK_RECONCILIATION",
+      "estimatedEffort": "Accountant Review",
+      "expectedCompletionTime": "15-60 minutes",
+      "fixLocation": "quickbooks",
+      "priority": 3,
+      "reason": "Bank account balances do not agree with the trial balance.",
+      "relatedIssueKeys": [
+        "CONTROL_BANK_RECONCILIATION"
+      ],
+      "title": "Resolve Bank Reconciliation difference"
+    },
+    {
+      "action": "Compare account-level closing balances across the QuickBooks source reports.",
+      "businessImpact": "Closing-balance differences can create destination reconciliation breaks.",
+      "code": "RESOLVE_CONTROL_CLOSING_BALANCES",
+      "estimatedEffort": "Accountant Review",
+      "expectedCompletionTime": "15-60 minutes",
+      "fixLocation": "quickbooks",
+      "priority": 4,
+      "reason": "Comparable closing balances differ across source reports.",
+      "relatedIssueKeys": [
+        "CONTROL_CLOSING_BALANCES"
+      ],
+      "title": "Resolve Closing Balances difference"
+    },
+    {
+      "action": "Review conversion balances and correct the entries preventing them from netting to zero.",
+      "businessImpact": "Opening balances must balance before they can establish a reliable Xero starting position.",
+      "code": "RESOLVE_CONTROL_OPENING_BALANCES",
+      "estimatedEffort": "Accountant Review",
+      "expectedCompletionTime": "15-60 minutes",
+      "fixLocation": "quickbooks",
+      "priority": 5,
+      "reason": "Conversion balances do not net to zero.",
+      "relatedIssueKeys": [
+        "CONTROL_OPENING_BALANCES"
+      ],
+      "title": "Resolve Opening Balances difference"
+    },
+    {
+      "action": "Review retained earnings across the QuickBooks trial balance and balance sheet.",
+      "businessImpact": "A retained earnings difference can carry an incorrect equity position into Xero.",
+      "code": "RESOLVE_CONTROL_RETAINED_EARNINGS",
+      "estimatedEffort": "Accountant Review",
+      "expectedCompletionTime": "15-60 minutes",
+      "fixLocation": "quickbooks",
+      "priority": 6,
+      "reason": "Retained earnings differs between source reports.",
+      "relatedIssueKeys": [
+        "CONTROL_RETAINED_EARNINGS"
+      ],
+      "title": "Resolve Retained Earnings difference"
+    },
+    {
+      "action": "Review the trial balance difference in QuickBooks and correct the underlying entries before migration.",
+      "businessImpact": "An out-of-balance ledger cannot be reconciled reliably in Xero.",
+      "code": "RESOLVE_CONTROL_TRIAL_BALANCE",
+      "estimatedEffort": "Accountant Review",
+      "expectedCompletionTime": "15-60 minutes",
+      "fixLocation": "quickbooks",
+      "priority": 7,
+      "reason": "Total debits and credits do not agree.",
+      "relatedIssueKeys": [
+        "CONTROL_TRIAL_BALANCE"
+      ],
+      "title": "Resolve Trial Balance difference"
+    },
+    {
+      "action": "Resolve duplicate document numbers before importing to Xero to avoid import conflicts.",
+      "businessImpact": "Affected records may not migrate or reconcile cleanly.",
+      "code": "RESOLVE_issue_0e3501f3bf2d54af",
+      "estimatedEffort": "Source System Change",
+      "expectedCompletionTime": "5-15 minutes",
+      "fixLocation": "quickbooks",
+      "priority": 8,
+      "reason": "INV-1001 appears on more than one invoice.",
+      "relatedIssueKeys": [
+        "issue_0e3501f3bf2d54af"
+      ],
+      "title": "Duplicate invoice number"
+    },
+    {
+      "action": "Merge or rename duplicates before importing to Xero.",
+      "businessImpact": "Affected records may not migrate or reconcile cleanly.",
+      "code": "RESOLVE_issue_25051dd13df50961",
+      "estimatedEffort": "Source System Change",
+      "expectedCompletionTime": "5-15 minutes",
+      "fixLocation": "quickbooks",
+      "priority": 9,
+      "reason": "Acme Customer appears more than once.",
+      "relatedIssueKeys": [
+        "issue_25051dd13df50961"
+      ],
+      "title": "Duplicate contact"
+    },
+    {
+      "action": "Assign an account to every transaction line before export.",
+      "businessImpact": "Affected records may not migrate or reconcile cleanly.",
+      "code": "RESOLVE_issue_a2eafe560c315b86",
+      "estimatedEffort": "Source System Change",
+      "expectedCompletionTime": "5-15 minutes",
+      "fixLocation": "quickbooks",
+      "priority": 10,
+      "reason": "invoice INV-1001 has a line without an account.",
+      "relatedIssueKeys": [
+        "issue_a2eafe560c315b86"
+      ],
+      "title": "Missing account reference"
+    },
+    {
+      "action": "Reactivate, map, or exclude this record before import.",
+      "businessImpact": "Affected records may not migrate or reconcile cleanly.",
+      "code": "RESOLVE_issue_bb69406b23406bf7",
+      "estimatedEffort": "Source System Change",
+      "expectedCompletionTime": "5-15 minutes",
+      "fixLocation": "quickbooks",
+      "priority": 11,
+      "reason": "Operating Expense is inactive but appears in migration data.",
+      "relatedIssueKeys": [
+        "issue_bb69406b23406bf7"
+      ],
+      "title": "Inactive account used"
+    },
+    {
+      "action": "Review the invoice in QuickBooks before export.",
+      "businessImpact": "Financial totals or allocations may be unreliable until this is resolved.",
+      "code": "RESOLVE_issue_c0293605b5258609",
+      "estimatedEffort": "Accountant Review",
+      "expectedCompletionTime": "15-60 minutes",
+      "fixLocation": "quickbooks",
+      "priority": 12,
+      "reason": "INV-1001 total does not match line totals plus tax.",
+      "relatedIssueKeys": [
+        "issue_c0293605b5258609"
+      ],
+      "title": "Invoice total mismatch"
+    },
+    {
+      "action": "Repair the supplier reference before export.",
+      "businessImpact": "Affected records may not migrate or reconcile cleanly.",
+      "code": "RESOLVE_issue_cff76547f5a1436b",
+      "estimatedEffort": "Source System Change",
+      "expectedCompletionTime": "5-15 minutes",
+      "fixLocation": "quickbooks",
+      "priority": 13,
+      "reason": "BILL-1001 does not reference an extracted supplier.",
+      "relatedIssueKeys": [
+        "issue_cff76547f5a1436b"
+      ],
+      "title": "Missing supplier"
+    },
+    {
+      "action": "Optionally archive or rename the unused duplicate in QuickBooks.",
+      "businessImpact": "Affected records may not migrate or reconcile cleanly.",
+      "code": "RESOLVE_issue_eab6b32b303e4367",
+      "estimatedEffort": "Source System Change",
+      "expectedCompletionTime": "5-15 minutes",
+      "fixLocation": "quickbooks",
+      "priority": 14,
+      "reason": "Operating Expense has an unused duplicate that is excluded from migration. Operating Expense: closing balance 1500.00, period activity 500.00, dependencies 3.",
+      "relatedIssueKeys": [
+        "issue_eab6b32b303e4367"
+      ],
+      "title": "Unused duplicate account"
+    },
+    {
+      "action": "Correct or exclude unbalanced journal entries before migration.",
+      "businessImpact": "Financial totals or allocations may be unreliable until this is resolved.",
+      "code": "RESOLVE_issue_f04937c0e23f454c",
+      "estimatedEffort": "Accountant Review",
+      "expectedCompletionTime": "15-60 minutes",
+      "fixLocation": "quickbooks",
+      "priority": 15,
+      "reason": "JRN-1 has debits of 100 and credits of 80.",
+      "relatedIssueKeys": [
         "issue_f04937c0e23f454c"
       ],
-      "title": "Resolve source-system findings"
+      "title": "Unbalanced journal"
     },
     {
       "action": "Review account, tax, and tracking suggestions before generating final Xero files.",
+      "businessImpact": "Confirmed mappings preserve the intended account, tax, and reporting treatment in Xero.",
       "code": "CONFIRM_MIGRATION_DECISIONS",
       "estimatedEffort": "Manual Mapping",
+      "expectedCompletionTime": "5-15 minutes",
       "fixLocation": "xero",
-      "priority": 3,
+      "priority": 16,
       "reason": "Mapping decisions are target-system choices, not accounting defects.",
       "relatedIssueKeys": [
         "decision_5d2e5d0963af7d21",

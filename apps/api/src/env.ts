@@ -66,6 +66,10 @@ const envSchema = z
       .default(3600),
     POSTHOG_KEY: z.string().optional(),
     POSTHOG_HOST: z.string().url().default("https://us.i.posthog.com"),
+    RESEND_API_KEY: z.string().min(1).optional(),
+    RESEND_API_URL: z.string().url().default("https://api.resend.com"),
+    CONTACT_ADMIN_EMAIL: z.string().email().optional(),
+    CONTACT_FROM_EMAIL: z.string().email().optional(),
     XERO_CLIENT_ID: z.string().optional(),
     XERO_CLIENT_SECRET: z.string().optional(),
     XERO_TENANT_ID: z.string().optional(),
@@ -104,6 +108,22 @@ const envSchema = z
           path: [key],
           message: "must not use a placeholder value",
         });
+      }
+    }
+
+    if (env.NODE_ENV === "production") {
+      for (const key of [
+        "RESEND_API_KEY",
+        "CONTACT_ADMIN_EMAIL",
+        "CONTACT_FROM_EMAIL",
+      ] as const) {
+        if (!env[key] || isPlaceholder(env[key])) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: [key],
+            message: "is required in production",
+          });
+        }
       }
     }
 

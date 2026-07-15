@@ -98,6 +98,33 @@ function mappingNotes(account: Account): string[] {
   return notes;
 }
 
+function mappingRationale(
+  account: Account,
+  targetType: string | undefined,
+  scope: AccountMigrationScope,
+): string {
+  if (!targetType) {
+    return "The QuickBooks account type has no single supported Xero treatment.";
+  }
+  const roles = new Set(scope.evidence.systemRoles);
+  if (roles.has("retained_earnings")) {
+    return "Retained earnings is a standard Xero system account.";
+  }
+  if (roles.has("accounts_receivable")) {
+    return "Accounts receivable is a standard Xero system account.";
+  }
+  if (roles.has("accounts_payable")) {
+    return "Accounts payable is a standard Xero system account.";
+  }
+  if (roles.has("tax_liability")) {
+    return "The account supports the source tax-liability position.";
+  }
+  if (normalizedType(account.sourceAccountType) === "creditcard") {
+    return "QuickBooks credit-card accounts use the Xero bank account treatment.";
+  }
+  return `QuickBooks ${account.sourceAccountType ?? account.classification} has one standard Xero ${targetType} treatment.`;
+}
+
 function mappingDecisionReason(
   account: Account,
   targetType: string | undefined,
@@ -249,8 +276,44 @@ export function mapAccounts(snapshot: AccountingSnapshot): {
   const accountScope = [...scopeById.values()].sort((left, right) =>
     left.sourceId.localeCompare(right.sourceId),
   );
+  const finalMappings = mappings.map((mapping) => {
+    const account = accounts.find(
+      (candidate) => candidate.id === mapping.sourceId,
+    )!;
+    const scope = scopeById.get(mapping.sourceId)!;
+    const requiresReview = scope.disposition === "decision_required";
+    const confidencePercentage = !xeroAccountType(account)
+      ? 50
+      : requiresReview
+        ? scope.evidence.systemRoles.some((role) =>
+            [
+              "accounts_receivable",
+              "accounts_payable",
+              "retained_earnings",
+            ].includes(role),
+          )
+          ? 99
+          : 90
+        : mapping.notes.length
+          ? 95
+          : 99;
+    return {
+      ...mapping,
+      confidence:
+        confidencePercentage >= 90
+          ? ("high" as const)
+          : confidencePercentage >= 70
+            ? ("medium" as const)
+            : ("low" as const),
+      confidencePercentage,
+      rationale: mappingRationale(account, xeroAccountType(account), scope),
+      reviewStatus: requiresReview
+        ? ("requires_review" as const)
+        : ("automatically_accepted" as const),
+    };
+  });
   return {
-    mappings,
+    mappings: finalMappings,
     exceptions,
     accountScope,
     accountScopeSummary: summarizeAccountScope(accountScope),

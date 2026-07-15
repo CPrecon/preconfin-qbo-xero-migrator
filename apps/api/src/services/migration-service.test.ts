@@ -1,5 +1,8 @@
 import type { QboRawDataset } from "@preconfin/canonical-model";
-import { parseFinancialAssessmentV1 } from "@preconfin/financial-assessment-engine";
+import {
+  parseFinancialAssessmentV1,
+  toPublicMigrationAssessment,
+} from "@preconfin/financial-assessment-engine";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { AppEnv } from "../env.js";
 import { encryptJson } from "../security/crypto.js";
@@ -174,7 +177,11 @@ describe("migration failure diagnostics", () => {
     expect(result).toEqual({
       score: assessment.scorecard.migrationReadiness.score,
       readiness: assessment.overallStatus,
+      report: toPublicMigrationAssessment(assessment),
     });
+    expect(JSON.stringify(result.report)).not.toMatch(
+      /sourceId|decisionKey|occurrenceId/,
+    );
     expect(repo.updateJob).toHaveBeenCalledWith(
       "00000000-0000-4000-8000-000000000001",
       expect.objectContaining({

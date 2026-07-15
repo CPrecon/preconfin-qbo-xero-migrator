@@ -4,7 +4,10 @@ export {
 } from "./adapters/auditor.js";
 export {
   adaptFinancialAssessmentForMigrator,
+  toPublicMigrationAssessment,
   type MigratorAssessmentAdapter,
+  type PublicMigrationAssessment,
+  type PublicMigrationReadinessState,
 } from "./adapters/migrator.js";
 export {
   createFinancialAssessment,

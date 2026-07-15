@@ -25,8 +25,12 @@ function legacySeverity(
 function legacyReadiness(
   status: AssessmentOverallStatus,
 ): ValidationReport["summary"]["readiness"] {
-  if (status === "blocked" || status === "incomplete") return "blocked";
-  if (status === "action_required" || status === "review_recommended") {
+  if (status === "blocked") return "blocked";
+  if (
+    status === "incomplete" ||
+    status === "action_required" ||
+    status === "review_recommended"
+  ) {
     return "review_needed";
   }
   return "ready";
@@ -46,7 +50,10 @@ function affectedRecords(
   }));
 }
 
-function legacyFinding(finding: AssessmentFinding): ValidationFinding {
+function legacyFinding(
+  finding: AssessmentFinding,
+  assessmentBlocked: boolean,
+): ValidationFinding {
   const firstRecord = finding.affectedRecords[0];
   return {
     code: finding.ruleCode,
@@ -55,7 +62,10 @@ function legacyFinding(finding: AssessmentFinding): ValidationFinding {
     message: finding.explanation,
     recommendation: finding.recommendedAction,
     affectedRecords: affectedRecords(finding.affectedRecords),
-    blocksExport: finding.workflowImpact === "blocks_workflow",
+    blocksExport:
+      assessmentBlocked &&
+      finding.issueClass === "financial_integrity" &&
+      finding.workflowImpact === "blocks_workflow",
     entityType: firstRecord?.sourceType,
     entityId: firstRecord?.sourceId,
   };
@@ -85,7 +95,9 @@ export function toLegacyValidationReport(
   assessment: FinancialAssessmentV1,
 ): ValidationReport {
   const findings = [
-    ...assessment.findings.map(legacyFinding),
+    ...assessment.findings.map((finding) =>
+      legacyFinding(finding, assessment.overallStatus === "blocked"),
+    ),
     ...assessment.decisions.map(legacyDecision),
   ];
   const errorCount = findings.filter(

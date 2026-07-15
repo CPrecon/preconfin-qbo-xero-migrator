@@ -1,7 +1,9 @@
 {
   "accountScope": [
     {
+      "confidencePercentage": 99,
       "decisionReason": "Confirm the destination Xero accounts-payable system account.",
+      "displayName": "Accounts Payable",
       "disposition": "decision_required",
       "evidence": {
         "active": true,
@@ -21,16 +23,23 @@
         "transactionCount": 0,
         "unresolvedRelationshipCount": 0
       },
+      "rationale": "Accounts payable is a standard Xero system account.",
       "relevanceReasons": [
         "non_zero_conversion_balance",
         "non_zero_closing_balance",
         "open_document_dependency",
         "required_system_account"
       ],
-      "sourceId": "acct_ap"
+      "reviewStatus": "requires_review",
+      "sourceId": "acct_ap",
+      "targetCode": "2000",
+      "targetName": "Accounts Payable",
+      "targetType": "CURRLIAB"
     },
     {
+      "confidencePercentage": 99,
       "decisionReason": "Confirm the destination Xero accounts-receivable system account.",
+      "displayName": "Accounts Receivable",
       "disposition": "decision_required",
       "evidence": {
         "active": true,
@@ -50,15 +59,22 @@
         "transactionCount": 0,
         "unresolvedRelationshipCount": 0
       },
+      "rationale": "Accounts receivable is a standard Xero system account.",
       "relevanceReasons": [
         "non_zero_conversion_balance",
         "non_zero_closing_balance",
         "open_document_dependency",
         "required_system_account"
       ],
-      "sourceId": "acct_ar"
+      "reviewStatus": "requires_review",
+      "sourceId": "acct_ar",
+      "targetCode": "1100",
+      "targetName": "Accounts Receivable",
+      "targetType": "CURRENT"
     },
     {
+      "confidencePercentage": 99,
+      "displayName": "Operating Bank",
       "disposition": "auto_mapped",
       "evidence": {
         "active": true,
@@ -76,13 +92,20 @@
         "transactionCount": 0,
         "unresolvedRelationshipCount": 0
       },
+      "rationale": "QuickBooks Bank has one standard Xero BANK treatment.",
       "relevanceReasons": [
         "non_zero_conversion_balance",
         "non_zero_closing_balance"
       ],
-      "sourceId": "acct_bank"
+      "reviewStatus": "automatically_accepted",
+      "sourceId": "acct_bank",
+      "targetCode": "1000",
+      "targetName": "Operating Bank",
+      "targetType": "BANK"
     },
     {
+      "confidencePercentage": 99,
+      "displayName": "Operating Expense",
       "disposition": "auto_mapped",
       "evidence": {
         "active": true,
@@ -100,6 +123,7 @@
         "transactionCount": 1,
         "unresolvedRelationshipCount": 0
       },
+      "rationale": "QuickBooks Expense has one standard Xero EXPENSE treatment.",
       "relevanceReasons": [
         "non_zero_conversion_balance",
         "non_zero_closing_balance",
@@ -108,10 +132,16 @@
         "item_dependency",
         "exported_record_dependency"
       ],
-      "sourceId": "acct_expense"
+      "reviewStatus": "automatically_accepted",
+      "sourceId": "acct_expense",
+      "targetCode": "5000",
+      "targetName": "Operating Expense",
+      "targetType": "EXPENSE"
     },
     {
+      "confidencePercentage": 99,
       "decisionReason": "Confirm the destination Xero retained-earnings system account.",
+      "displayName": "Retained Earnings",
       "disposition": "decision_required",
       "evidence": {
         "active": true,
@@ -131,14 +161,21 @@
         "transactionCount": 0,
         "unresolvedRelationshipCount": 0
       },
+      "rationale": "Retained earnings is a standard Xero system account.",
       "relevanceReasons": [
         "non_zero_conversion_balance",
         "non_zero_closing_balance",
         "required_system_account"
       ],
-      "sourceId": "acct_retained"
+      "reviewStatus": "requires_review",
+      "sourceId": "acct_retained",
+      "targetCode": "3200",
+      "targetName": "Retained Earnings",
+      "targetType": "EQUITY"
     },
     {
+      "confidencePercentage": 99,
+      "displayName": "Service Revenue",
       "disposition": "auto_mapped",
       "evidence": {
         "active": true,
@@ -156,6 +193,7 @@
         "transactionCount": 1,
         "unresolvedRelationshipCount": 0
       },
+      "rationale": "QuickBooks Income has one standard Xero REVENUE treatment.",
       "relevanceReasons": [
         "non_zero_conversion_balance",
         "non_zero_closing_balance",
@@ -164,7 +202,11 @@
         "item_dependency",
         "exported_record_dependency"
       ],
-      "sourceId": "acct_revenue"
+      "reviewStatus": "automatically_accepted",
+      "sourceId": "acct_revenue",
+      "targetCode": "4000",
+      "targetName": "Service Revenue",
+      "targetType": "REVENUE"
     }
   ],
   "accountScopeSummary": {
@@ -551,7 +593,7 @@
       ],
       "businessImpact": "The migration cannot be finalized until the target treatment is confirmed.",
       "category": "migration_mapping",
-      "confidence": 0.9,
+      "confidence": 0.99,
       "decisionKey": "decision_5d2e5d0963af7d21",
       "estimatedEffort": "Manual Mapping",
       "evidence": [
@@ -569,7 +611,7 @@
           "sourceSystem": "quickbooks-online"
         }
       ],
-      "explanation": "Confirm the destination Xero accounts-receivable system account.",
+      "explanation": "Accounts receivable is a standard Xero system account. Confirm the destination Xero accounts-receivable system account.",
       "fixLocation": "xero",
       "issueClass": "migration_decision",
       "occurrenceId": "occurrence_986d267ce5309d50",
@@ -592,7 +634,7 @@
       ],
       "businessImpact": "The migration cannot be finalized until the target treatment is confirmed.",
       "category": "migration_mapping",
-      "confidence": 0.9,
+      "confidence": 0.99,
       "decisionKey": "decision_8120eb6f0d98fbdb",
       "estimatedEffort": "Manual Mapping",
       "evidence": [
@@ -610,7 +652,7 @@
           "sourceSystem": "quickbooks-online"
         }
       ],
-      "explanation": "Confirm the destination Xero accounts-payable system account.",
+      "explanation": "Accounts payable is a standard Xero system account. Confirm the destination Xero accounts-payable system account.",
       "fixLocation": "xero",
       "issueClass": "migration_decision",
       "occurrenceId": "occurrence_e1817c915db6b109",
@@ -633,7 +675,7 @@
       ],
       "businessImpact": "The migration cannot be finalized until the target treatment is confirmed.",
       "category": "migration_mapping",
-      "confidence": 0.9,
+      "confidence": 0.99,
       "decisionKey": "decision_fa3c972ca1c9f898",
       "estimatedEffort": "Manual Mapping",
       "evidence": [
@@ -651,7 +693,7 @@
           "sourceSystem": "quickbooks-online"
         }
       ],
-      "explanation": "Confirm the destination Xero retained-earnings system account.",
+      "explanation": "Retained earnings is a standard Xero system account. Confirm the destination Xero retained-earnings system account.",
       "fixLocation": "xero",
       "issueClass": "migration_decision",
       "occurrenceId": "occurrence_92dcc87582d03ba9",
@@ -680,7 +722,7 @@
   "identity": {
     "assessmentKey": "assessment_8daaa85eba04ea6c",
     "organizationId": "org_northwind_advisory",
-    "reportId": "report_5a70549d954c63e5"
+    "reportId": "report_c13ba36c1c912ea8"
   },
   "lineage": {
     "assessmentEngineVersion": "1.0.0",
@@ -690,7 +732,7 @@
       "deterministic-rule-catalogue",
       "financial-controls"
     ],
-    "inputFingerprint": "50d6fc1ec0440d4a",
+    "inputFingerprint": "4052ce38bb636200",
     "normalizationVersion": "qbo-canonical-v1",
     "snapshotPulledAt": "2026-06-30T11:30:00.000Z",
     "sourceRecordCounts": {
@@ -747,24 +789,24 @@
       "description": "Confirm account, tax, and tracking treatment for Xero.",
       "required": true,
       "sequence": 4,
-      "title": "Confirm migration decisions"
+      "title": "Review mappings"
     },
     {
-      "code": "REGENERATE_ASSESSMENT",
+      "code": "GENERATE_MIGRATION_PACKAGE",
       "dependsOn": [
         "COMPLETE_CONTROLS",
         "RESOLVE_SOURCE_DATA",
         "CONFIRM_MAPPINGS"
       ],
-      "description": "Run the deterministic assessment again after corrections and decisions.",
+      "description": "Generate the reviewed Xero-ready files and Financial Assessment.",
       "required": true,
       "sequence": 5,
-      "title": "Regenerate the assessment"
+      "title": "Generate the migration package"
     },
     {
       "code": "IMPORT_XERO_DEMO",
       "dependsOn": [
-        "REGENERATE_ASSESSMENT"
+        "GENERATE_MIGRATION_PACKAGE"
       ],
       "description": "Test the reviewed migration files in a disposable Xero organisation.",
       "required": true,
@@ -795,8 +837,10 @@
   "recommendations": [
     {
       "action": "Review account, tax, and tracking suggestions before generating final Xero files.",
+      "businessImpact": "Confirmed mappings preserve the intended account, tax, and reporting treatment in Xero.",
       "code": "CONFIRM_MIGRATION_DECISIONS",
       "estimatedEffort": "Manual Mapping",
+      "expectedCompletionTime": "5-15 minutes",
       "fixLocation": "xero",
       "priority": 1,
       "reason": "Mapping decisions are target-system choices, not accounting defects.",

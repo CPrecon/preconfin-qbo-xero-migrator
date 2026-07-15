@@ -57,6 +57,7 @@ wrangler secret put OAUTH_STATE_SIGNING_SECRET --env staging
 wrangler secret put SUPABASE_URL --env staging
 wrangler secret put SUPABASE_SERVICE_ROLE_KEY --env staging
 wrangler secret put POSTHOG_KEY --env staging
+wrangler secret put RESEND_API_KEY --env staging
 ```
 
 Use the same names with `--env production` only after staging certification.
@@ -69,6 +70,8 @@ PUBLIC_API_URL=https://migrate-staging.preconfin.com
 INTUIT_REDIRECT_URI=https://migrate-staging.preconfin.com/api/oauth/qbo/callback
 INTUIT_ENVIRONMENT=sandbox
 SUPABASE_STORAGE_BUCKET=migration-artifacts-staging
+CONTACT_ADMIN_EMAIL=<verified administrative inbox>
+CONTACT_FROM_EMAIL=<sender on a Resend-verified domain>
 ```
 
 Expected production values by name, without secret values:
@@ -80,7 +83,29 @@ CORS_ORIGINS=https://migrate.preconfin.com
 INTUIT_REDIRECT_URI=https://api-migrate.preconfin.com/api/oauth/qbo/callback
 INTUIT_ENVIRONMENT=production
 SUPABASE_STORAGE_BUCKET=migration-artifacts-production
+CONTACT_ADMIN_EMAIL=<verified administrative inbox>
+CONTACT_FROM_EMAIL=<sender on a Resend-verified domain>
 ```
+
+`RESEND_API_KEY` is a secret. `CONTACT_ADMIN_EMAIL` and
+`CONTACT_FROM_EMAIL` are dashboard-managed runtime variables. The production
+deploy uses `--keep-vars`, so configure all three on the same named Wrangler
+environment that receives the deployment. `CONTACT_FROM_EMAIL` must belong to
+the sender domain verified with Resend. The API refuses to initialize in
+production when any required email binding is absent; health reports binding
+names only and never their values.
+
+Before deploying this contact-delivery path, apply the additive Supabase
+migration:
+
+```text
+infrastructure/supabase/migrations/0002_lead_email_delivery.sql
+```
+
+The API inserts the lead before contacting Resend. Admin and confirmation
+delivery outcomes are then stored independently on `migration_leads`, so a
+provider outage cannot discard a submitted lead. Existing row-level security
+remains in force and no anonymous lead policies are added.
 
 ### Web build variables
 

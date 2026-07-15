@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { apiUrl } from "../lib/config";
 import { track } from "../lib/analytics";
+import { submitLead } from "../lib/lead-client";
 
 export function LeadForm({
   source,
@@ -17,12 +18,16 @@ export function LeadForm({
     "idle" | "submitting" | "success" | "error"
   >("idle");
   const [message, setMessage] = useState("");
+  const inFlight = useRef(false);
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (inFlight.current) return;
+    inFlight.current = true;
+    const formElement = event.currentTarget;
     setStatus("submitting");
     setMessage("");
-    const form = new FormData(event.currentTarget);
+    const form = new FormData(formElement);
     const payload = {
       email: String(form.get("email") || ""),
       name: String(form.get("name") || "") || undefined,
@@ -30,12 +35,21 @@ export function LeadForm({
       jobId,
       source,
     };
-    const response = await fetch(`${apiUrl}/api/leads`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    if (!response.ok) {
+    try {
+      const result = await submitLead({
+        apiUrl,
+        payload,
+        track,
+      });
+      setStatus("success");
+      setMessage(
+        result.notifications.confirmation === "failed"
+          ? "Thanks. We saved your request. Your email confirmation may be delayed."
+          : "Thanks. We received your request and sent a confirmation email.",
+      );
+      onSuccess?.();
+      formElement.reset();
+    } catch {
       setStatus("error");
       setMessage("We could not submit the form. Please try again.");
       track("migration_failed", {
@@ -43,13 +57,9 @@ export function LeadForm({
         stage: "lead",
         reason: "lead_submit_failed",
       });
-      return;
+    } finally {
+      inFlight.current = false;
     }
-    track("migration_lead_submitted", { source, hasJob: Boolean(jobId) });
-    setStatus("success");
-    setMessage("Thanks. PreconFin will follow up with the right next step.");
-    onSuccess?.();
-    event.currentTarget.reset();
   }
 
   return (

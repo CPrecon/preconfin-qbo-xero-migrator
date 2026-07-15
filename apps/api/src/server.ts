@@ -16,6 +16,8 @@ import {
 } from "./security/tokens.js";
 import type { IntuitTokens } from "./services/intuit-oauth.js";
 import { IntuitOAuthClient } from "./services/intuit-oauth.js";
+import { createEmailSender } from "./services/email.js";
+import { LeadService, leadSubmissionSchema } from "./services/lead-service.js";
 import { MigrationService } from "./services/migration-service.js";
 import { Repository } from "./services/repository.js";
 
@@ -46,6 +48,12 @@ export async function buildServer(
   const repo = new Repository(createSupabase(env));
   const oauth = new IntuitOAuthClient(env);
   const migrationService = new MigrationService(env, repo);
+  const leadService = new LeadService(
+    env,
+    repo,
+    createEmailSender(env),
+    (event, details) => logger.error({ event, ...details }, event),
+  );
 
   await app.register(cors, {
     origin: env.CORS_ORIGINS.split(",").map((item) => item.trim()),
@@ -242,21 +250,9 @@ export async function buildServer(
   });
 
   app.post("/api/leads", async (request, reply) => {
-    const body = z
-      .object({
-        email: z.string().email(),
-        name: z.string().optional(),
-        company: z.string().optional(),
-        jobId: z.string().uuid().optional(),
-        source: z.string().default("migration-report"),
-      })
-      .parse(request.body);
-    await repo.saveLead(body);
-    await repo.audit("lead_captured", {
-      jobId: body.jobId,
-      source: body.source,
-    });
-    return reply.code(201).send({ ok: true });
+    const body = leadSubmissionSchema.parse(request.body);
+    const result = await leadService.submit(body);
+    return reply.code(201).send(result);
   });
 
   app.setErrorHandler((error, request, reply) => {

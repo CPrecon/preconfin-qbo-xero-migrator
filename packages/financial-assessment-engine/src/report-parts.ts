@@ -7,6 +7,7 @@ import type {
   AssessmentNextStep,
   AssessmentRecommendation,
   AssessmentSummary,
+  ExpectedCompletionTime,
   FindingGroup,
   FinancialControl,
   VerificationEvidence,
@@ -58,26 +59,118 @@ export function buildFindingGroups(
     });
 }
 
-function failedControlRecommendation(
+const controlRecommendationDetails: Record<
+  string,
+  {
+    action: string;
+    businessImpact: string;
+    estimatedEffort: AssessmentRecommendation["estimatedEffort"];
+    expectedCompletionTime: ExpectedCompletionTime;
+  }
+> = {
+  CONTROL_TRIAL_BALANCE: {
+    action:
+      "Review the trial balance difference in QuickBooks and correct the underlying entries before migration.",
+    businessImpact:
+      "An out-of-balance ledger cannot be reconciled reliably in Xero.",
+    estimatedEffort: "Accountant Review",
+    expectedCompletionTime: "15-60 minutes",
+  },
+  CONTROL_ACCOUNTS_RECEIVABLE: {
+    action:
+      "Compare open invoices with the QuickBooks AR aging report and correct the unmatched balance.",
+    businessImpact:
+      "Customer balances may be misstated after migration if receivables do not agree.",
+    estimatedEffort: "Quick Review",
+    expectedCompletionTime: "5-15 minutes",
+  },
+  CONTROL_ACCOUNTS_PAYABLE: {
+    action:
+      "Compare open bills with the QuickBooks AP aging report and correct the unmatched balance.",
+    businessImpact:
+      "Supplier balances may be misstated after migration if payables do not agree.",
+    estimatedEffort: "Quick Review",
+    expectedCompletionTime: "5-15 minutes",
+  },
+  CONTROL_BANK_RECONCILIATION: {
+    action:
+      "Reconcile QuickBooks bank balances to the ledger balance for the conversion date.",
+    businessImpact:
+      "Unreconciled bank balances reduce confidence in opening cash positions.",
+    estimatedEffort: "Accountant Review",
+    expectedCompletionTime: "15-60 minutes",
+  },
+  CONTROL_RETAINED_EARNINGS: {
+    action:
+      "Review retained earnings across the QuickBooks trial balance and balance sheet.",
+    businessImpact:
+      "A retained earnings difference can carry an incorrect equity position into Xero.",
+    estimatedEffort: "Accountant Review",
+    expectedCompletionTime: "15-60 minutes",
+  },
+  CONTROL_OPENING_BALANCES: {
+    action:
+      "Review conversion balances and correct the entries preventing them from netting to zero.",
+    businessImpact:
+      "Opening balances must balance before they can establish a reliable Xero starting position.",
+    estimatedEffort: "Accountant Review",
+    expectedCompletionTime: "15-60 minutes",
+  },
+  CONTROL_CLOSING_BALANCES: {
+    action:
+      "Compare account-level closing balances across the QuickBooks source reports.",
+    businessImpact:
+      "Closing-balance differences can create destination reconciliation breaks.",
+    estimatedEffort: "Accountant Review",
+    expectedCompletionTime: "15-60 minutes",
+  },
+  CONTROL_TAX_LIABILITY: {
+    action:
+      "Reconcile the QuickBooks tax-liability balance before selecting Xero tax mappings.",
+    businessImpact:
+      "A tax-liability difference can carry an incorrect amount into the destination ledger.",
+    estimatedEffort: "Accountant Review",
+    expectedCompletionTime: "15-30 minutes",
+  },
+};
+
+function completionTime(
+  effort: AssessmentRecommendation["estimatedEffort"],
+): ExpectedCompletionTime {
+  if (effort === "Quick Review") return "2-5 minutes";
+  if (effort === "Source System Change") return "5-15 minutes";
+  if (effort === "Manual Mapping") return "5-15 minutes";
+  return "15-60 minutes";
+}
+
+function failedControlRecommendations(
   controls: readonly FinancialControl[],
-): AssessmentRecommendation | undefined {
+): AssessmentRecommendation[] {
   const failed = controls.filter(
     (control) => control.blockingGate && control.status === "failed",
   );
-  if (!failed.length) return undefined;
-  return {
-    code: "RESOLVE_FINANCIAL_CONTROLS",
-    priority: 1,
-    title: "Resolve failed financial controls",
-    action:
-      "Review and correct the source balances behind the failed controls, then rerun the assessment.",
-    reason:
-      failed.map((control) => control.title).join(", ") +
-      " did not pass deterministic comparison.",
-    relatedIssueKeys: failed.map((control) => control.code),
-    estimatedEffort: "Accountant Review",
-    fixLocation: "quickbooks",
-  };
+  return failed.map((control) => {
+    const details = controlRecommendationDetails[control.code] ?? {
+      action:
+        "Review and correct the source balances behind this failed control, then rerun the assessment.",
+      businessImpact:
+        "A failed financial control reduces confidence in the migration starting position.",
+      estimatedEffort: "Accountant Review" as const,
+      expectedCompletionTime: "15-60 minutes" as const,
+    };
+    return {
+      code: `RESOLVE_${control.code}`,
+      priority: 1,
+      title: `Resolve ${control.title} difference`,
+      action: details.action,
+      reason: control.explanation,
+      relatedIssueKeys: [control.code],
+      estimatedEffort: details.estimatedEffort,
+      fixLocation: "quickbooks",
+      businessImpact: details.businessImpact,
+      expectedCompletionTime: details.expectedCompletionTime,
+    };
+  });
 }
 
 function operationalControlRecommendation(
@@ -101,6 +194,9 @@ function operationalControlRecommendation(
     relatedIssueKeys: affected.map((control) => control.code),
     estimatedEffort: "Quick Review",
     fixLocation: "preconfin",
+    businessImpact:
+      "Stale or incomplete source evidence can make an otherwise correct assessment unreliable.",
+    expectedCompletionTime: "2-5 minutes",
   };
 }
 
@@ -123,6 +219,9 @@ function incompleteControlRecommendation(
     relatedIssueKeys: missing.map((control) => control.code),
     estimatedEffort: "Quick Review",
     fixLocation: "preconfin",
+    businessImpact:
+      "Unavailable controls leave part of the financial position unassessed.",
+    expectedCompletionTime: "2-5 minutes",
   };
 }
 
@@ -132,10 +231,10 @@ export function buildRecommendations(
   decisions: readonly AssessmentDecision[],
 ): AssessmentRecommendation[] {
   const recommendations: AssessmentRecommendation[] = [];
-  const failed = failedControlRecommendation(controls);
+  const failed = failedControlRecommendations(controls);
   const incomplete = incompleteControlRecommendation(controls);
   const operational = operationalControlRecommendation(controls);
-  if (failed) recommendations.push(failed);
+  recommendations.push(...failed);
   if (incomplete) recommendations.push(incomplete);
   if (operational) recommendations.push(operational);
 
@@ -144,24 +243,20 @@ export function buildRecommendations(
       finding.issueClass === "source_data_quality" ||
       finding.issueClass === "financial_integrity",
   );
-  if (sourceFindings.length) {
-    recommendations.push({
-      code: "RESOLVE_SOURCE_FINDINGS",
+  recommendations.push(
+    ...sourceFindings.map((finding) => ({
+      code: `RESOLVE_${finding.issueKey}`,
       priority: 3,
-      title: "Resolve source-system findings",
-      action:
-        "Correct the affected records in QuickBooks and regenerate the assessment.",
-      reason:
-        "Source corrections are required before the migration package can be finalized.",
-      relatedIssueKeys: sourceFindings.map((finding) => finding.issueKey),
-      estimatedEffort: sourceFindings.some(
-        (finding) => finding.estimatedEffort === "Accountant Review",
-      )
-        ? "Accountant Review"
-        : "Source System Change",
-      fixLocation: "quickbooks",
-    });
-  }
+      title: finding.title,
+      action: finding.recommendedAction,
+      reason: finding.explanation,
+      relatedIssueKeys: [finding.issueKey],
+      estimatedEffort: finding.estimatedEffort,
+      fixLocation: finding.fixLocation,
+      businessImpact: finding.businessImpact,
+      expectedCompletionTime: completionTime(finding.estimatedEffort),
+    })),
+  );
 
   if (decisions.length) {
     recommendations.push({
@@ -175,6 +270,10 @@ export function buildRecommendations(
       relatedIssueKeys: decisions.map((decision) => decision.decisionKey),
       estimatedEffort: "Manual Mapping",
       fixLocation: "xero",
+      businessImpact:
+        "Confirmed mappings preserve the intended account, tax, and reporting treatment in Xero.",
+      expectedCompletionTime:
+        decisions.length <= 3 ? "5-15 minutes" : "15-30 minutes",
     });
   }
 
@@ -193,6 +292,9 @@ export function buildRecommendations(
       relatedIssueKeys: evidenceFindings.map((finding) => finding.issueKey),
       estimatedEffort: "Quick Review",
       fixLocation: "preconfin",
+      businessImpact:
+        "Supporting evidence increases confidence in the records selected for migration.",
+      expectedCompletionTime: "5-15 minutes",
     });
   }
 
@@ -256,22 +358,18 @@ export function buildNextSteps(
     {
       sequence: 4,
       code: "CONFIRM_MAPPINGS",
-      title: "Confirm migration decisions",
+      title: "Review mappings",
       description: "Confirm account, tax, and tracking treatment for Xero.",
       required: decisions.length > 0,
       dependsOn: ["RESOLVE_SOURCE_DATA"],
     },
     {
       sequence: 5,
-      code: "REGENERATE_ASSESSMENT",
-      title: "Regenerate the assessment",
+      code: "GENERATE_MIGRATION_PACKAGE",
+      title: "Generate the migration package",
       description:
-        "Run the deterministic assessment again after corrections and decisions.",
-      required:
-        failedControls ||
-        incompleteControls ||
-        sourceActions ||
-        decisions.length > 0,
+        "Generate the reviewed Xero-ready files and Financial Assessment.",
+      required: true,
       dependsOn: [
         "COMPLETE_CONTROLS",
         "RESOLVE_SOURCE_DATA",
@@ -285,7 +383,7 @@ export function buildNextSteps(
       description:
         "Test the reviewed migration files in a disposable Xero organisation.",
       required: true,
-      dependsOn: ["REGENERATE_ASSESSMENT"],
+      dependsOn: ["GENERATE_MIGRATION_PACKAGE"],
     },
     {
       sequence: 7,
@@ -365,18 +463,22 @@ export function buildSummary(
       controls.filter(
         (control) => control.blockingGate && control.status === "failed",
       ).length +
-      findings.filter((finding) => finding.workflowImpact === "blocks_workflow")
-        .length,
+      findings.filter(
+        (finding) =>
+          finding.issueClass === "financial_integrity" &&
+          finding.workflowImpact === "blocks_workflow",
+      ).length,
     actionRequiredCount:
       controls.filter(
         (control) =>
           (!control.blockingGate && control.status === "failed") ||
           (control.blockingGate && control.status === "unavailable"),
       ).length +
-      findings.filter((finding) => finding.workflowImpact === "action_required")
-        .length +
-      decisions.filter(
-        (decision) => decision.workflowImpact === "action_required",
+      findings.filter(
+        (finding) =>
+          (finding.workflowImpact === "blocks_workflow" &&
+            finding.issueClass !== "financial_integrity") ||
+          finding.workflowImpact === "action_required",
       ).length,
     reviewItemCount:
       controls.filter((control) => control.status === "warning").length +

@@ -180,7 +180,11 @@ function hasBlockingFailure(
     controls.some(
       (control) => control.blockingGate && control.status === "failed",
     ) ||
-    findings.some((finding) => finding.workflowImpact === "blocks_workflow")
+    findings.some(
+      (finding) =>
+        finding.issueClass === "financial_integrity" &&
+        finding.workflowImpact === "blocks_workflow",
+    )
   );
 }
 
@@ -224,8 +228,11 @@ export function deriveOverallStatus(
   if (hasIncompleteRequiredControl(controls)) return "incomplete";
   if (
     controls.some((control) => control.status === "failed") ||
-    findings.some((finding) => finding.workflowImpact === "action_required") ||
-    decisions.some((decision) => decision.workflowImpact === "action_required")
+    findings.some(
+      (finding) =>
+        finding.workflowImpact === "blocks_workflow" ||
+        finding.workflowImpact === "action_required",
+    )
   )
     return "action_required";
   if (

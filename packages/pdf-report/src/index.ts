@@ -1,5 +1,9 @@
 import PDFDocument from "pdfkit/js/pdfkit.standalone.js";
 import type { AccountingSnapshot } from "@preconfin/canonical-model";
+import {
+  toPublicMigrationAssessment,
+  type FinancialAssessmentV1,
+} from "@preconfin/financial-assessment-engine";
 import type { MigrationPlan } from "@preconfin/migration-engine";
 import type { ValidationReport } from "@preconfin/validation-engine";
 
@@ -7,6 +11,7 @@ export interface PdfReportInput {
   snapshot: AccountingSnapshot;
   plan: MigrationPlan;
   validation: ValidationReport;
+  assessment?: FinancialAssessmentV1;
 }
 
 function collect(doc: PDFKit.PDFDocument): Promise<Buffer> {
@@ -37,11 +42,218 @@ function keyValue(
     .text(`  ${value}`);
 }
 
+function displayLocation(value: string): string {
+  if (value === "quickbooks") return "QuickBooks";
+  if (value === "xero") return "Xero";
+  if (value === "preconfin") return "PreconFin";
+  if (value === "accountant") return "Accountant";
+  if (value === "source_system") return "Source system";
+  return "Review only";
+}
+
+export async function generateFinancialAssessmentPdf(
+  assessment: FinancialAssessmentV1,
+): Promise<Buffer> {
+  const report = toPublicMigrationAssessment(assessment);
+  const doc = new PDFDocument({
+    size: "LETTER",
+    margin: 56,
+    info: {
+      Title: "PreconFin Financial Assessment",
+      Author: "PreconFin",
+    },
+  });
+  const done = collect(doc);
+
+  doc.rect(0, 0, 612, 104).fill("#16202a");
+  doc
+    .fillColor("#ffffff")
+    .fontSize(23)
+    .text("PreconFin Financial Assessment", 56, 32);
+  doc
+    .fontSize(10)
+    .fillColor("#c9d7d3")
+    .text("Migration Readiness for Xero", 56, 66);
+
+  doc
+    .fillColor("#16202a")
+    .fontSize(22)
+    .text(assessment.organization.displayName, 56, 132);
+  doc
+    .fontSize(10)
+    .fillColor("#5a6673")
+    .text(
+      `${assessment.period.endDate} | ${assessment.basis} basis | ${assessment.currency}`,
+    );
+
+  section(doc, "Executive Summary");
+  keyValue(doc, "Overall status", report.readiness.label);
+  keyValue(doc, "Financial Health", `${report.scores.financialHealth}/100`);
+  keyValue(
+    doc,
+    "Migration Readiness",
+    `${report.scores.migrationReadiness}/100`,
+  );
+  keyValue(doc, "Manual Review Required", report.scores.manualReviewRequired);
+  doc
+    .moveDown(0.4)
+    .fontSize(10)
+    .fillColor("#16202a")
+    .text(report.readiness.explanation, { lineGap: 3 });
+
+  section(doc, "Financial Controls");
+  for (const control of report.controls) {
+    doc
+      .fontSize(10)
+      .fillColor(
+        control.status === "failed"
+          ? "#a32929"
+          : control.status === "warning" || control.status === "unavailable"
+            ? "#946200"
+            : "#185c60",
+      )
+      .text(
+        `${control.status.replace("_", " ").toUpperCase()}  ${control.title}`,
+      );
+    doc
+      .fontSize(9)
+      .fillColor("#5a6673")
+      .text(control.explanation, { indent: 12, lineGap: 3 });
+  }
+
+  section(doc, "Action Required");
+  if (!assessment.findings.length) {
+    doc
+      .fontSize(10)
+      .fillColor("#16202a")
+      .text("No source-data actions were identified.");
+  }
+  for (const finding of assessment.findings.slice(0, 12)) {
+    doc.fontSize(10).fillColor("#16202a").text(finding.title, { lineGap: 2 });
+    doc
+      .fontSize(9)
+      .fillColor("#5a6673")
+      .text(`Why it matters: ${finding.businessImpact}`, {
+        indent: 12,
+        lineGap: 2,
+      });
+    doc.text(`How to fix: ${finding.recommendedAction}`, {
+      indent: 12,
+      lineGap: 2,
+    });
+    doc.text(
+      `Where: ${displayLocation(finding.fixLocation)} | Effort: ${finding.estimatedEffort}`,
+      { indent: 12, lineGap: 4 },
+    );
+  }
+
+  section(doc, "Mapping Review");
+  keyValue(
+    doc,
+    "Automatically accepted",
+    report.mappingReview.automaticallyAccepted,
+  );
+  keyValue(doc, "Requires review", report.mappingReview.requiresReview);
+  keyValue(doc, "Excluded because unused", report.mappingReview.excludedUnused);
+  const reviewMappings = report.mappingReview.mappings.filter(
+    (mapping) => mapping.reviewStatus === "requires_review",
+  );
+  if (!reviewMappings.length) {
+    doc
+      .fontSize(10)
+      .fillColor("#16202a")
+      .text("No manual mapping decisions remain.");
+  }
+  for (const mapping of reviewMappings.slice(0, 15)) {
+    doc.fontSize(10).fillColor("#16202a").text(mapping.title, { lineGap: 2 });
+    doc
+      .fontSize(9)
+      .fillColor("#5a6673")
+      .text(
+        `Confidence: ${mapping.confidencePercentage}% | Status: Requires review`,
+        { indent: 12, lineGap: 2 },
+      );
+    doc.text(`Proposed treatment: ${mapping.target}`, {
+      indent: 12,
+      lineGap: 2,
+    });
+    doc.text(`Reason: ${mapping.reason}`, {
+      indent: 12,
+      lineGap: 4,
+    });
+  }
+
+  section(doc, "Prioritized Recommendations");
+  if (!report.recommendations.length) {
+    doc
+      .fontSize(10)
+      .fillColor("#16202a")
+      .text(report.summary.primaryRecommendation);
+  }
+  for (const recommendation of report.recommendations.slice(0, 12)) {
+    doc
+      .fontSize(10)
+      .fillColor("#16202a")
+      .text(`Priority ${recommendation.priority}: ${recommendation.title}`, {
+        lineGap: 2,
+      });
+    doc
+      .fontSize(9)
+      .fillColor("#5a6673")
+      .text(
+        `Estimated effort: ${recommendation.estimatedEffort} | Expected time: ${recommendation.expectedCompletionTime}`,
+        { indent: 12, lineGap: 2 },
+      );
+    doc.text(`Business impact: ${recommendation.businessImpact}`, {
+      indent: 12,
+      lineGap: 2,
+    });
+    doc.text(`Action: ${recommendation.action}`, {
+      indent: 12,
+      lineGap: 4,
+    });
+  }
+
+  section(doc, "Next Steps");
+  const finalSteps = report.nextSteps.filter((step) =>
+    [
+      "Review mappings",
+      "Generate the migration package",
+      "Import into a Xero demo organisation",
+      "Verify destination balances",
+    ].includes(step.title),
+  );
+  for (const [index, step] of finalSteps.entries()) {
+    doc
+      .fontSize(10)
+      .fillColor("#16202a")
+      .text(`${index + 1}. ${step.title}`, { lineGap: 2 });
+    doc
+      .fontSize(9)
+      .fillColor("#5a6673")
+      .text(step.description, { indent: 12, lineGap: 4 });
+  }
+  if (report.supportRecommended) {
+    doc
+      .moveDown(0.4)
+      .fontSize(9)
+      .fillColor("#5a6673")
+      .text(
+        "A deterministic product limitation requires PreconFin review. Contact PreconFin with the report reference.",
+      );
+  }
+
+  doc.end();
+  return done;
+}
+
 export async function generateMigrationHealthPdf({
   snapshot,
   plan,
   validation,
+  assessment,
 }: PdfReportInput): Promise<Buffer> {
+  if (assessment) return generateFinancialAssessmentPdf(assessment);
   const doc = new PDFDocument({
     size: "LETTER",
     margin: 56,

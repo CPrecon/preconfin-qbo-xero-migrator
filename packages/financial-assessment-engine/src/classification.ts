@@ -619,23 +619,29 @@ export function buildAssessmentDecisions(
       mappingDecision({
         kind: "account",
         title: "Confirm account treatment",
-        explanation:
-          accountScope?.decisionReason ??
-          mapping.sourceName +
-            " has a suggested Xero type of " +
-            mapping.targetType +
-            ".",
+        explanation: [
+          mapping.rationale ??
+            mapping.sourceName +
+              " has a suggested Xero type of " +
+              mapping.targetType +
+              ".",
+          accountScope?.decisionReason,
+        ]
+          .filter(Boolean)
+          .join(" "),
         action:
           "Confirm the account type and code before generating final import files.",
         mappingIds: [mapping.sourceId],
         records: mappedRecord(snapshot, mapping),
         periodKey,
         confidence:
-          mapping.confidence === "low"
-            ? 0.5
-            : mapping.confidence === "medium"
-              ? 0.75
-              : 0.9,
+          mapping.confidencePercentage !== undefined
+            ? mapping.confidencePercentage / 100
+            : mapping.confidence === "low"
+              ? 0.5
+              : mapping.confidence === "medium"
+                ? 0.75
+                : 0.9,
         effort:
           normalizedType === "fixedasset"
             ? "Accountant Review"
@@ -657,7 +663,10 @@ export function buildAssessmentDecisions(
         mappingIds: [mapping.sourceId],
         records: mappedRecord(snapshot, mapping),
         periodKey,
-        confidence: 0.75,
+        confidence:
+          mapping.confidencePercentage !== undefined
+            ? mapping.confidencePercentage / 100
+            : 0.75,
         effort: "Manual Mapping",
       }),
     );

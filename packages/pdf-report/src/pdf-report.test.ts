@@ -1,5 +1,6 @@
 import { resolve } from "node:path";
 import { createMigrationPlan } from "@preconfin/migration-engine";
+import { createFinancialAssessment } from "@preconfin/financial-assessment-engine";
 import { validateMigration } from "@preconfin/validation-engine";
 import { unstable_dev } from "wrangler";
 import { describe, expect, it, vi } from "vitest";
@@ -19,6 +20,28 @@ describe("generateMigrationHealthPdf", () => {
 
     expect(pdf.subarray(0, 4).toString()).toBe("%PDF");
     expect(pdf.length).toBeGreaterThan(1000);
+  });
+
+  it("renders the canonical assessment without recalculating report values", async () => {
+    const snapshot = accountingFixture();
+    const plan = createMigrationPlan(snapshot);
+    const assessment = createFinancialAssessment({
+      snapshot,
+      plan,
+      assessmentType: "migration_readiness",
+      generatedAt: "2026-06-30T12:00:00.000Z",
+    });
+    const original = JSON.stringify(assessment);
+    const pdf = await generateMigrationHealthPdf({
+      snapshot,
+      plan,
+      validation: validateMigration(snapshot, plan),
+      assessment,
+    });
+
+    expect(pdf.subarray(0, 4).toString()).toBe("%PDF");
+    expect(pdf.length).toBeGreaterThan(1000);
+    expect(JSON.stringify(assessment)).toBe(original);
   });
 
   it("generates the complete report in the workerd runtime without filesystem globals", async () => {

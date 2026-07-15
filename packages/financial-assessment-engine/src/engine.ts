@@ -147,10 +147,28 @@ export function createFinancialAssessment(
   );
   const recommendation = primaryRecommendation(overallStatus, assessmentType);
   const counts = sourceCounts(input.snapshot);
+  const accountMappingById = new Map(
+    (assessmentPlan?.accountMappings ?? []).map((mapping) => [
+      mapping.sourceId,
+      mapping,
+    ]),
+  );
   const accountScope = assessmentPlan?.accountScope
-    ? [...assessmentPlan.accountScope].sort((left, right) =>
-        left.sourceId.localeCompare(right.sourceId),
-      )
+    ? [...assessmentPlan.accountScope]
+        .map((scope) => {
+          const mapping = accountMappingById.get(scope.sourceId);
+          return {
+            ...scope,
+            displayName: mapping?.sourceName,
+            targetType: mapping?.targetType,
+            targetCode: mapping?.targetCode,
+            targetName: mapping?.targetName,
+            confidencePercentage: mapping?.confidencePercentage,
+            rationale: mapping?.rationale,
+            reviewStatus: mapping?.reviewStatus,
+          };
+        })
+        .sort((left, right) => left.sourceId.localeCompare(right.sourceId))
     : undefined;
   const inputFingerprint = stableFingerprint({
     snapshot: input.snapshot,

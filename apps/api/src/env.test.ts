@@ -58,4 +58,18 @@ describe("loadEnv", () => {
       );
     }
   });
+
+  it("requires email delivery bindings in production without printing values", () => {
+    try {
+      loadEnv({ ...validEnv, NODE_ENV: "production" });
+      throw new Error("Expected production environment to fail");
+    } catch (error) {
+      expect(error).toBeInstanceOf(EnvValidationError);
+      const message = error instanceof Error ? error.message : "";
+      expect(message).toContain("RESEND_API_KEY");
+      expect(message).toContain("CONTACT_ADMIN_EMAIL");
+      expect(message).toContain("CONTACT_FROM_EMAIL");
+      expect(message).not.toContain(validEnv.INTUIT_CLIENT_SECRET);
+    }
+  });
 });

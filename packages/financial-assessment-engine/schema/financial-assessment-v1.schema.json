@@ -228,6 +228,35 @@
             "type": "string",
             "minLength": 1
           },
+          "displayName": {
+            "type": "string",
+            "minLength": 1
+          },
+          "targetType": {
+            "type": "string",
+            "minLength": 1
+          },
+          "targetCode": {
+            "type": "string",
+            "minLength": 1
+          },
+          "targetName": {
+            "type": "string",
+            "minLength": 1
+          },
+          "confidencePercentage": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "rationale": {
+            "type": "string",
+            "minLength": 1
+          },
+          "reviewStatus": {
+            "type": "string",
+            "enum": ["automatically_accepted", "requires_review"]
+          },
           "evidence": {
             "type": "object",
             "additionalProperties": false,
@@ -1283,6 +1312,19 @@
               "source_system",
               "accountant",
               "none"
+            ]
+          },
+          "businessImpact": {
+            "type": "string",
+            "minLength": 1
+          },
+          "expectedCompletionTime": {
+            "type": "string",
+            "enum": [
+              "2-5 minutes",
+              "5-15 minutes",
+              "15-30 minutes",
+              "15-60 minutes"
             ]
           }
         },
