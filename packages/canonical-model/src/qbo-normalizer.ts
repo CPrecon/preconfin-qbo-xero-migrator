@@ -12,20 +12,22 @@ import type {
   Item,
   Journal,
   Payment,
-  ReportValue,
-  TaxRate,
   TrackingCategory,
-  TransactionLine,
   TransactionStatus,
 } from "./types.js";
 import {
+  normalizeQboDocument,
+  normalizeQboLines,
+  normalizeQboReport,
+  normalizeQboTaxCodes,
+  normalizeQboTaxRates,
+} from "./qbo-accounting.js";
+import {
   compactId,
   firstString,
-  lineAmount,
   money,
   normalizeDate,
   sourceRef,
-  sumMoney,
 } from "./utils.js";
 
 export interface QboRawDataset {
@@ -57,25 +59,27 @@ export interface QboRawDataset {
 }
 
 const accountTypeMap: Record<string, AccountClassification> = {
-  Bank: "bank",
-  "Accounts Receivable": "accounts_receivable",
-  "Accounts Payable": "accounts_payable",
-  OtherCurrentAsset: "asset",
-  FixedAsset: "asset",
-  OtherAsset: "asset",
-  OtherCurrentLiability: "liability",
-  LongTermLiability: "liability",
-  Equity: "equity",
-  Income: "revenue",
-  OtherIncome: "revenue",
-  Expense: "expense",
-  CostOfGoodsSold: "expense",
-  OtherExpense: "expense",
+  bank: "bank",
+  creditcard: "liability",
+  accountsreceivable: "accounts_receivable",
+  accountspayable: "accounts_payable",
+  othercurrentasset: "asset",
+  fixedasset: "asset",
+  otherasset: "asset",
+  othercurrentliability: "liability",
+  longtermliability: "liability",
+  equity: "equity",
+  income: "revenue",
+  otherincome: "revenue",
+  expense: "expense",
+  costofgoodssold: "expense",
+  otherexpense: "expense",
 };
 
 function accountClassification(type: unknown): AccountClassification {
   if (typeof type !== "string") return "other";
-  return accountTypeMap[type] ?? "other";
+  const normalized = type.toLowerCase().replace(/[^a-z0-9]/g, "");
+  return accountTypeMap[normalized] ?? "other";
 }
 
 function status(value: unknown): TransactionStatus {
@@ -100,43 +104,6 @@ function contactAddress(source: any): string | undefined {
     .join(", ");
 }
 
-function normalizeLines(
-  lines: any[] | undefined,
-  currency: string,
-): TransactionLine[] {
-  return (lines ?? [])
-    .filter((line) => line?.DetailType && line?.Amount !== undefined)
-    .map((line, index) => {
-      const detail =
-        line.SalesItemLineDetail ??
-        line.ItemBasedExpenseLineDetail ??
-        line.AccountBasedExpenseLineDetail ??
-        line.JournalEntryLineDetail ??
-        {};
-      const accountRef = detail.AccountRef?.value;
-      const itemRef = detail.ItemRef?.value;
-      return {
-        id: compactId("line", line.Id ?? index),
-        description: firstString(line.Description, detail.Description),
-        accountId: accountRef ? compactId("acct", accountRef) : undefined,
-        itemId: itemRef ? compactId("item", itemRef) : undefined,
-        quantity: detail.Qty === undefined ? undefined : Number(detail.Qty),
-        unitAmount:
-          detail.UnitPrice === undefined
-            ? undefined
-            : money(detail.UnitPrice, currency),
-        amount: lineAmount(line, currency),
-        taxRateId: detail.TaxCodeRef?.value
-          ? compactId("tax", detail.TaxCodeRef.value)
-          : undefined,
-        tracking: {
-          class: detail.ClassRef?.name,
-          location: detail.DepartmentRef?.name,
-        },
-      };
-    });
-}
-
 function linkedTransactionId(txn: any): string {
   const type = String(txn?.TxnType ?? "").toLowerCase();
   if (type === "invoice") return compactId("invoice", txn.TxnId);
@@ -146,28 +113,6 @@ function linkedTransactionId(txn: any): string {
   if (type === "journalentry") return compactId("journal", txn.TxnId);
   if (type === "payment") return compactId("payment", txn.TxnId);
   return compactId("txn", txn?.TxnId ?? "unknown");
-}
-
-function reportRows(report: any, currency: string): ReportValue[] {
-  const rows: ReportValue[] = [];
-  const walk = (node: any) => {
-    if (!node) return;
-    if (Array.isArray(node.Rows?.Row)) node.Rows.Row.forEach(walk);
-    const cols = node.ColData;
-    if (Array.isArray(cols) && cols.length >= 2) {
-      const label = String(cols[0]?.value ?? "").trim();
-      const rawAmount = cols[cols.length - 1]?.value;
-      if (label && rawAmount !== undefined && rawAmount !== "") {
-        rows.push({
-          label,
-          amount: money(String(rawAmount).replace(/,/g, ""), currency),
-          accountId: cols[0]?.id ? compactId("acct", cols[0].id) : undefined,
-        });
-      }
-    }
-  };
-  report?.Rows?.Row?.forEach(walk);
-  return rows;
 }
 
 export function normalizeQboDataset(raw: QboRawDataset): AccountingSnapshot {
@@ -285,10 +230,19 @@ export function normalizeQboDataset(raw: QboRawDataset): AccountingSnapshot {
     isInventory: item.Type === "Inventory",
   }));
 
+  const itemsById = new Map(items.map((item) => [item.id, item]));
+
   const invoices: Invoice[] = raw.invoices.map((invoice) => {
     const currency =
       firstString(invoice.CurrencyRef?.value, baseCurrency) ?? baseCurrency;
-    const lines = normalizeLines(invoice.Line, currency);
+    const lines = normalizeQboLines(
+      invoice.Line,
+      currency,
+      "sales",
+      itemsById,
+      firstString(invoice.TxnTaxDetail?.TxnTaxCodeRef?.value),
+    );
+    const normalized = normalizeQboDocument(invoice, lines, currency);
     return {
       id: compactId("invoice", invoice.Id),
       source: sourceRef(invoice.Id, "invoice", invoice),
@@ -300,20 +254,25 @@ export function normalizeQboDataset(raw: QboRawDataset): AccountingSnapshot {
       dueDate: normalizeDate(invoice.DueDate),
       status: invoice.Balance === 0 ? "paid" : status(invoice.PrintStatus),
       lines,
-      subtotal: sumMoney(
-        lines.map((line) => line.amount),
-        currency,
-      ),
-      tax: money(invoice.TxnTaxDetail?.TotalTax ?? 0, currency),
+      subtotal: normalized.subtotal,
+      tax: normalized.tax,
       total: money(invoice.TotalAmt ?? 0, currency),
       amountDue: money(invoice.Balance ?? 0, currency),
+      normalization: normalized.normalization,
     };
   });
 
   const bills: Bill[] = raw.bills.map((bill) => {
     const currency =
       firstString(bill.CurrencyRef?.value, baseCurrency) ?? baseCurrency;
-    const lines = normalizeLines(bill.Line, currency);
+    const lines = normalizeQboLines(
+      bill.Line,
+      currency,
+      "purchase",
+      itemsById,
+      firstString(bill.TxnTaxDetail?.TxnTaxCodeRef?.value),
+    );
+    const normalized = normalizeQboDocument(bill, lines, currency);
     return {
       id: compactId("bill", bill.Id),
       source: sourceRef(bill.Id, "bill", bill),
@@ -325,13 +284,11 @@ export function normalizeQboDataset(raw: QboRawDataset): AccountingSnapshot {
       dueDate: normalizeDate(bill.DueDate),
       status: bill.Balance === 0 ? "paid" : "authorized",
       lines,
-      subtotal: sumMoney(
-        lines.map((line) => line.amount),
-        currency,
-      ),
-      tax: money(bill.TxnTaxDetail?.TotalTax ?? 0, currency),
+      subtotal: normalized.subtotal,
+      tax: normalized.tax,
       total: money(bill.TotalAmt ?? 0, currency),
       amountDue: money(bill.Balance ?? 0, currency),
+      normalization: normalized.normalization,
     };
   });
 
@@ -368,9 +325,12 @@ export function normalizeQboDataset(raw: QboRawDataset): AccountingSnapshot {
         : undefined,
       date: normalizeDate(credit.TxnDate),
       type: "customer-credit" as const,
-      lines: normalizeLines(
+      lines: normalizeQboLines(
         credit.Line,
         firstString(credit.CurrencyRef?.value, baseCurrency) ?? baseCurrency,
+        "sales",
+        itemsById,
+        firstString(credit.TxnTaxDetail?.TxnTaxCodeRef?.value),
       ),
       total: money(
         credit.TotalAmt ?? 0,
@@ -386,9 +346,12 @@ export function normalizeQboDataset(raw: QboRawDataset): AccountingSnapshot {
         : undefined,
       date: normalizeDate(credit.TxnDate),
       type: "supplier-credit" as const,
-      lines: normalizeLines(
+      lines: normalizeQboLines(
         credit.Line,
         firstString(credit.CurrencyRef?.value, baseCurrency) ?? baseCurrency,
+        "purchase",
+        itemsById,
+        firstString(credit.TxnTaxDetail?.TxnTaxCodeRef?.value),
       ),
       total: money(
         credit.TotalAmt ?? 0,
@@ -411,7 +374,14 @@ export function normalizeQboDataset(raw: QboRawDataset): AccountingSnapshot {
         accountId: detail.AccountRef?.value
           ? compactId("acct", detail.AccountRef.value)
           : undefined,
+        accountResolution: detail.AccountRef?.value
+          ? ("direct" as const)
+          : ("unresolved" as const),
         amount: money(line.Amount ?? 0, baseCurrency),
+        taxCodeId: detail.TaxCodeRef?.value
+          ? compactId("tax_code", detail.TaxCodeRef.value)
+          : undefined,
+        kind: "account" as const,
         side:
           detail.PostingType === "Credit"
             ? ("credit" as const)
@@ -420,14 +390,8 @@ export function normalizeQboDataset(raw: QboRawDataset): AccountingSnapshot {
     }),
   }));
 
-  const taxRates: TaxRate[] = raw.taxRates.map((taxRate) => ({
-    id: compactId("tax", taxRate.Id),
-    source: sourceRef(taxRate.Id, "tax-rate", taxRate),
-    name: firstString(taxRate.Name, taxRate.Id) ?? String(taxRate.Id),
-    rate: Number(taxRate.RateValue ?? 0),
-    active: taxRate.Active !== false,
-    agency: firstString(taxRate.AgencyRef?.name),
-  }));
+  const taxRates = normalizeQboTaxRates(raw.taxRates);
+  const taxCodes = normalizeQboTaxCodes(raw.taxCodes, raw.taxRates);
 
   const currencies: Currency[] = raw.currencies.length
     ? raw.currencies.map((currency) => ({
@@ -476,19 +440,39 @@ export function normalizeQboDataset(raw: QboRawDataset): AccountingSnapshot {
     })),
   ];
 
-  const reports: AccountingReports = {
-    trialBalance: reportRows(raw.reports.trialBalance, baseCurrency),
-    profitAndLoss: reportRows(raw.reports.profitAndLoss, baseCurrency),
-    balanceSheet: reportRows(raw.reports.balanceSheet, baseCurrency),
-    arAging: reportRows(raw.reports.arAging, baseCurrency),
-    apAging: reportRows(raw.reports.apAging, baseCurrency),
+  const normalizedReports = {
+    trialBalance: normalizeQboReport(raw.reports.trialBalance, baseCurrency),
+    profitAndLoss: normalizeQboReport(raw.reports.profitAndLoss, baseCurrency),
+    balanceSheet: normalizeQboReport(raw.reports.balanceSheet, baseCurrency),
+    arAging: normalizeQboReport(raw.reports.arAging, baseCurrency),
+    apAging: normalizeQboReport(raw.reports.apAging, baseCurrency),
   };
+
+  const reports: AccountingReports = {
+    trialBalance: normalizedReports.trialBalance.values,
+    profitAndLoss: normalizedReports.profitAndLoss.values,
+    balanceSheet: normalizedReports.balanceSheet.values,
+    arAging: normalizedReports.arAging.values,
+    apAging: normalizedReports.apAging.values,
+    metadata: {
+      trialBalance: normalizedReports.trialBalance.metadata,
+      profitAndLoss: normalizedReports.profitAndLoss.metadata,
+      balanceSheet: normalizedReports.balanceSheet.metadata,
+      arAging: normalizedReports.arAging.metadata,
+      apAging: normalizedReports.apAging.metadata,
+    },
+  };
+
+  const trialBalanceAsOf =
+    reports.metadata?.trialBalance?.endDate ??
+    raw.pulledAt?.slice(0, 10) ??
+    new Date().toISOString().slice(0, 10);
 
   const balances: Balance[] = reports.trialBalance.map((row) => ({
     id: compactId("balance", row.accountId ?? row.label),
     source: sourceRef(row.accountId ?? row.label, "balance", { ...row }),
     accountId: row.accountId ?? compactId("acct_label", row.label),
-    asOfDate: new Date().toISOString().slice(0, 10),
+    asOfDate: trialBalanceAsOf,
     amount: row.amount,
     basis: "trial-balance",
   }));
@@ -504,6 +488,7 @@ export function normalizeQboDataset(raw: QboRawDataset): AccountingSnapshot {
     credits,
     journals,
     taxRates,
+    taxCodes,
     currencies,
     tracking,
     balances,

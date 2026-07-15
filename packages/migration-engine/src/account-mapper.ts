@@ -10,8 +10,59 @@ const xeroAccountTypeByClassification: Record<string, string> = {
   equity: "EQUITY",
   revenue: "REVENUE",
   expense: "EXPENSE",
-  other: "EXPENSE",
 };
+
+function normalizedType(value: string | undefined): string {
+  return String(value ?? "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
+}
+
+function xeroAccountType(account: Account): string | undefined {
+  const type = normalizedType(account.sourceAccountType);
+  const subtype = normalizedType(account.sourceAccountSubType);
+
+  switch (type) {
+    case "bank":
+      return "BANK";
+    case "creditcard":
+      return "BANK";
+    case "accountsreceivable":
+      return "CURRENT";
+    case "accountspayable":
+      return "CURRLIAB";
+    case "othercurrentasset":
+      if (subtype === "inventory") return "INVENTORY";
+      if (subtype === "prepaidexpenses") return "PREPAYMENT";
+      return "CURRENT";
+    case "fixedasset":
+      return "FIXED";
+    case "otherasset":
+      return "NONCURRENT";
+    case "othercurrentliability":
+      return "CURRLIAB";
+    case "longtermliability":
+      return "TERMLIAB";
+    case "equity":
+      return "EQUITY";
+    case "income":
+      return "REVENUE";
+    case "otherincome":
+      return "OTHERINCOME";
+    case "expense":
+      return subtype === "depreciation" ? "DEPRECIATN" : "EXPENSE";
+    case "costofgoodssold":
+      return "DIRECTCOSTS";
+    case "otherexpense":
+      return "EXPENSE";
+    case "nonposting":
+      return undefined;
+    default:
+      return type
+        ? undefined
+        : xeroAccountTypeByClassification[account.classification];
+  }
+}
 
 function accountCode(account: Account, index: number): string {
   if (account.code) return account.code;
@@ -26,29 +77,30 @@ function accountCode(account: Account, index: number): string {
   return String(base + index).padStart(3, "0");
 }
 
+function mappingNotes(account: Account): string[] {
+  const notes: string[] = [];
+  if (!account.code) {
+    notes.push(
+      "Generated Xero account code because QuickBooks account number was empty.",
+    );
+  }
+  if (normalizedType(account.sourceAccountType) === "creditcard") {
+    notes.push(
+      "Configure this Xero bank account with the credit-card bank account type.",
+    );
+  }
+  return notes;
+}
+
 export function mapAccounts(snapshot: AccountingSnapshot): {
   mappings: MappingResult[];
   exceptions: MigrationException[];
 } {
-  const seenCodes = new Set<string>();
   const exceptions: MigrationException[] = [];
   const mappings = snapshot.accounts.map((account, index) => {
     const targetCode = accountCode(account, index);
-    if (seenCodes.has(targetCode)) {
-      exceptions.push({
-        code: "DUPLICATE_ACCOUNT_CODE",
-        severity: "warning",
-        entityType: "account",
-        entityId: account.id,
-        entityName: account.name,
-        message: `Multiple accounts map to code ${targetCode}.`,
-        recommendation: "Assign a unique Xero account code before import.",
-      });
-    }
-    seenCodes.add(targetCode);
+    const resolvedTargetType = xeroAccountType(account);
 
-    const targetType =
-      xeroAccountTypeByClassification[account.classification] ?? "EXPENSE";
     if (!account.active) {
       exceptions.push({
         code: "INACTIVE_ACCOUNT",
@@ -61,7 +113,7 @@ export function mapAccounts(snapshot: AccountingSnapshot): {
           "Review whether this account should be imported, archived, or merged in Xero.",
       });
     }
-    if (account.classification === "other") {
+    if (!resolvedTargetType) {
       exceptions.push({
         code: "UNSUPPORTED_ACCOUNT_TYPE",
         severity: "error",
@@ -74,23 +126,19 @@ export function mapAccounts(snapshot: AccountingSnapshot): {
       });
     }
 
+    const notes = mappingNotes(account);
     return {
       sourceId: account.id,
       sourceName: account.name,
-      targetType,
+      targetType: resolvedTargetType ?? "EXPENSE",
       targetCode,
       targetName: account.name,
-      confidence:
-        account.classification === "other"
-          ? ("low" as const)
-          : account.code
-            ? ("high" as const)
-            : ("medium" as const),
-      notes: account.code
-        ? []
-        : [
-            "Generated Xero account code because QuickBooks account number was empty.",
-          ],
+      confidence: !resolvedTargetType
+        ? ("low" as const)
+        : notes.length
+          ? ("medium" as const)
+          : ("high" as const),
+      notes,
     };
   });
 

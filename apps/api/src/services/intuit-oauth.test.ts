@@ -15,6 +15,7 @@ describe("IntuitOAuthClient", () => {
         "https://api-migrate.preconfin.com/api/oauth/qbo/callback",
       INTUIT_ENVIRONMENT: "production",
       QBO_MINOR_VERSION: "75",
+      QBO_REPORT_BASIS: "Accrual",
       TOKEN_ENCRYPTION_KEY: Buffer.from(
         "12345678901234567890123456789012",
       ).toString("base64"),

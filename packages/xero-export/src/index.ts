@@ -156,7 +156,7 @@ function invoiceRows(invoices: Invoice[], ctx: ExportContext): CsvRow[] {
         ? amount(line.unitAmount)
         : amount(line.amount),
       AccountCode: accountCode(ctx, line.accountId),
-      TaxType: taxCode(ctx, line.taxRateId),
+      TaxType: taxCode(ctx, line.taxCodeId ?? line.taxRateId),
       Currency: invoice.total.currency,
       Status: invoice.status === "paid" ? "Paid" : "Approved",
     })),
@@ -176,7 +176,7 @@ function billRows(bills: Bill[], ctx: ExportContext): CsvRow[] {
         ? amount(line.unitAmount)
         : amount(line.amount),
       AccountCode: accountCode(ctx, line.accountId),
-      TaxType: taxCode(ctx, line.taxRateId),
+      TaxType: taxCode(ctx, line.taxCodeId ?? line.taxRateId),
       Currency: bill.total.currency,
       Status: bill.status === "paid" ? "Paid" : "Approved",
     })),
@@ -195,7 +195,7 @@ function creditRows(credits: Credit[], ctx: ExportContext): CsvRow[] {
         ? amount(line.unitAmount)
         : amount(line.amount),
       AccountCode: accountCode(ctx, line.accountId),
-      TaxType: taxCode(ctx, line.taxRateId),
+      TaxType: taxCode(ctx, line.taxCodeId ?? line.taxRateId),
       Currency: credit.total.currency,
       Status: "Approved",
       Type:
@@ -319,7 +319,7 @@ function journalsCsv(
       Description: line.description,
       Debit: line.side === "debit" ? amount(line.amount) : "",
       Credit: line.side === "credit" ? amount(line.amount) : "",
-      TaxType: taxCode(ctx, line.taxRateId),
+      TaxType: taxCode(ctx, line.taxCodeId ?? line.taxRateId),
     })),
   );
   return {

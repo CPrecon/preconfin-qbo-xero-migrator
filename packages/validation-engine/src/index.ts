@@ -36,6 +36,29 @@ function sumAbs(values: MoneyAmount[]): number {
   );
 }
 
+const MAX_ROUNDING_ADJUSTMENT = 0.02;
+
+function normalizedDocumentTotal(document: Invoice | Bill): {
+  amount: number;
+  validRounding: boolean;
+} {
+  if (!document.normalization) {
+    return {
+      amount:
+        sum(document.lines.map((line) => line.amount)) + document.tax.amount,
+      validRounding: true,
+    };
+  }
+  return {
+    amount:
+      document.normalization.calculatedTotal.amount +
+      document.normalization.rounding.amount,
+    validRounding:
+      Math.abs(document.normalization.rounding.amount) <=
+      MAX_ROUNDING_ADJUSTMENT,
+  };
+}
+
 function sourceRecord(
   entity: {
     id: string;
@@ -61,6 +84,36 @@ function finding(
     affectedRecords: input.affectedRecords ?? [],
     blocksExport: input.blocksExport ?? input.severity === "error",
   };
+}
+
+function deduplicateFindings(
+  findings: ValidationFinding[],
+): ValidationFinding[] {
+  const byRoot = new Map<string, ValidationFinding>();
+  for (const item of findings) {
+    const affectedScope = item.affectedRecords
+      .map((record) => `${record.sourceType}:${record.sourceId}`)
+      .sort()
+      .join("|");
+    const rootScope = item.entityId ?? affectedScope;
+    const key = [item.code, item.entityType ?? "", rootScope].join("|");
+    const existing = byRoot.get(key);
+    if (!existing) {
+      byRoot.set(key, item);
+      continue;
+    }
+    const records = new Map(
+      [...existing.affectedRecords, ...item.affectedRecords].map((record) => [
+        `${record.sourceType}:${record.sourceId}`,
+        record,
+      ]),
+    );
+    byRoot.set(key, {
+      ...existing,
+      affectedRecords: [...records.values()],
+    });
+  }
+  return [...byRoot.values()];
 }
 
 function duplicateFindings(
@@ -142,9 +195,12 @@ function duplicateDocumentFindings(
 
 function validateInvoiceTotals(invoices: Invoice[]): ValidationFinding[] {
   return invoices.flatMap((invoice) => {
-    const computed =
-      sum(invoice.lines.map((line) => line.amount)) + invoice.tax.amount;
-    if (approxEqual(computed, invoice.total.amount)) return [];
+    const computed = normalizedDocumentTotal(invoice);
+    if (
+      computed.validRounding &&
+      approxEqual(computed.amount, invoice.total.amount)
+    )
+      return [];
     return [
       finding({
         code: "INVOICE_TOTAL_MISMATCH",
@@ -162,9 +218,12 @@ function validateInvoiceTotals(invoices: Invoice[]): ValidationFinding[] {
 
 function validateBillTotals(bills: Bill[]): ValidationFinding[] {
   return bills.flatMap((bill) => {
-    const computed =
-      sum(bill.lines.map((line) => line.amount)) + bill.tax.amount;
-    if (approxEqual(computed, bill.total.amount)) return [];
+    const computed = normalizedDocumentTotal(bill);
+    if (
+      computed.validRounding &&
+      approxEqual(computed.amount, bill.total.amount)
+    )
+      return [];
     return [
       finding({
         code: "BILL_TOTAL_MISMATCH",
@@ -445,7 +504,9 @@ function validateReferences(snapshot: AccountingSnapshot): ValidationFinding[] {
   const contacts = new Set(snapshot.contacts.map((contact) => contact.id));
   const accounts = new Set(snapshot.accounts.map((account) => account.id));
   const items = new Set(snapshot.items.map((item) => item.id));
-  const taxRates = new Set(snapshot.taxRates.map((tax) => tax.id));
+  const taxReferences = new Set(
+    (snapshot.taxCodes ?? snapshot.taxRates).map((tax) => tax.id),
+  );
   const findings: ValidationFinding[] = [];
 
   const lineChecks = (
@@ -497,7 +558,8 @@ function validateReferences(snapshot: AccountingSnapshot): ValidationFinding[] {
             affectedRecords: [sourceRecord(owner, owner.number)],
           }),
         );
-      if (line.taxRateId && !taxRates.has(line.taxRateId))
+      const taxReferenceId = line.taxCodeId ?? line.taxRateId;
+      if (taxReferenceId && !taxReferences.has(taxReferenceId))
         findings.push(
           finding({
             code: "INVALID_TAX_REFERENCE",
@@ -709,8 +771,10 @@ function validateMappings(
     ...snapshot.bills,
     ...snapshot.credits,
   ])
-    for (const line of doc.lines)
-      if (line.taxRateId) usedTaxes.add(line.taxRateId);
+    for (const line of doc.lines) {
+      const taxReferenceId = line.taxCodeId ?? line.taxRateId;
+      if (taxReferenceId) usedTaxes.add(taxReferenceId);
+    }
   for (const taxId of usedTaxes)
     if (!mappedTaxes.has(taxId))
       findings.push(
@@ -918,7 +982,7 @@ export function validateMigration(
   snapshot: AccountingSnapshot,
   plan: MigrationPlan,
 ): ValidationReport {
-  const findings = [
+  const rawFindings = [
     ...validateTrialBalance(snapshot),
     ...validateArApAgreement(snapshot),
     ...duplicateFindings(
@@ -953,25 +1017,10 @@ export function validateMigration(
     ...validateDates(snapshot),
     ...validateOpeningBalances(snapshot),
     ...validateScale(snapshot),
-    ...snapshot.items
-      .filter((item) => item.isInventory)
-      .map((item) =>
-        finding({
-          code: "UNSUPPORTED_INVENTORY",
-          severity: "warning" as const,
-          title: "Inventory requires review",
-          message: `${item.name} is an inventory item.`,
-          recommendation:
-            "Xero CSV migration requires inventory setup review before import.",
-          entityType: "item",
-          entityId: item.id,
-          affectedRecords: [sourceRecord(item, item.name)],
-          blocksExport: false,
-        }),
-      ),
     ...migrationPlanFindings(plan),
   ];
 
+  const findings = deduplicateFindings(rawFindings);
   const errorCount = findings.filter(
     (item) => item.severity === "error",
   ).length;

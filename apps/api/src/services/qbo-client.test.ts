@@ -13,6 +13,7 @@ const env = {
   INTUIT_REDIRECT_URI: "http://localhost:4000/api/oauth/qbo/callback",
   INTUIT_ENVIRONMENT: "sandbox" as const,
   QBO_MINOR_VERSION: "77",
+  QBO_REPORT_BASIS: "Accrual",
   TOKEN_ENCRYPTION_KEY: Buffer.from(
     "12345678901234567890123456789012",
   ).toString("base64"),
@@ -55,6 +56,11 @@ describe("QboClient", () => {
     expect(urls.some((url) => url.includes("TaxCode"))).toBe(true);
     expect(urls.some((url) => url.includes("AgedReceivables"))).toBe(true);
     expect(urls.some((url) => url.includes("AgedPayables"))).toBe(true);
+    expect(
+      urls
+        .filter((url) => url.includes("/reports/"))
+        .every((url) => url.includes("accounting_method=Accrual")),
+    ).toBe(true);
   });
 
   it("throws structured integration errors without response body leakage", async () => {

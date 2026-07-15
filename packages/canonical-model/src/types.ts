@@ -12,6 +12,7 @@ export type SourceType =
   | "credit"
   | "journal"
   | "tax-rate"
+  | "tax-code"
   | "currency"
   | "tracking"
   | "balance"
@@ -104,6 +105,15 @@ export interface TaxRate extends CanonicalEntity {
   agency?: string;
 }
 
+export interface TaxCode extends CanonicalEntity {
+  name: string;
+  active: boolean;
+  taxable: boolean;
+  salesRate?: number;
+  purchaseRate?: number;
+  componentRateIds: string[];
+}
+
 export interface Currency extends CanonicalEntity {
   code: string;
   name?: string;
@@ -127,7 +137,23 @@ export interface TransactionLine {
   unitAmount?: MoneyAmount;
   amount: MoneyAmount;
   taxRateId?: string;
+  taxCodeId?: string;
+  taxInclusiveAmount?: MoneyAmount;
+  discountAmount?: MoneyAmount;
+  kind?: "item" | "account" | "discount" | "shipping" | "other";
+  accountResolution?: "direct" | "item_income" | "item_expense" | "unresolved";
   tracking?: Record<string, string>;
+}
+
+export type TaxCalculation =
+  "tax_exclusive" | "tax_inclusive" | "not_applicable" | "unknown";
+
+export interface DocumentNormalization {
+  taxCalculation: TaxCalculation;
+  discount: MoneyAmount;
+  shipping: MoneyAmount;
+  calculatedTotal: MoneyAmount;
+  rounding: MoneyAmount;
 }
 
 export interface Invoice extends CanonicalEntity {
@@ -141,6 +167,7 @@ export interface Invoice extends CanonicalEntity {
   tax: MoneyAmount;
   total: MoneyAmount;
   amountDue?: MoneyAmount;
+  normalization?: DocumentNormalization;
 }
 
 export interface Bill extends CanonicalEntity {
@@ -154,6 +181,7 @@ export interface Bill extends CanonicalEntity {
   tax: MoneyAmount;
   total: MoneyAmount;
   amountDue?: MoneyAmount;
+  normalization?: DocumentNormalization;
 }
 
 export interface Payment extends CanonicalEntity {
@@ -194,12 +222,28 @@ export interface ReportValue {
   accountId?: string;
 }
 
+export type AccountingBasis = "cash" | "accrual" | "unknown";
+
+export interface AccountingReportMetadata {
+  name?: string;
+  basis: AccountingBasis;
+  startDate?: string;
+  endDate?: string;
+  generatedAt?: string;
+  currency?: string;
+  noData: boolean;
+}
+
+export type AccountingReportName =
+  "trialBalance" | "profitAndLoss" | "balanceSheet" | "arAging" | "apAging";
+
 export interface AccountingReports {
   trialBalance: ReportValue[];
   profitAndLoss: ReportValue[];
   balanceSheet: ReportValue[];
   arAging: ReportValue[];
   apAging: ReportValue[];
+  metadata?: Partial<Record<AccountingReportName, AccountingReportMetadata>>;
 }
 
 export interface AccountingSnapshot {
@@ -213,6 +257,7 @@ export interface AccountingSnapshot {
   credits: Credit[];
   journals: Journal[];
   taxRates: TaxRate[];
+  taxCodes?: TaxCode[];
   currencies: Currency[];
   tracking: TrackingCategory[];
   balances: Balance[];

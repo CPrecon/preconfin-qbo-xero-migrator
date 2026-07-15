@@ -31,6 +31,7 @@ export type QboExtractionObserver = (progress: QboExtractionProgress) => void;
 export class QboClient {
   private readonly baseUrl: string;
   private readonly minorVersion: string;
+  private readonly reportBasis: string;
 
   constructor(
     private readonly env: AppEnv,
@@ -42,6 +43,7 @@ export class QboClient {
         ? "https://quickbooks.api.intuit.com"
         : "https://sandbox-quickbooks.api.intuit.com";
     this.minorVersion = env.QBO_MINOR_VERSION;
+    this.reportBasis = env.QBO_REPORT_BASIS;
   }
 
   async fetchDataset(onStage?: QboExtractionObserver): Promise<QboRawDataset> {
@@ -172,8 +174,11 @@ export class QboClient {
   }
 
   private async report(name: string): Promise<any> {
+    const query = new URLSearchParams({
+      accounting_method: this.reportBasis,
+    });
     return this.request(
-      this.minor(`/v3/company/${this.realmId}/reports/${name}`),
+      this.minor(`/v3/company/${this.realmId}/reports/${name}?${query}`),
       `report:${name}`,
     );
   }

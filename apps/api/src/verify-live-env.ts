@@ -10,6 +10,7 @@ type HealthPayload = {
   runtime?: {
     publicApiUrl?: string;
     intuitEnvironment?: string;
+    qboReportBasis?: string;
     storageBucket?: string;
     oauthCallbackPath?: string;
   };
@@ -43,6 +44,9 @@ async function verifyRuntime(urlValue: string): Promise<void> {
   console.log(
     `Intuit environment: ${payload.runtime?.intuitEnvironment ?? "unknown"}`,
   );
+  console.log(
+    `QBO report basis: ${payload.runtime?.qboReportBasis ?? "unknown"}`,
+  );
   console.log(`Storage bucket: ${payload.runtime?.storageBucket ?? "unknown"}`);
   console.log(
     `OAuth callback path: ${payload.runtime?.oauthCallbackPath ?? "unknown"}`,
@@ -59,6 +63,7 @@ async function main(): Promise<void> {
   const env = loadEnv({ ...process.env, LIVE_CERTIFICATION_MODE: "true" });
   console.log("Local live certification environment is configured.");
   console.log(`Intuit environment: ${env.INTUIT_ENVIRONMENT}`);
+  console.log(`QBO report basis: ${env.QBO_REPORT_BASIS}`);
   console.log(`QBO minor version: ${env.QBO_MINOR_VERSION}`);
   console.log(`Storage bucket: ${env.SUPABASE_STORAGE_BUCKET}`);
 }

@@ -16,6 +16,7 @@ const env = {
   INTUIT_REDIRECT_URI: "http://localhost:4000/api/oauth/qbo/callback",
   INTUIT_ENVIRONMENT: "sandbox",
   QBO_MINOR_VERSION: "75",
+  QBO_REPORT_BASIS: "Accrual",
   TOKEN_ENCRYPTION_KEY: Buffer.from(
     "12345678901234567890123456789012",
   ).toString("base64"),
@@ -75,6 +76,7 @@ describe("worker router", () => {
     await expect(response.json()).resolves.toMatchObject({
       ok: true,
       service: "qbo-xero-migrator-api",
+      runtime: { qboReportBasis: "Accrual" },
     });
   });
   it("formats repository failures without losing table and operation metadata", () => {

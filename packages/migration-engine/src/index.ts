@@ -22,30 +22,6 @@ function byNameMapping(
   };
 }
 
-function duplicateExceptions(
-  entityType: string,
-  values: Array<{ id: string; name: string }>,
-): MigrationException[] {
-  const seen = new Map<string, Array<{ id: string; name: string }>>();
-  for (const value of values) {
-    const key = value.name.trim().toLowerCase();
-    seen.set(key, [...(seen.get(key) ?? []), value]);
-  }
-  return [...seen.values()]
-    .filter((group) => group.length > 1)
-    .flatMap((group) =>
-      group.map((value) => ({
-        code: `DUPLICATE_${entityType.toUpperCase()}`,
-        severity: "warning" as const,
-        entityType,
-        entityId: value.id,
-        entityName: value.name,
-        message: `Duplicate ${entityType} name detected: ${value.name}.`,
-        recommendation: "Merge or rename duplicates before importing to Xero.",
-      })),
-    );
-}
-
 export function createMigrationPlan(
   snapshot: AccountingSnapshot,
 ): MigrationPlan {
@@ -65,27 +41,17 @@ export function createMigrationPlan(
 
   const exceptions: MigrationException[] = [
     ...accountResult.exceptions,
-    ...duplicateExceptions(
-      "contact",
-      snapshot.contacts.map((contact) => ({
-        id: contact.id,
-        name: contact.name,
-      })),
-    ),
-    ...duplicateExceptions(
-      "account",
-      snapshot.accounts.map((account) => ({
-        id: account.id,
-        name: account.name,
-      })),
-    ),
     ...itemExceptions,
   ];
 
   return {
     accountMappings: accountResult.mappings,
-    taxMappings: snapshot.taxRates.map((tax) =>
-      byNameMapping(tax.id, tax.name, "TaxRate", [`Rate: ${tax.rate}%`]),
+    taxMappings: (snapshot.taxCodes ?? snapshot.taxRates).map((tax) =>
+      byNameMapping(tax.id, tax.name, "TaxRate", [
+        "rate" in tax
+          ? `Rate: ${tax.rate}%`
+          : `Sales rate: ${tax.salesRate ?? 0}%`,
+      ]),
     ),
     contactMappings: snapshot.contacts.map((contact) =>
       byNameMapping(

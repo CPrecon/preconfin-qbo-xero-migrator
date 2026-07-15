@@ -145,6 +145,7 @@ function healthResponse(env: AppEnv) {
       corsOrigins: env.CORS_ORIGINS.split(",").map((item) => item.trim()),
       intuitEnvironment: env.INTUIT_ENVIRONMENT,
       qboMinorVersion: env.QBO_MINOR_VERSION,
+      qboReportBasis: env.QBO_REPORT_BASIS,
       storageBucket: env.SUPABASE_STORAGE_BUCKET,
       oauthCallbackPath,
     },

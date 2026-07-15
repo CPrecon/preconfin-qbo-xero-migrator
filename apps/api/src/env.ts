@@ -51,6 +51,7 @@ const envSchema = z
     INTUIT_REDIRECT_URI: z.string().url(),
     INTUIT_ENVIRONMENT: z.enum(["sandbox", "production"]).default("sandbox"),
     QBO_MINOR_VERSION: z.string().regex(/^\d+$/).default("75"),
+    QBO_REPORT_BASIS: z.enum(["Accrual", "Cash"]).default("Accrual"),
     TOKEN_ENCRYPTION_KEY: z.string().min(1),
     OAUTH_STATE_SIGNING_SECRET: z.string().min(32),
     SUPABASE_URL: z.string().url(),

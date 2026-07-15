@@ -58,6 +58,7 @@ export const accountingSnapshotSchema = z.object({
   credits: z.array(z.unknown()),
   journals: z.array(z.unknown()),
   taxRates: z.array(z.unknown()),
+  taxCodes: z.array(z.unknown()).optional(),
   currencies: z.array(z.unknown()),
   tracking: z.array(z.unknown()),
   balances: z.array(z.unknown()),
@@ -65,6 +66,9 @@ export const accountingSnapshotSchema = z.object({
     trialBalance: z.array(z.unknown()),
     profitAndLoss: z.array(z.unknown()),
     balanceSheet: z.array(z.unknown()),
+    arAging: z.array(z.unknown()),
+    apAging: z.array(z.unknown()),
+    metadata: z.record(z.unknown()).optional(),
   }),
   pulledAt: z.string(),
 });
