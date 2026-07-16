@@ -6,6 +6,8 @@ export {
   adaptFinancialAssessmentForMigrator,
   toPublicMigrationAssessment,
   type MigratorAssessmentAdapter,
+  type PublicMappingConfidence,
+  type PublicMappingGroup,
   type PublicMigrationAssessment,
   type PublicMigrationReadinessState,
 } from "./adapters/migrator.js";

@@ -5,7 +5,10 @@ import { validateMigration } from "@preconfin/validation-engine";
 import { unstable_dev } from "wrangler";
 import { describe, expect, it, vi } from "vitest";
 import { accountingFixture } from "./accounting-fixture.test-helper.js";
-import { generateMigrationHealthPdf } from "./index.js";
+import {
+  generateFinancialAssessmentPdf,
+  generateMigrationHealthPdf,
+} from "./index.js";
 
 describe("generateMigrationHealthPdf", () => {
   it("generates a branded PDF artifact in Node", async () => {
@@ -42,6 +45,23 @@ describe("generateMigrationHealthPdf", () => {
     expect(pdf.subarray(0, 4).toString()).toBe("%PDF");
     expect(pdf.length).toBeGreaterThan(1000);
     expect(JSON.stringify(assessment)).toBe(original);
+  });
+
+  it("keeps the executive assessment and detail report within a compact page count", async () => {
+    const snapshot = accountingFixture();
+    const plan = createMigrationPlan(snapshot);
+    const assessment = createFinancialAssessment({
+      snapshot,
+      plan,
+      assessmentType: "migration_readiness",
+      generatedAt: "2026-06-30T12:00:00.000Z",
+    });
+    const pdf = await generateFinancialAssessmentPdf(assessment);
+    const pageCount = (pdf.toString("latin1").match(/\/Type \/Page\b/g) ?? [])
+      .length;
+
+    expect(pageCount).toBeGreaterThanOrEqual(2);
+    expect(pageCount).toBeLessThanOrEqual(6);
   });
 
   it("generates the complete report in the workerd runtime without filesystem globals", async () => {

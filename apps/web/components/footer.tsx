@@ -12,9 +12,11 @@ export function Footer() {
       <div className="container flex flex-col justify-between gap-6 text-sm text-ink/70 md:flex-row md:items-center">
         <div>
           <p className="font-semibold text-ink">
-            PreconFin QBO → Xero Migrator
+            PreconFin Financial Assessment
           </p>
-          <p className="mt-1">A PreconFin tool for migration readiness.</p>
+          <p className="mt-1">
+            A PreconFin tool for financial health and migration readiness.
+          </p>
         </div>
         <nav className="flex flex-wrap gap-4" aria-label="Footer navigation">
           <Link href={privacyUrl} className="hover:text-ink">

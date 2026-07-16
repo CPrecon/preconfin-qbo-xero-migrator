@@ -25,7 +25,7 @@ const features = [
   ],
   [
     "Branded PDF report",
-    "Creates a professional Migration Health Report with score, findings, recommendations, and next steps.",
+    "Creates a professional PreconFin Financial Assessment with financial controls, prioritized findings, migration decisions, and next steps.",
   ],
   [
     "Secure downloads",
@@ -37,7 +37,7 @@ export default function FeaturesPage() {
   return (
     <main className="py-20">
       <div className="container">
-        <h1 className="text-4xl font-semibold tracking-tight text-ink">
+        <h1 className="text-4xl font-semibold text-ink">
           Everything needed for a controlled first migration pass.
         </h1>
         <div className="mt-10 grid gap-4 md:grid-cols-2">

@@ -180,7 +180,7 @@ describe("FinancialAssessmentV1 golden conformance", () => {
     );
   });
 
-  it("exposes mapping confidence and rationale without source IDs", () => {
+  it("exposes deterministic mapping classifications and rationale without technical IDs", () => {
     const report = toPublicMigrationAssessment(generate("clean-company"));
     expect(report.mappingReview.requiresReview).toBeGreaterThan(0);
     const reviewMappings = report.mappingReview.mappings.filter(
@@ -191,8 +191,13 @@ describe("FinancialAssessmentV1 golden conformance", () => {
     );
     expect(reviewMappings).toHaveLength(report.mappingReview.requiresReview);
     expect(
-      reviewMappings.every((mapping) =>
-        mapping.reason.includes("Review required:"),
+      reviewMappings.every(
+        (mapping) =>
+          ["Recommended", "Requires Review", "Manual Decision"].includes(
+            mapping.confidenceClassification,
+          ) &&
+          mapping.businessReason.length > 0 &&
+          mapping.requiredAction.length > 0,
       ),
     ).toBe(true);
     expect(automaticMappings).toHaveLength(
@@ -201,29 +206,93 @@ describe("FinancialAssessmentV1 golden conformance", () => {
     expect(
       report.mappingReview.mappings.every(
         (mapping) =>
-          mapping.confidencePercentage >= 0 &&
-          mapping.confidencePercentage <= 100 &&
+          [
+            "Automatic",
+            "Recommended",
+            "Requires Review",
+            "Manual Decision",
+          ].includes(mapping.confidenceClassification) &&
           mapping.reason.length > 0 &&
-          mapping.target.length > 0,
+          mapping.target.length > 0 &&
+          mapping.proposedTreatment.length > 0,
       ),
     ).toBe(true);
     expect(JSON.stringify(report.mappingReview.mappings)).not.toMatch(
-      /sourceId|decisionKey|occurrenceId/,
+      /sourceId|decisionKey|occurrenceId|confidencePercentage/,
     );
   });
 
-  it("ends with an actionable migration sequence and no generic consultation step", () => {
+  it("ends with the deterministic consultant workflow and no generic consultation step", () => {
     const report = toPublicMigrationAssessment(generate("clean-company"));
-    expect(report.nextSteps.map((step) => step.title)).toEqual(
-      expect.arrayContaining([
-        "Review mappings",
-        "Generate the migration package",
-        "Import into a Xero demo organisation",
-        "Verify destination balances",
-      ]),
-    );
+    expect(report.nextSteps.map((step) => step.title)).toEqual([
+      "Resolve accounting issues",
+      "Confirm migration decisions",
+      "Generate migration package",
+      "Import into Xero Demo Organisation",
+      "Verify Trial Balance",
+      "Go Live",
+    ]);
     expect(JSON.stringify(report.nextSteps)).not.toMatch(/consultation/i);
     expect(report.supportRecommended).toBe(false);
+  });
+
+  it("merges each account scope row with its canonical account decision", () => {
+    const assessment = generate("clean-company");
+    const report = toPublicMigrationAssessment(assessment);
+    const manualMappings = report.mappingReview.mappings.filter(
+      (mapping) => mapping.reviewStatus === "requires_review",
+    );
+    const publicRoots = manualMappings.map((mapping) =>
+      [mapping.group, mapping.title, mapping.proposedTreatment]
+        .join("|")
+        .toLowerCase(),
+    );
+
+    expect(new Set(publicRoots).size).toBe(publicRoots.length);
+    expect(manualMappings).toHaveLength(report.mappingReview.requiresReview);
+    expect(report.scores.manualReviewRequired).toBe(
+      report.mappingReview.requiresReview,
+    );
+    expect(manualMappings.length).toBeLessThanOrEqual(
+      assessment.decisions.length,
+    );
+  });
+
+  it("deduplicates recommendations and keeps deterministic priorities", () => {
+    const report = toPublicMigrationAssessment(generate("messy-books"));
+    const roots = report.recommendations.map((recommendation) =>
+      [recommendation.title, recommendation.fixLocation]
+        .join("|")
+        .toLowerCase(),
+    );
+
+    expect(new Set(roots).size).toBe(roots.length);
+    expect(report.recommendations.map((item) => item.priority)).toEqual(
+      report.recommendations.map((_, index) => index + 1),
+    );
+  });
+
+  it("uses business control labels and deterministic executive copy", () => {
+    const assessment = generate("migration-edge-cases");
+    const first = toPublicMigrationAssessment(assessment);
+    const second = toPublicMigrationAssessment(assessment);
+
+    expect(first.executiveSummary).toBe(second.executiveSummary);
+    expect(first.executiveSummary).toMatch(
+      /books|financial position|migration decision/i,
+    );
+    expect(first.controls.every((control) => control.evidence.length > 0)).toBe(
+      true,
+    );
+    expect(
+      first.controls.every((control) => control.businessImpact.length > 0),
+    ).toBe(true);
+    expect(first.controls.map((control) => control.statusLabel)).not.toContain(
+      "Unknown",
+    );
+    expect(JSON.stringify(first)).not.toMatch(
+      /occurrenceId|decisionKey|issueKey|rootKey|entityId/,
+    );
   });
 
   it("aggregates one account mapping decision per root account", () => {

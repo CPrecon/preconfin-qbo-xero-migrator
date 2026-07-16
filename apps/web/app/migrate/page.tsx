@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { MigrationWizard } from "../../components/migration-wizard";
 
 export const metadata: Metadata = {
-  title: "Migration Wizard",
+  title: "Free Financial Health Assessment",
   description:
-    "Connect QuickBooks Online and generate Xero-ready migration files.",
+    "Connect QuickBooks to assess financial health and Xero migration readiness before generating migration files.",
   robots: {
     index: false,
     follow: false,

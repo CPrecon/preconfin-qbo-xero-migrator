@@ -9,7 +9,7 @@ export default function TermsPage() {
   return (
     <main className="py-20">
       <div className="container max-w-3xl">
-        <h1 className="text-4xl font-semibold tracking-tight">Terms</h1>
+        <h1 className="text-4xl font-semibold">Terms</h1>
         <div className="mt-8 space-y-6 leading-8 text-ink/72">
           <p>
             The migrator provides export and validation tools for review. It

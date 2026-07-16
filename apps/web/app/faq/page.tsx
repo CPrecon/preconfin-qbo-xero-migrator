@@ -17,7 +17,7 @@ const faqs = [
   ],
   [
     "What do I receive?",
-    "A ZIP package with CSV files, mapping report, exceptions, README, validation JSON, and a branded Migration Health PDF.",
+    "A ZIP package with CSV files, mapping report, exceptions, README, assessment JSON, and a branded PreconFin Financial Assessment PDF.",
   ],
   [
     "Is this a replacement for an accountant?",
@@ -33,7 +33,7 @@ export default function FaqPage() {
   return (
     <main className="py-20">
       <div className="container max-w-3xl">
-        <h1 className="text-4xl font-semibold tracking-tight text-ink">FAQ</h1>
+        <h1 className="text-4xl font-semibold text-ink">FAQ</h1>
         <div className="mt-10 divide-y divide-ink/10 rounded-lg border border-ink/10 bg-white">
           {faqs.map(([question, answer]) => (
             <section key={question} className="p-6">

@@ -8,26 +8,27 @@ import { appUrl, marketingToolUrl } from "../lib/config";
 export const metadata: Metadata = {
   metadataBase: new URL(appUrl),
   title: {
-    default: "QBO to Xero Migrator by PreconFin",
-    template: "%s | PreconFin Migrator",
+    default: "Free Financial Health Assessment | PreconFin",
+    template: "%s | PreconFin Financial Assessment",
   },
   description:
-    "Connect QuickBooks Online, validate migration readiness, and generate Xero-ready CSV files with a branded financial validation report.",
+    "Connect QuickBooks to receive a professional Financial Health Assessment covering reconciliation, migration readiness, data quality, and recommended fixes before moving to Xero.",
   alternates: {
     canonical: marketingToolUrl,
   },
   openGraph: {
-    title: "QBO to Xero Migrator by PreconFin",
+    title: "Free Financial Health Assessment by PreconFin",
     description:
-      "Secure QuickBooks Online to Xero migration files and validation report.",
+      "Understand your books before migration with deterministic financial controls and a clear path to Xero.",
     type: "website",
     url: appUrl,
-    siteName: "PreconFin Migrator",
+    siteName: "PreconFin Financial Assessment",
   },
   twitter: {
     card: "summary_large_image",
-    title: "QBO to Xero Migrator by PreconFin",
-    description: "Generate Xero-ready migration files from QuickBooks Online.",
+    title: "Free Financial Health Assessment by PreconFin",
+    description:
+      "Assess financial health and migration readiness before moving from QuickBooks to Xero.",
   },
 };
 

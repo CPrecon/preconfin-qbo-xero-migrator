@@ -6,11 +6,8 @@ export function Nav() {
     <header className="sticky top-0 z-30 border-b border-ink/10 bg-paper/95 backdrop-blur">
       <div className="container flex min-h-16 items-center justify-between gap-6">
         <div>
-          <Link
-            href="/"
-            className="text-base font-semibold tracking-tight text-ink"
-          >
-            PreconFin Migrator
+          <Link href="/" className="text-base font-semibold text-ink">
+            PreconFin Financial Assessment
           </Link>
           <p className="hidden text-xs text-ink/55 sm:block">
             A PreconFin tool
@@ -52,7 +49,7 @@ export function Nav() {
           href="/migrate"
           className="inline-flex min-h-11 items-center rounded-full bg-teal px-5 text-sm font-semibold text-white hover:bg-[#185c60]"
         >
-          Start migration scan
+          Get free assessment
         </Link>
       </div>
     </header>

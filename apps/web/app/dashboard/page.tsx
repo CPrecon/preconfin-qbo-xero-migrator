@@ -14,9 +14,7 @@ export default function DashboardPage() {
   return (
     <main className="py-20">
       <div className="container max-w-3xl">
-        <h1 className="text-4xl font-semibold tracking-tight text-ink">
-          Migration dashboard
-        </h1>
+        <h1 className="text-4xl font-semibold text-ink">Migration dashboard</h1>
         <p className="mt-5 text-lg leading-8 text-ink/72">
           Open the migration wizard on the same browser used for your scan to
           view status, downloads, reconnect QuickBooks, or delete the scan.

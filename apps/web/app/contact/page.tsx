@@ -15,7 +15,7 @@ export default function ContactPage() {
           <p className="text-sm font-semibold uppercase text-teal">
             Migration support
           </p>
-          <h1 className="mt-4 text-4xl font-semibold tracking-tight text-ink">
+          <h1 className="mt-4 text-4xl font-semibold text-ink">
             Talk through your migration report.
           </h1>
           <p className="mt-5 text-lg leading-8 text-ink/72">

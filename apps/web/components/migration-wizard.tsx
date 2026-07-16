@@ -64,6 +64,7 @@ export function MigrationWizard() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const runScanOnce = useRef(createInFlightGuard());
+  const pdfDownload = downloads.find((item) => item.kind === "pdf");
 
   useEffect(() => {
     const attribution = captureAttribution();
@@ -188,6 +189,16 @@ export function MigrationWizard() {
     setLeadSubmitted(true);
   }
 
+  function requestReportDelivery() {
+    const delivery = document.getElementById("report-delivery");
+    delivery?.scrollIntoView({ behavior: "smooth", block: "center" });
+    window.setTimeout(() => {
+      const emailInput = delivery?.querySelector('input[type="email"]') as
+        { focus(): void } | undefined;
+      emailInput?.focus();
+    }, 350);
+  }
+
   async function deleteScan() {
     if (!jobId || !jobToken) return;
     await fetch(`${apiUrl}/api/migration-jobs/${jobId}`, {
@@ -209,15 +220,15 @@ export function MigrationWizard() {
     <div className="grid gap-8 lg:grid-cols-[0.85fr_1fr]">
       <section className="rounded-lg border border-ink/10 bg-white p-6 shadow-sm">
         <p className="text-sm font-semibold uppercase text-teal">
-          Migration wizard
+          Financial assessment
         </p>
-        <h1 className="mt-3 text-3xl font-semibold tracking-tight text-ink">
-          Generate your Xero-ready migration package.
+        <h1 className="mt-3 text-3xl font-semibold text-ink">
+          Understand your books before migration.
         </h1>
         <p className="mt-4 leading-7 text-ink/70">
-          Connect QuickBooks Online with read-only access, run the validation
-          scan, then download your files and report. Version 1 does not write to
-          QuickBooks or Xero.
+          Connect QuickBooks with read-only access to assess financial health,
+          reconciliation, data quality, and Xero migration readiness. Version 1
+          does not write to QuickBooks or Xero.
         </p>
         <div className="mt-6 space-y-3">
           <button
@@ -243,7 +254,7 @@ export function MigrationWizard() {
             ) : (
               <ArrowRight aria-hidden="true" className="mr-2 h-4 w-4" />
             )}
-            Run migration scan
+            Run Financial Assessment
           </button>
         </div>
         {error && (
@@ -257,7 +268,7 @@ export function MigrationWizard() {
       </section>
 
       <section className="rounded-lg border border-ink/10 bg-white p-6 shadow-sm">
-        <h2 className="text-xl font-semibold text-ink">Scan status</h2>
+        <h2 className="text-xl font-semibold text-ink">Assessment status</h2>
         <div className="mt-5 grid gap-3 sm:grid-cols-3">
           <div className="rounded-lg bg-paper p-4">
             <p className="text-xs font-semibold uppercase text-ink/50">
@@ -272,7 +283,9 @@ export function MigrationWizard() {
             <p className="mt-2 font-semibold">{statusLabel(status)}</p>
           </div>
           <div className="rounded-lg bg-paper p-4">
-            <p className="text-xs font-semibold uppercase text-ink/50">Score</p>
+            <p className="text-xs font-semibold uppercase text-ink/50">
+              Migration readiness
+            </p>
             <p className="mt-2 font-semibold">
               {score === null ? "Pending" : `${score}/100`}
             </p>
@@ -296,7 +309,7 @@ export function MigrationWizard() {
           </p>
         )}
         {downloads.length > 0 && (
-          <div className="mt-6 space-y-3">
+          <div id="report-delivery" className="mt-6 scroll-mt-24 space-y-3">
             <h3 className="font-semibold text-ink">Downloads</h3>
             {leadSubmitted ? (
               downloads.map((item) => (
@@ -329,17 +342,18 @@ export function MigrationWizard() {
             ) : (
               <div className="rounded-lg border border-ink/10 bg-paper p-4">
                 <h4 className="font-semibold text-ink">
-                  Send the package to your work email.
+                  Unlock your report and migration package.
                 </h4>
                 <p className="mt-2 text-sm leading-6 text-ink/70">
-                  Your scan is complete. Submit your details to unlock the ZIP
-                  package and PDF report links in this browser.
+                  Your assessment is complete. Submit your details to unlock
+                  secure ZIP and PDF actions in this browser.
                 </p>
                 <div className="mt-4">
                   <LeadForm
                     source="migration-package-download"
                     jobId={jobId}
                     onSuccess={markLeadSubmitted}
+                    submitLabel="Unlock report and package"
                   />
                 </div>
               </div>
@@ -359,7 +373,13 @@ export function MigrationWizard() {
           organization first.
         </p>
       </section>
-      {report && <AssessmentReport report={report} />}
+      {report && (
+        <AssessmentReport
+          report={report}
+          reportDownloadUrl={leadSubmitted ? pdfDownload?.url : undefined}
+          onRequestReport={requestReportDelivery}
+        />
+      )}
     </div>
   );
 }
@@ -402,7 +422,7 @@ function stageRows(
             : "Waiting",
     },
     {
-      label: "Validation and mapping",
+      label: "Financial controls and mapping",
       state:
         status === "completed"
           ? "Complete"

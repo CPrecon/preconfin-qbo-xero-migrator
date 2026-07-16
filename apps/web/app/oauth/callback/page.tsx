@@ -14,7 +14,7 @@ export default function OAuthCallbackPage() {
   return (
     <main className="py-20">
       <div className="container max-w-2xl text-center">
-        <h1 className="text-4xl font-semibold tracking-tight text-ink">
+        <h1 className="text-4xl font-semibold text-ink">
           QuickBooks connection returned.
         </h1>
         <p className="mt-5 text-lg leading-8 text-ink/72">

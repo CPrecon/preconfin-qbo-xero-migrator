@@ -9,7 +9,7 @@ export default function PrivacyPage() {
   return (
     <main className="py-20">
       <div className="container max-w-3xl">
-        <h1 className="text-4xl font-semibold tracking-tight">Privacy</h1>
+        <h1 className="text-4xl font-semibold">Privacy</h1>
         <div className="mt-8 space-y-6 leading-8 text-ink/72">
           <p>
             The migrator requests read-only QuickBooks Online accounting access

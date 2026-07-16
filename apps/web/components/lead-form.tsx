@@ -9,10 +9,12 @@ export function LeadForm({
   source,
   jobId,
   onSuccess,
+  submitLabel = "Contact PreconFin",
 }: {
   source: string;
   jobId?: string;
   onSuccess?: () => void;
+  submitLabel?: string;
 }) {
   const [status, setStatus] = useState<
     "idle" | "submitting" | "success" | "error"
@@ -95,7 +97,7 @@ export function LeadForm({
           disabled={status === "submitting"}
           className="min-h-12 rounded-full bg-teal px-5 text-sm font-semibold text-white hover:bg-[#185c60] disabled:opacity-60"
         >
-          {status === "submitting" ? "Submitting" : "Contact PreconFin"}
+          {status === "submitting" ? "Submitting" : submitLabel}
         </button>
         {message && (
           <p
